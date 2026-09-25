@@ -35,6 +35,8 @@ export type InvoiceDocument = {
     hsnCode: string | null;
     quantity: number;
     unitPricePaise: number;
+    /** Share of a discount code (absent on older invoices). */
+    discountPaise?: number;
     gstRateBasisPoints: number;
     taxablePaise: number;
     cgstPaise: number;
@@ -80,16 +82,18 @@ export async function issueInvoice(tx: Tx, order: OrderRow, seller: SellerDetail
   const intraState = (order.gst as { intraState: boolean }).intraState;
 
   const docLines = lines.map((line) => {
-    const split = splitGst(line.lineTotalPaise, line.taxRateBasisPoints, intraState);
+    const net = line.lineTotalPaise - line.discountPaise;
+    const split = splitGst(net, line.taxRateBasisPoints, intraState);
     return {
       description: line.optionsLabel ? `${line.productTitle} (${line.optionsLabel})` : line.productTitle,
       sku: line.sku,
       hsnCode: line.hsnCode,
       quantity: line.quantity,
       unitPricePaise: line.unitPricePaise,
+      discountPaise: line.discountPaise,
       gstRateBasisPoints: line.taxRateBasisPoints,
       ...split,
-      totalPaise: line.lineTotalPaise,
+      totalPaise: net,
     };
   });
   const sum = (key: "taxablePaise" | "cgstPaise" | "sgstPaise" | "igstPaise") => docLines.reduce((total, line) => total + line[key], 0);

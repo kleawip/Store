@@ -39,13 +39,16 @@ export function renderInvoiceHtml(doc: InvoiceDocument, status: "issued" | "canc
   const taxHead = doc.intraState ? "<th>CGST</th><th>SGST</th>" : "<th>IGST</th>";
   const taxCells = (line: { cgstPaise: number; sgstPaise: number; igstPaise: number }) =>
     doc.intraState ? `<td>${rupees(line.cgstPaise)}</td><td>${rupees(line.sgstPaise)}</td>` : `<td>${rupees(line.igstPaise)}</td>`;
+  // A discount column appears only when a discount code was used.
+  const discounted = doc.lines.some((line) => (line.discountPaise ?? 0) > 0);
+  const discountCell = (paise: number | undefined) => (discounted ? `<td>${paise ? `−${rupees(paise)}` : "—"}</td>` : "");
   const rows = doc.lines
     .map(
       (line, index) => `<tr><td>${index + 1}</td><td>${escape(line.description)}<div class="muted">SKU ${escape(line.sku)}</div></td><td>${escape(line.hsnCode ?? "—")}</td>` +
-        `<td>${line.quantity}</td><td>${rupees(line.unitPricePaise)}</td><td>${rupees(line.taxablePaise)}</td><td>${percent(line.gstRateBasisPoints)}</td>${taxCells(line)}<td>${rupees(line.totalPaise)}</td></tr>`,
+        `<td>${line.quantity}</td><td>${rupees(line.unitPricePaise)}</td>${discountCell(line.discountPaise)}<td>${rupees(line.taxablePaise)}</td><td>${percent(line.gstRateBasisPoints)}</td>${taxCells(line)}<td>${rupees(line.totalPaise)}</td></tr>`,
     )
     .join("");
-  const span = doc.intraState ? 10 : 9;
+  const span = (doc.intraState ? 10 : 9) + (discounted ? 1 : 0);
   const shippingRow = doc.shippingPaise > 0 ? `<tr><td colspan="${span - 1}">Delivery charges</td><td>${rupees(doc.shippingPaise)}</td></tr>` : "";
   const creditNote = doc.kind === "credit_note";
   const title = creditNote ? "Credit Note" : "Tax Invoice";
@@ -76,9 +79,9 @@ export function renderInvoiceHtml(doc: InvoiceDocument, status: "issued" | "canc
 <div class="parties"><div><strong>Bill to / Ship to</strong><div>${escape(buyer.name)}</div><div>${escape(buyer.line1)}${buyer.line2 ? `, ${escape(buyer.line2)}` : ""}</div>
 ${buyer.landmark ? `<div>${escape(buyer.landmark)}</div>` : ""}<div>${escape(buyer.city)}, ${escape(buyer.stateName)} ${escape(buyer.pincode)}</div><div>${escape(buyer.phone)}</div></div>
 <div><strong>Place of supply</strong><div>${escape(doc.placeOfSupply.stateName)} (${escape(doc.placeOfSupply.gstStateNumber)})</div><div class="muted">${doc.intraState ? "Intra-state supply: CGST + SGST" : "Inter-state supply: IGST"}</div></div></div>
-<table><thead><tr><th>#</th><th>Item</th><th>HSN</th><th>Qty</th><th>Rate (incl. GST)</th><th>Taxable value</th><th>GST</th>${taxHead}<th>Amount</th></tr></thead>
+<table><thead><tr><th>#</th><th>Item</th><th>HSN</th><th>Qty</th><th>Rate (incl. GST)</th>${discounted ? "<th>Discount</th>" : ""}<th>Taxable value</th><th>GST</th>${taxHead}<th>Amount</th></tr></thead>
 <tbody>${rows}${shippingRow}
-<tr class="totals"><td colspan="5">Total</td><td>${rupees(doc.totals.taxablePaise)}</td><td></td>${taxCells(doc.totals)}<td>${rupees(doc.totals.grandTotalPaise)}</td></tr></tbody></table>
+<tr class="totals"><td colspan="${discounted ? 6 : 5}">Total</td><td>${rupees(doc.totals.taxablePaise)}</td><td></td>${taxCells(doc.totals)}<td>${rupees(doc.totals.grandTotalPaise)}</td></tr></tbody></table>
 <p><strong>Amount in words:</strong> ${amountInWords(doc.totals.grandTotalPaise)} only</p>
 <p>${payment}</p>
 <p class="muted">Prices are inclusive of GST. Tax is not payable on reverse charge. This is a computer-generated ${creditNote ? "credit note" : "invoice"}.</p>

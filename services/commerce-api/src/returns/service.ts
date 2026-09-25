@@ -25,8 +25,8 @@ const UUID = /^[0-9a-f-]{36}$/i;
 /** Returns that no longer hold any quantity. */
 const RELEASED: ReturnRow["status"][] = ["rejected", "cancelled"];
 
-/** Value of `quantity` units of a line at the price actually paid (line totals are GST-inclusive). */
-const unitsValue = (line: OrderLineRow, quantity: number) => Math.round((line.lineTotalPaise * quantity) / line.quantity);
+/** Value of `quantity` units of a line at the price actually paid: GST-inclusive, after the line's discount share. */
+const unitsValue = (line: OrderLineRow, quantity: number) => Math.round(((line.lineTotalPaise - line.discountPaise) * quantity) / line.quantity);
 
 async function returnableLines(db: DbOrTx, orderId: string) {
   const lines = await db.select().from(orderLines).where(eq(orderLines.orderId, orderId)).orderBy(asc(orderLines.sku));

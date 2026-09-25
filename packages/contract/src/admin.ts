@@ -782,3 +782,106 @@ export const AdminNotificationListQuery = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
+
+// ---- Milestone 4: discount codes ----
+
+export const DiscountKind = z.enum(["percentage", "fixed_amount", "free_shipping"]);
+export const DiscountInput = z.object({
+  code: z.string().trim().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{2,39}$/, "Use 3–40 letters, numbers, - or _."),
+  description: z.string().trim().max(200).default(""),
+  kind: DiscountKind,
+  // percentage: 0.01–100 (e.g. 10 = 10% off); fixed_amount: amountPaise.
+  percent: z.number().positive().max(100).nullable().optional(),
+  amountPaise: Paise.nullable().optional(),
+  maxDiscountPaise: Paise.nullable().optional(),
+  minSubtotalPaise: z.number().int().min(0).default(0),
+  startsAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  endsAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  usageLimit: z.number().int().positive().nullable().optional(),
+  // null = unlimited per customer; default 1.
+  perCustomerLimit: z.number().int().positive().nullable().optional(),
+  firstOrderOnly: z.boolean().default(false),
+});
+export const AdminDiscount = z.object({
+  id: z.string(),
+  code: z.string(),
+  description: z.string(),
+  kind: DiscountKind,
+  percent: z.number().nullable(),
+  amount: AdminMoney.nullable(),
+  maxDiscount: AdminMoney.nullable(),
+  minSubtotal: AdminMoney,
+  startsAt: z.string(),
+  endsAt: z.string().nullable(),
+  usageLimit: z.number().int().nullable(),
+  perCustomerLimit: z.number().int().nullable(),
+  firstOrderOnly: z.boolean(),
+  status: z.enum(["active", "disabled"]),
+  // What customers experience right now.
+  state: z.enum(["active", "scheduled", "expired", "disabled"]),
+  timesUsed: z.number().int(),
+  usesHeld: z.number().int(),
+  totalDiscounted: AdminMoney,
+  createdBy: z.string().nullable(),
+  createdAt: z.string(),
+});
+export const AdminDiscountListQuery = z.object({
+  q: z.string().trim().max(40).optional(),
+  status: z.enum(["active", "disabled"]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+// ---- Milestone 4: reports (owner only; dates are India-time calendar days, inclusive) ----
+
+const ReportDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD.");
+export const ReportRange = z.object({ from: ReportDate, to: ReportDate });
+export const SalesReportQuery = ReportRange.extend({ groupBy: z.enum(["day", "month"]).default("day") });
+export const ProductReportQuery = ReportRange.extend({ limit: z.coerce.number().int().min(1).max(200).default(50) });
+export const GstReportQuery = ReportRange.extend({ format: z.enum(["json", "csv"]).default("json"), section: z.enum(["documents", "hsn"]).default("documents") });
+
+const SalesFigures = z.object({
+  orders: z.number().int(),
+  units: z.number().int(),
+  grossSales: AdminMoney,
+  discounts: AdminMoney,
+  shipping: AdminMoney,
+  totalSales: AdminMoney,
+  codToCollect: AdminMoney,
+  refunds: AdminMoney,
+  netSales: AdminMoney,
+});
+export const SalesReport = z.object({
+  from: z.string(),
+  to: z.string(),
+  groupBy: z.enum(["day", "month"]),
+  rows: z.array(SalesFigures.extend({ period: z.string() })),
+  totals: SalesFigures.extend({ averageOrderValue: AdminMoney }),
+});
+export const ProductReport = z.object({
+  from: z.string(),
+  to: z.string(),
+  rows: z.array(z.object({ sku: z.string(), productTitle: z.string(), optionsLabel: z.string(), units: z.number().int(), orders: z.number().int(), revenue: AdminMoney, returnedUnits: z.number().int() })),
+});
+export const GstReport = z.object({
+  from: z.string(),
+  to: z.string(),
+  totals: z.object({ invoices: z.number().int(), cancelledInvoices: z.number().int(), creditNotes: z.number().int(), taxable: AdminMoney, cgst: AdminMoney, sgst: AdminMoney, igst: AdminMoney, total: AdminMoney }),
+  hsnSummary: z.array(z.object({ hsnCode: z.string(), gstRatePercent: z.number(), quantity: z.number().int(), taxable: AdminMoney, cgst: AdminMoney, sgst: AdminMoney, igst: AdminMoney })),
+  stateSummary: z.array(z.object({ placeOfSupply: z.string(), taxable: AdminMoney, tax: AdminMoney })),
+  documents: z.array(z.object({
+    kind: z.enum(["invoice", "credit_note"]),
+    number: z.string(),
+    date: z.string(),
+    orderNumber: z.string(),
+    againstInvoice: z.string().nullable(),
+    buyerName: z.string(),
+    placeOfSupply: z.string(),
+    status: z.enum(["issued", "cancelled"]),
+    taxable: AdminMoney,
+    cgst: AdminMoney,
+    sgst: AdminMoney,
+    igst: AdminMoney,
+    total: AdminMoney,
+  })),
+});

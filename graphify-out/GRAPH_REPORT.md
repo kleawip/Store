@@ -1,17 +1,17 @@
 # Graph Report - project  (2026-09-25)
 
 ## Corpus Check
-- 280 files · ~499,903 words
+- 290 files · ~518,438 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 7 file(s) not represented in the graph (top: (none) 4, .css 2, .example 1)
 
 ## Summary
-- 2048 nodes · 5029 edges · 136 communities (102 shown, 34 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 93 edges (avg confidence: 0.9)
+- 2131 nodes · 5297 edges · 127 communities (93 shown, 34 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 99 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `c37b65e0`
+- Built from commit: `9f7033c9`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -41,7 +41,7 @@
 - Generated storefront hero assets — demo review
 - admin-auth.ts
 - Kleawip build — frontend / backend task split
-- commerce-api/package.json
+- admin-reports.ts
 - contract/package.json
 - scripts
 - compilerOptions
@@ -50,59 +50,56 @@
 - Log (newest last)
 - Kleawip commerce API
 - admin-campaigns.test.ts
-- catalogue/admin-service.ts
+- app.ts
 - twisted-loop-detail.tsx
 - products.ts
-- client.ts
+- storage.ts
 - 3. Workflow details observed
-- layout.tsx
+- SiteHeader
 - Kleawip admin: screen brief for Stitch (Milestone 1)
-- app.ts
-- scripts
-- dependencies
-- devDependencies
+- commerce-api/package.json
+- client.ts
+- MediaStorage
+- video.ts
 - cart/service.ts
 - products/[id]/page.tsx
 - campaigns/service.ts
-- lifecycle.ts
+- invoices/service.ts
 - orders/service.ts
 - store-cart.ts
 - store-account.test.ts
 - admin/package.json
 - ApiError
-- db/seed-demo.ts
+- drizzle-orm
 - customer.ts
 - videos.ts
 - admin-orders.ts
 - mail.mjs
 - src/admin.ts
-- index.ts
+- render.ts
 - schema.ts
-- helpers.ts
-- store-catalogue.ts
+- db/seed-demo.ts
+- index.ts
 - collections.ts
 - quote.ts
-- DevGateway
-- shipments.ts
+- gateway.ts
+- recordAudit
 - compilerOptions
 - admin-shipments.test.ts
 - media/service.ts
-- Kleawip commerce API contract — v1 proposal
 - admin-staff.ts
-- 5.1 Implemented admin API (25 Sep 2026)
 - catalogue-import.ts
 - otp-senders.ts
 - ADR 0002: Phase 0 commerce decisions (26 September 2026)
 - returns/service.ts
 - product-video-feature.tsx
 - admin-media-collections.ts
-- settings/service.ts
+- Database
 - admin-catalogue.ts
-- ref_vitest
-- orders/admin.ts
+- helpers.ts
+- shipments.ts
 - admin/src/app/layout.tsx
-- queries.ts
-- 2026-09-25T10-40-08-600Z_claude-to-codex_handoff-while-you-were-paused-your-next-.md
+- discounts/service.ts
 - rehearse-restore.sh
 - _pg.sh
 - provider.ts
@@ -110,51 +107,44 @@
 - SOURCES.md
 - backup.sh
 - restore.sh
-- staff/service.ts
+- r2.ts
 - catalogue-api.ts
-- render.ts
-- video.ts
 - deliverDueNotifications
 - server.ts
-- Database
+- ADR 0001: Backend stack and core conventions
 - packages_contract_src_index_adminrefund
 - home-campaigns.ts
-- process.ts
 - ref_instagram_feature
-- admin-auth.test.ts
-- password.ts
-- MockShippingProvider
-- errors.ts
 - 5. Admin endpoints — Milestone 1 (outline)
 
 ## God Nodes (most connected - your core abstractions)
-1. `recordAudit()` - 73 edges
-2. `ApiError` - 71 edges
-3. `drizzle-orm` - 55 edges
-4. `notFound()` - 53 edges
-5. `Database` - 47 edges
+1. `recordAudit()` - 77 edges
+2. `ApiError` - 77 edges
+3. `drizzle-orm` - 59 edges
+4. `notFound()` - 55 edges
+5. `Database` - 51 edges
 6. `adminMediaCollectionRoutes()` - 31 edges
-7. `buildApp()` - 28 edges
-8. `createTestApp()` - 26 edges
-9. `products` - 25 edges
-10. `authorize()` - 24 edges
+7. `buildApp()` - 30 edges
+8. `authorize()` - 28 edges
+9. `createTestApp()` - 28 edges
+10. `products` - 25 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `5.4 Milestone 4: discount codes and reports (implemented 25 Sep 2026)` --references--> `state()`  [INFERRED]
+  docs/api/API_CONTRACT.md → services/commerce-api/src/discounts/service.ts
 - ``GET /v1/store/products`` --references--> `priceFrom()`  [INFERRED]
   docs/api/API_CONTRACT.md → services/commerce-api/src/domain/availability.ts
 - `2026-09-25 (later): Claude Code` --references--> `priceFrom()`  [INFERRED]
   docs/coordination/HANDOFF_LOG.md → services/commerce-api/src/domain/availability.ts
-- `2026-09-25 (night): Claude Code` --references--> `MediaStorage`  [INFERRED]
-  docs/coordination/HANDOFF_LOG.md → services/commerce-api/src/media/storage.ts
+- `Decision` --references--> `MediaStorage`  [INFERRED]
+  docs/decisions/0001-backend-stack-and-core-conventions.md → services/commerce-api/src/media/storage.ts
 - `R3: Production image storage: **Cloudflare R2**` --references--> `MediaStorage`  [INFERRED]
   docs/decisions/0002-phase0-commerce-decisions.md → services/commerce-api/src/media/storage.ts
-- `R1: Customer sign-in: **WhatsApp OTP first, email OTP as fallback; SMS later**` --references--> `OtpSender`  [INFERRED]
-  docs/decisions/0002-phase0-commerce-decisions.md → services/commerce-api/src/messaging/otp-senders.ts
 
 ## Import Cycles
 - None detected.
 
-## Communities (136 total, 34 thin omitted)
+## Communities (127 total, 34 thin omitted)
 
 ### Community 0 - "build_feature_expansion_addendum.py"
 Cohesion: 0.16
@@ -177,8 +167,8 @@ Cohesion: 0.29
 Nodes (6): Admin field mapping, Customer product-page order, Design-review caution, Interaction checks before implementation acceptance, Kleawip product page ↔ admin mapping (review draft), Publish gate
 
 ### Community 5 - "ref_next"
-Cohesion: 0.11
-Nodes (9): nextConfig, nextConfig, metadata, metadata, SignInPage(), SearchOverlay(), ref_lucide_react, ref_next (+1 more)
+Cohesion: 0.08
+Nodes (14): nextConfig, nextConfig, metadata, metadata, apps_storefront_src_app_globals, inter, manrope, metadata (+6 more)
 
 ### Community 6 - "Google Stitch for Kleawip — read before design work"
 Cohesion: 0.29
@@ -241,24 +231,24 @@ Cohesion: 0.27
 Nodes (9): SearchPage(), SearchAutocomplete(), matches(), normalized(), score(), searchableProducts, searchProducts(), SearchSuggestion (+1 more)
 
 ### Community 21 - "store-account.ts"
-Cohesion: 0.11
-Nodes (31): Customer, CustomerUpdate, INDIAN_STATES, OtpRequest, OtpVerify, StateCode, packages_contract_src_index_addressinput, packages_contract_src_index_customer (+23 more)
+Cohesion: 0.13
+Nodes (28): Customer, CustomerUpdate, OtpRequest, OtpVerify, packages_contract_src_index_addressinput, packages_contract_src_index_customer, packages_contract_src_index_customerupdate, packages_contract_src_index_otprequest (+20 more)
 
 ### Community 22 - "Generated storefront hero assets — demo review"
 Cohesion: 0.50
 Nodes (3): Final files, Generated storefront hero assets — demo review, Prompt set
 
 ### Community 23 - "admin-auth.ts"
-Cohesion: 0.13
-Nodes (26): StaffLoginRequest, packages_contract_src_index_staffloginrequest, ADMIN_COOKIE, authorize(), CSRF_HEADER, fastify, FastifyRequest, forbidden() (+18 more)
+Cohesion: 0.08
+Nodes (39): StaffLoginRequest, packages_contract_src_index_staffloginrequest, ADMIN_COOKIE, authorize(), CSRF_HEADER, fastify, FastifyRequest, forbidden() (+31 more)
 
 ### Community 24 - "Kleawip build — frontend / backend task split"
 Cohesion: 0.18
 Nodes (10): Handoff checklist for every milestone, Kleawip build — frontend / backend task split, Milestone 0 — decisions and contract (first, before real commerce), Milestone 1 — real catalogue and campaigns, Milestone 2 — identity, bag and checkout foundation, Milestone 3 — operations and launch readiness, Ownership — avoid editing each other's work, Progress log (+2 more)
 
-### Community 25 - "commerce-api/package.json"
-Cohesion: 0.12
-Nodes (14): drizzle-kit, tsx, @types/pg, description, @kleawip/contract, sharp, @types/node, typescript (+6 more)
+### Community 25 - "admin-reports.ts"
+Cohesion: 0.13
+Nodes (18): GstReport, GstReportQuery, ProductReport, ProductReportQuery, SalesReport, SalesReportQuery, packages_contract_src_index_gstreport, packages_contract_src_index_gstreportquery (+10 more)
 
 ### Community 26 - "contract/package.json"
 Cohesion: 0.11
@@ -281,20 +271,20 @@ Cohesion: 0.20
 Nodes (9): Bag, identity and orders, Contract questions Claude Code should answer before implementation, Data the frontend must be able to display, Existing preview sources to replace gradually, First integration test gate, Frontend data handoff for Claude Code, Product detail and selection, Product discovery (+1 more)
 
 ### Community 31 - "Log (newest last)"
-Cohesion: 0.10
-Nodes (20): 2026-09-25 — Claude Code, 2026-09-25 — Claude Code (Milestone 3 step 2: shipments, tracking, GST invoices), 2026-09-25 — Claude Code (Milestone 3 step 3: returns, credit notes; dormant R2 adapter), 2026-09-25 — Claude Code (Milestone 3 step 4: customer notifications — Milestone 3 backend complete), 2026-09-25 — Codex, 2026-09-25 — Codex (product reel and admin video controls), 2026-09-25 (evening): Claude Code, 2026-09-25 (evening, owner present): Claude Code (+12 more)
+Cohesion: 0.09
+Nodes (21): 2026-09-25 — Claude Code, 2026-09-25 — Claude Code (Milestone 3 step 2: shipments, tracking, GST invoices), 2026-09-25 — Claude Code (Milestone 3 step 3: returns, credit notes; dormant R2 adapter), 2026-09-25 — Claude Code (Milestone 3 step 4: customer notifications — Milestone 3 backend complete), 2026-09-25 — Claude Code (Milestone 4: discount codes and reports), 2026-09-25 — Codex, 2026-09-25 — Codex (product reel and admin video controls), 2026-09-25 (evening): Claude Code (+13 more)
 
 ### Community 32 - "Kleawip commerce API"
 Cohesion: 0.33
 Nodes (5): Commands (run from `WEBSITE DATA/project`), Demo data, Kleawip commerce API, Known issue, Requirements
 
 ### Community 33 - "admin-campaigns.test.ts"
-Cohesion: 0.09
-Nodes (19): destination, products, root, AdminProduct, MediaAsset, packages_contract_src_index_mediaasset, ProductDetail, ref_node_path (+11 more)
+Cohesion: 0.15
+Nodes (11): MediaAsset, HomeResponse, packages_contract_src_index_mediaasset, completeSlide(), productId(), uploadBanner(), uploadImage(), box() (+3 more)
 
-### Community 37 - "catalogue/admin-service.ts"
-Cohesion: 0.28
-Nodes (18): adminProduct(), categoryId(), checkPrices(), createProduct(), createVariant(), FieldError, invalid(), listAdminProducts() (+10 more)
+### Community 37 - "app.ts"
+Cohesion: 0.19
+Nodes (18): fastify, ref_zod, AppOptions, buildApp(), errorHandler(), FieldError, notFoundHandler(), send() (+10 more)
 
 ### Community 38 - "twisted-loop-detail.tsx"
 Cohesion: 0.16
@@ -304,157 +294,149 @@ Nodes (16): CartPage(), WishlistPage(), ProductCard(), LegacyProductDetail(), Pr
 Cohesion: 0.23
 Nodes (7): CategoryPage(), metadata, Listing(), apps_storefront_src_data_catalogue, categories, categoryById(), products
 
-### Community 40 - "client.ts"
-Cohesion: 0.06
-Nodes (33): RFC-3986, StaffRole, packages_contract_src_index_staffrole, ref_node_util, pg, ref_zod, { db, close }, input (+25 more)
+### Community 40 - "storage.ts"
+Cohesion: 0.15
+Nodes (10): ref_node_stream, config, { db, close }, Config, Env, loadConfig(), ADR-0002, storageFromConfig() (+2 more)
 
 ### Community 41 - "3. Workflow details observed"
 Cohesion: 0.14
 Nodes (13): 1. Navigation map, and what Kleawip keeps, 2. How the sections connect, 3.1 Product editor (observed), 3.2 Inventory (observed), 3.3 Discounts (observed), 3.4 Draft / manual order (observed), 3.5 Order lifecycle (known behaviour; not observed, because the dev store blocks orders), 3.6 Notifications (observed) (+5 more)
 
-### Community 42 - "layout.tsx"
-Cohesion: 0.18
-Nodes (8): apps_storefront_src_app_globals, inter, manrope, metadata, SiteFooter(), SiteHeader(), closeMenu(), openSearch()
+### Community 42 - "SiteHeader"
+Cohesion: 0.50
+Nodes (3): SiteHeader(), closeMenu(), openSearch()
 
 ### Community 43 - "Kleawip admin: screen brief for Stitch (Milestone 1)"
 Cohesion: 0.15
 Nodes (12): 0. Shared shell (every admin screen), 1. Staff sign-in, 2. Dashboard (Milestone 1 version), 3. Products: list, 4. Product editor (create / edit), 5. Catalogue import (CSV), 6. Inventory, 7. Collections (+4 more)
 
-### Community 44 - "app.ts"
+### Community 44 - "commerce-api/package.json"
+Cohesion: 0.04
+Nodes (47): drizzle-kit, @fastify/cookie, @fastify/cors, @fastify/helmet, @fastify/multipart, @fastify/rate-limit, tsx, @types/pg (+39 more)
+
+### Community 45 - "client.ts"
 Cohesion: 0.16
-Nodes (15): fastify, @fastify/cookie, @fastify/cors, @fastify/helmet, @fastify/multipart, @fastify/rate-limit, AppOptions, buildApp() (+7 more)
+Nodes (14): StaffRole, packages_contract_src_index_staffrole, ref_node_util, pg, { db, close }, input, password, { values } (+6 more)
 
-### Community 45 - "scripts"
-Cohesion: 0.22
-Nodes (9): scripts, db:generate, db:migrate, db:seed:demo, dev, staff:create, start, test (+1 more)
+### Community 46 - "MediaStorage"
+Cohesion: 0.16
+Nodes (11): 2026-09-25 (night): Claude Code, deliveryKey(), FORMATS, MAX_UPLOAD_BYTES, MIN_DIMENSION, originalKey(), ProcessedImage, processImage() (+3 more)
 
-### Community 46 - "dependencies"
-Cohesion: 0.17
-Nodes (12): dependencies, drizzle-orm, fastify, @fastify/cookie, @fastify/cors, @fastify/helmet, @fastify/multipart, @fastify/rate-limit (+4 more)
-
-### Community 47 - "devDependencies"
-Cohesion: 0.29
-Nodes (7): devDependencies, drizzle-kit, tsx, @types/node, @types/pg, typescript, vitest
+### Community 47 - "video.ts"
+Cohesion: 0.23
+Nodes (11): MAX_VIDEO_BYTES, MP4_AUDIO, MP4_VIDEO, mp4Codecs(), rejected(), sha256Of(), sniffVideo(), videoKey() (+3 more)
 
 ### Community 48 - "cart/service.ts"
-Cohesion: 0.21
-Nodes (16): packages_contract_src_index_cartline, clearCart(), findCart(), findOrCreateCart(), getCart(), inr(), MAX_CART_LINES, mergeGuestCart() (+8 more)
+Cohesion: 0.20
+Nodes (17): packages_contract_src_index_cart, packages_contract_src_index_cartline, CartOwner, clearCart(), findCart(), findOrCreateCart(), getCart(), inr() (+9 more)
 
 ### Community 54 - "products/[id]/page.tsx"
 Cohesion: 0.06
-Nodes (46): LoginForm(), submit(), AddVariant(), CATEGORIES, Form, formOf(), MediaTab(), MobilePreview() (+38 more)
+Nodes (45): LoginForm(), submit(), AddVariant(), CATEGORIES, Form, formOf(), MediaTab(), MobilePreview() (+37 more)
 
 ### Community 55 - "campaigns/service.ts"
 Cohesion: 0.08
-Nodes (54): CampaignOrder, HeroSlide, HeroSlideInput, RibbonMessage, packages_contract_src_index_campaignorder, packages_contract_src_index_campaigntargetinput, packages_contract_src_index_heroslide, packages_contract_src_index_heroslideinput (+46 more)
+Nodes (53): HeroSlide, HeroSlideInput, RibbonMessage, RibbonMessageInput, packages_contract_src_index_campaignorder, packages_contract_src_index_campaigntargetinput, packages_contract_src_index_heroslide, packages_contract_src_index_heroslideinput (+45 more)
 
-### Community 56 - "lifecycle.ts"
+### Community 56 - "invoices/service.ts"
 Cohesion: 0.11
-Nodes (21): AuditEntry, listAudit(), auditEvents, invoices, invoiceSequences, refunds, staffUsers, Address (+13 more)
+Nodes (20): INDIAN_STATES, packages_contract_src_index_indian_states, creditNotes, invoices, invoiceSequences, orderLines, refunds, returnLines (+12 more)
 
 ### Community 57 - "orders/service.ts"
-Cohesion: 0.11
-Nodes (32): packages_contract_src_index_order, packages_contract_src_index_paymentsession, packages_contract_src_index_paymentverifyrequest, packages_contract_src_index_placeorderrequest, enqueueNotification(), cancelUnpaidOrder(), capturePayment(), conflict() (+24 more)
+Cohesion: 0.10
+Nodes (33): PaymentSession, PaymentVerifyRequest, PlaceOrderRequest, packages_contract_src_index_order, packages_contract_src_index_paymentsession, packages_contract_src_index_paymentverifyrequest, packages_contract_src_index_placeorderrequest, orderNumberSeq (+25 more)
 
 ### Community 58 - "store-cart.ts"
-Cohesion: 0.12
-Nodes (22): CartLineUpdate, WishlistItem, WishlistMerge, WishlistPut, packages_contract_src_index_cart, packages_contract_src_index_cartlineupdate, packages_contract_src_index_wishlistitem, packages_contract_src_index_wishlistmerge (+14 more)
+Cohesion: 0.14
+Nodes (20): CartLineUpdate, WishlistItem, WishlistMerge, WishlistPut, packages_contract_src_index_cartlineupdate, packages_contract_src_index_wishlistitem, packages_contract_src_index_wishlistmerge, packages_contract_src_index_wishlistput (+12 more)
 
 ### Community 59 - "store-account.test.ts"
-Cohesion: 0.16
-Nodes (13): Address, CustomerSession, IndianMobile, OtpChallenge, packages_contract_src_index_address, packages_contract_src_index_customersession, packages_contract_src_index_indianmobile, packages_contract_src_index_otpchallenge (+5 more)
+Cohesion: 0.15
+Nodes (14): Address, CustomerSession, IndianMobile, OtpChallenge, packages_contract_src_index_address, packages_contract_src_index_customersession, packages_contract_src_index_indianmobile, packages_contract_src_index_otpchallenge (+6 more)
 
 ### Community 60 - "admin/package.json"
 Cohesion: 0.06
 Nodes (31): dependencies, @kleawip/contract, lucide-react, next, react, react-dom, zod, description (+23 more)
 
 ### Community 61 - "ApiError"
-Cohesion: 0.12
-Nodes (27): codeHash(), CUSTOMER_SESSION_ABSOLUTE_MS, CUSTOMER_SESSION_IDLE_MS, CustomerContext, CustomerRow, invalid(), maskEmail(), maskPhone() (+19 more)
+Cohesion: 0.11
+Nodes (27): ErrorCode, codeHash(), CUSTOMER_SESSION_ABSOLUTE_MS, CUSTOMER_SESSION_IDLE_MS, CustomerContext, CustomerRow, invalid(), maskEmail() (+19 more)
 
-### Community 62 - "db/seed-demo.ts"
-Cohesion: 0.16
-Nodes (10): packages_contract_src_index_adminproduct, Problem, ProductListResponse, inventoryMovements, products, DEMO_SEEDABLE_DATABASE, DemoCatalogue, demoCataloguePath (+2 more)
+### Community 62 - "drizzle-orm"
+Cohesion: 0.11
+Nodes (22): DashboardResponse, CheckoutQuote, PlaceOrderResponse, packages_contract_src_index_checkoutquote, packages_contract_src_index_dashboardresponse, drizzle-orm, ref_node_crypto, DEFAULT_COMMERCE_SETTINGS (+14 more)
 
 ### Community 63 - "customer.ts"
-Cohesion: 0.09
-Nodes (23): 5.2 Milestone 2: customer accounts (implemented 26 Sep 2026), 2026-09-25 — Claude Code (Milestone 3 step 1: order actions and refunds), AddressInput, Cart, CartLine, CartLineWarning, CheckoutQuote, CustomerReturn (+15 more)
+Cohesion: 0.10
+Nodes (21): 5.2 Milestone 2: customer accounts (implemented 26 Sep 2026), 2026-09-25 — Claude Code (Milestone 3 step 1: order actions and refunds), AddressInput, AppliedDiscountView, Cart, CartLine, CartLineWarning, CustomerReturn (+13 more)
 
 ### Community 64 - "videos.ts"
 Cohesion: 0.22
 Nodes (20): videoAssets, parseInstagramUrl(), checklist(), checkReferences(), createProductVideo(), deleteVideoAsset(), invalid(), isUuid() (+12 more)
 
 ### Community 65 - "admin-orders.ts"
-Cohesion: 0.08
-Nodes (30): AdminNotification, AdminNotificationListQuery, AdminOrderDetail, AdminOrderListItem, AdminOrderListQuery, AttentionResolve, FulfilmentStep, OrderCancel (+22 more)
+Cohesion: 0.07
+Nodes (41): AdminNotification, AdminNotificationListQuery, AdminOrderDetail, AdminOrderListItem, AdminOrderListQuery, AdminOrderPayment, AttentionResolve, FulfilmentStep (+33 more)
 
 ### Community 66 - "mail.mjs"
-Cohesion: 0.12
-Nodes (15): ref_node_url, DEMO_BANNER_SOURCES, DEVICES, OUT, agentFlag(), AGENTS, box, fail() (+7 more)
+Cohesion: 0.07
+Nodes (28): 10. Questions for review, 11. Answers to Codex's frontend data handoff, 1. Proposed backend structure and stack, 2. Conventions, 3. Catalogue data model and stable IDs, 4. Storefront endpoints — Milestone 1 (catalogue and campaigns), 6. Later milestones (outline only; blocked on Phase 0), 7. Mapping from the current storefront fixtures (+20 more)
 
 ### Community 67 - "src/admin.ts"
-Cohesion: 0.07
-Nodes (27): AdminInventoryMovement, AdminInvoiceSummary, AdminMoney, AdminProductListItem, AdminRefund, AdminShipment, AdminVariant, CAMPAIGN_PAGES (+19 more)
+Cohesion: 0.06
+Nodes (32): AdminInventoryMovement, AdminInvoiceSummary, AdminMoney, AdminProductListItem, AdminRefund, AdminShipment, AdminVariant, CAMPAIGN_PAGES (+24 more)
 
-### Community 68 - "index.ts"
-Cohesion: 0.10
-Nodes (19): RFC-9457, Category, CategoryListResponse, CollectionListResponse, CollectionSummary, Facet, HomeResponse, Image (+11 more)
+### Community 68 - "render.ts"
+Cohesion: 0.33
+Nodes (9): amountInWords(), belowThousand(), escape(), istDate(), ONES, percent(), renderInvoiceHtml(), rupees() (+1 more)
 
 ### Community 69 - "schema.ts"
-Cohesion: 0.05
-Nodes (36): campaignTarget, campaignTargetType, creditNotes, customerStatus, fulfilmentStatus, importStatus, inventoryReason, invoiceStatus (+28 more)
+Cohesion: 0.06
+Nodes (32): campaignTarget, campaignTargetType, customerStatus, discountKind, discountStatus, fulfilmentStatus, importStatus, inventoryReason (+24 more)
 
-### Community 70 - "helpers.ts"
-Cohesion: 0.12
-Nodes (20): drizzle-orm, ref_node_os, CommerceSettings, DEFAULT_COMMERCE_SETTINGS, ADR-0002, checkoutQuotes, inventoryItems, orders (+12 more)
+### Community 70 - "db/seed-demo.ts"
+Cohesion: 0.09
+Nodes (21): destination, products, root, ref_node_fs, ref_node_path, ref_node_url, ref_sharp, DEMO_BANNER_SOURCES (+13 more)
 
-### Community 71 - "store-catalogue.ts"
-Cohesion: 0.30
-Nodes (13): storeHome(), storeCollection(), storeCollections(), Cursor, decodeCursor(), encodeCursor(), escapeLike(), filterFingerprint() (+5 more)
+### Community 71 - "index.ts"
+Cohesion: 0.09
+Nodes (32): RFC-9457, Category, CategoryListResponse, CollectionSummary, Facet, Image, Money, OptionGroup (+24 more)
 
 ### Community 72 - "collections.ts"
-Cohesion: 0.30
-Nodes (14): slugify(), adminCollection(), collectionRow(), createCollection(), invalid(), isUuid(), listAdminCollections(), publishedMembers (+6 more)
+Cohesion: 0.19
+Nodes (19): packages_contract_src_index_admincollection, slugify(), adminCollection(), collectionRow(), createCollection(), invalid(), isUuid(), listAdminCollections() (+11 more)
 
 ### Community 73 - "quote.ts"
-Cohesion: 0.14
-Nodes (21): CheckoutQuoteRequest, Serviceability, ServiceabilityQuery, packages_contract_src_index_checkoutquote, packages_contract_src_index_checkoutquoterequest, packages_contract_src_index_serviceability, packages_contract_src_index_serviceabilityquery, blocked() (+13 more)
+Cohesion: 0.13
+Nodes (22): CheckoutQuoteRequest, Serviceability, ServiceabilityQuery, packages_contract_src_index_checkoutquoterequest, packages_contract_src_index_serviceability, packages_contract_src_index_serviceabilityquery, blocked(), checkServiceability() (+14 more)
 
-### Community 74 - "DevGateway"
+### Community 74 - "gateway.ts"
 Cohesion: 0.17
-Nodes (6): DevGateway, hmacHex(), PaymentGatewayError, RazorpayGateway, safeEqualHex(), devPaymentRoutes()
+Nodes (7): DevGateway, Fetch, GatewayOrder, hmacHex(), PaymentGatewayError, RazorpayGateway, safeEqualHex()
 
-### Community 75 - "shipments.ts"
-Cohesion: 0.11
-Nodes (33): rupees(), assertNoLiveShipment(), clearAttention(), createRefund(), invalid(), lockedOrder(), retryRefund(), setFulfilmentStep() (+25 more)
+### Community 75 - "recordAudit"
+Cohesion: 0.14
+Nodes (36): recordAudit(), payments, cancelInvoice(), assertNoLiveShipment(), CANCELLABLE_FULFILMENT, clearAttention(), createRefund(), invalid() (+28 more)
 
 ### Community 76 - "compilerOptions"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
 ### Community 77 - "admin-shipments.test.ts"
-Cohesion: 0.09
-Nodes (18): PlaceOrderResponse, ref_node_crypto, notifications, financialYear(), paidOrder(), placeOrder(), paidOrder(), SELLER (+10 more)
+Cohesion: 0.08
+Nodes (20): packages_contract_src_index_placeorderresponse, notifications, financialYear(), paidOrder(), placeOrder(), paidOrder(), SELLER, customerSignIn() (+12 more)
 
 ### Community 78 - "media/service.ts"
 Cohesion: 0.25
-Nodes (16): AssetRow, attachProductMedia(), deleteAsset(), getAsset(), invalid(), isUuid(), listAssets(), optionValueId() (+8 more)
-
-### Community 79 - "Kleawip commerce API contract — v1 proposal"
-Cohesion: 0.11
-Nodes (18): 10. Questions for review, 11. Answers to Codex's frontend data handoff, 1. Proposed backend structure and stack, 2. Conventions, 3. Catalogue data model and stable IDs, 4. Storefront endpoints — Milestone 1 (catalogue and campaigns), 6. Later milestones (outline only; blocked on Phase 0), 7. Mapping from the current storefront fixtures (+10 more)
+Nodes (17): productVideos, AssetRow, attachProductMedia(), deleteAsset(), getAsset(), invalid(), isUuid(), listAssets() (+9 more)
 
 ### Community 80 - "admin-staff.ts"
 Cohesion: 0.09
-Nodes (18): ActivityEvent, ActivityQuery, PasswordChange, StaffInvite, StaffMember, StaffSetupLink, StaffSetupRequest, StaffUpdate (+10 more)
-
-### Community 81 - "5.1 Implemented admin API (25 Sep 2026)"
-Cohesion: 0.13
-Nodes (15): 5.1 Implemented admin API (25 Sep 2026), AdminCollection, AdminInventoryItem, AdminOptionsReplace, AdminProductCreate, AdminProductUpdate, AdminVariantCreate, AdminVariantUpdate (+7 more)
+Nodes (33): ActivityEvent, ActivityQuery, PasswordChange, StaffInvite, StaffMember, StaffSetupLink, StaffSetupRequest, StaffUpdate (+25 more)
 
 ### Community 82 - "catalogue-import.ts"
 Cohesion: 0.07
-Nodes (45): RFC-4180, IMPORT_COLUMNS, ImportReport, packages_contract_src_index_import_columns, packages_contract_src_index_importreport, catalogueImports, categories, productOptions (+37 more)
+Nodes (44): RFC-4180, IMPORT_COLUMNS, ImportReport, packages_contract_src_index_import_columns, packages_contract_src_index_importreport, catalogueImports, productOptions, productOptionValues (+36 more)
 
 ### Community 83 - "otp-senders.ts"
 Cohesion: 0.12
@@ -465,68 +447,56 @@ Cohesion: 0.22
 Nodes (8): ADR 0002: Phase 0 commerce decisions (26 September 2026), Decided by the owner, Partial COD details to confirm (proposed defaults), R1: Customer sign-in: **WhatsApp OTP first, email OTP as fallback; SMS later**, R2: Shipping: **Shiprocket**, R3: Production image storage: **Cloudflare R2**, Recommended, awaiting the owner's OK, Still open (not answered yet)
 
 ### Community 85 - "returns/service.ts"
-Cohesion: 0.08
-Nodes (61): AdminReturn, AdminReturnListQuery, ReturnClose, ReturnDecision, ReturnReceive, ReturnRefund, ReturnReject, StaffReturnCreate (+53 more)
+Cohesion: 0.07
+Nodes (47): AdminReturn, AdminReturnListQuery, ReturnClose, ReturnDecision, ReturnReceive, ReturnRefund, ReturnReject, StaffReturnCreate (+39 more)
 
 ### Community 86 - "product-video-feature.tsx"
-Cohesion: 0.28
-Nodes (4): ProductVideo, ProductVideoFeature(), timeLabel(), kleawipInstagram
+Cohesion: 0.18
+Nodes (7): ProductVideo, ProductVideoFeature(), catalogue, video, timeLabel(), kleawipInstagram, ref_react_dom
 
 ### Community 87 - "admin-media-collections.ts"
-Cohesion: 0.07
-Nodes (28): 5.3 Product videos (implemented 26 Sep 2026, at Codex's request), AdminCollectionCreate, AdminCollectionProducts, AdminCollectionUpdate, AdminProductVideo, MediaAssetUpdate, MediaListQuery, ProductMediaAttach (+20 more)
+Cohesion: 0.08
+Nodes (24): AdminCollectionCreate, AdminCollectionProducts, AdminCollectionUpdate, MediaAssetUpdate, MediaListQuery, ProductMediaAttach, ProductMediaOrder, ProductMediaUpdate (+16 more)
 
-### Community 88 - "settings/service.ts"
-Cohesion: 0.20
-Nodes (15): 5.2.2 Milestone 3 step 2: shipments, courier tracking, GST invoices (implemented 25 Sep 2026), SellerDetails, packages_contract_src_index_sellerdetails, DbOrTx, siteSettings, GST_STATE_NUMBERS, adminSettingsRoutes(), SettingsSchema (+7 more)
+### Community 88 - "Database"
+Cohesion: 0.22
+Nodes (15): 5.2.2 Milestone 3 step 2: shipments, courier tracking, GST invoices (implemented 25 Sep 2026), SellerDetails, packages_contract_src_index_sellerdetails, staffOf(), Database, siteSettings, adminSettingsRoutes(), SettingsSchema (+7 more)
 
 ### Community 89 - "admin-catalogue.ts"
-Cohesion: 0.12
-Nodes (20): AdminInventoryAdjustment, AdminProductListQuery, AuditCommentCreate, AuditEvent, packages_contract_src_index_admininventoryadjustment, packages_contract_src_index_admininventoryitem, packages_contract_src_index_adminoptionsreplace, packages_contract_src_index_adminproductcreate (+12 more)
+Cohesion: 0.06
+Nodes (69): 5.1 Implemented admin API (25 Sep 2026), 9. Change process, Changelog, AdminCollection, AdminInventoryAdjustment, AdminInventoryItem, AdminOptionsReplace, AdminProductCreate (+61 more)
 
-### Community 90 - "ref_vitest"
-Cohesion: 0.19
-Nodes (9): DashboardResponse, packages_contract_src_index_dashboardresponse, packages_contract_src_index_placeorderresponse, ref_vitest, heroSlides, createStaff(), createTestApp(), resetStaffAndAudit() (+1 more)
+### Community 90 - "helpers.ts"
+Cohesion: 0.09
+Nodes (19): AdminProduct, packages_contract_src_index_adminproduct, CollectionDetail, CollectionListResponse, Problem, packages_contract_src_index_staffsession, ref_node_os, ref_vitest (+11 more)
 
-### Community 91 - "orders/admin.ts"
-Cohesion: 0.18
-Nodes (17): AdminOrderPayment, packages_contract_src_index_adminorderpayment, orderLines, payments, shipmentEvents, shipments, invoiceFor(), adminOrder() (+9 more)
+### Community 91 - "shipments.ts"
+Cohesion: 0.08
+Nodes (31): AuditEntry, DbOrTx, listAudit(), auditEvents, shipmentEvents, shipments, rupees(), ShippingProvider (+23 more)
 
 ### Community 92 - "admin/src/app/layout.tsx"
 Cohesion: 0.33
 Nodes (4): apps_admin_src_app_globals, inter, manrope, metadata
 
-### Community 93 - "queries.ts"
-Cohesion: 0.24
-Nodes (16): Availability, inr(), loadVariantRows(), productDetail(), productSummaries(), AvailabilityState, availableUnits(), priceFrom() (+8 more)
-
-### Community 94 - "2026-09-25T10-40-08-600Z_claude-to-codex_handoff-while-you-were-paused-your-next-.md"
-Cohesion: 0.50
-Nodes (3): Rules (unchanged), What changed, Your next work (the owner says: start per scope)
+### Community 94 - "discounts/service.ts"
+Cohesion: 0.11
+Nodes (31): Rules (unchanged), What changed, Your next work (the owner says: start per scope), AdminDiscount, AdminDiscountListQuery, DiscountInput, packages_contract_src_index_admindiscount, packages_contract_src_index_admindiscountlistquery (+23 more)
 
 ### Community 95 - "rehearse-restore.sh"
 Cohesion: 0.83
 Nodes (3): counts(), migrations(), rehearse-restore.sh script
 
 ### Community 97 - "provider.ts"
-Cohesion: 0.15
-Nodes (10): Fetch, istDateTime(), ServiceabilityQuery, ServiceabilityResult, ShipmentRequest, ShippingRejectedError, ShippingUnavailableError, ShiprocketProvider (+2 more)
+Cohesion: 0.11
+Nodes (11): Fetch, istDateTime(), MockShippingProvider, ServiceabilityQuery, ServiceabilityResult, ShipmentRequest, ShippingRejectedError, ShippingUnavailableError (+3 more)
 
-### Community 113 - "staff/service.ts"
-Cohesion: 0.28
-Nodes (15): dashboard(), adminStaffRoutes(), activityLog(), assertOtherActiveOwner(), completeSetup(), hashToken(), invalid(), inviteStaff() (+7 more)
+### Community 113 - "r2.ts"
+Cohesion: 0.19
+Nodes (10): RFC-3986, encodeKey(), Fetch, hmac(), MediaStorageError, R2Config, R2Storage, sha256() (+2 more)
 
 ### Community 114 - "catalogue-api.ts"
 Cohesion: 0.29
 Nodes (9): dynamic, ProductPage(), ProductDetail(), productById(), apiOrigin, loadProductPage(), productPageRecord, publicMediaUrl() (+1 more)
-
-### Community 115 - "render.ts"
-Cohesion: 0.33
-Nodes (9): amountInWords(), belowThousand(), escape(), istDate(), ONES, percent(), renderInvoiceHtml(), rupees() (+1 more)
-
-### Community 119 - "video.ts"
-Cohesion: 0.23
-Nodes (11): MAX_VIDEO_BYTES, MP4_AUDIO, MP4_VIDEO, mp4Codecs(), rejected(), sha256Of(), sniffVideo(), videoKey() (+3 more)
 
 ### Community 120 - "deliverDueNotifications"
 Cohesion: 0.21
@@ -536,50 +506,34 @@ Nodes (7): deliverDueNotifications(), NotificationSender, OutgoingMessage, Chann
 Cohesion: 0.17
 Nodes (13): ChannelSender, Fetch, fileOutboxChannel(), resendEmailChannel(), whatsAppCloudChannel(), expireUnpaidOrders(), commerce, config (+5 more)
 
-### Community 122 - "Database"
-Cohesion: 0.13
-Nodes (14): ADR 0001: Backend stack and core conventions, Consequences, Context, Conventions that follow from this, Decision, ref_node_fs, ref_node_stream, DIR (+6 more)
+### Community 122 - "ADR 0001: Backend stack and core conventions"
+Cohesion: 0.33
+Nodes (5): ADR 0001: Backend stack and core conventions, Consequences, Context, Conventions that follow from this, Decision
 
 ### Community 126 - "home-campaigns.ts"
-Cohesion: 0.23
+Cohesion: 0.24
 Nodes (9): AnnouncementRibbon(), HomeHeroCarousel(), campaignHref(), CampaignTarget, HeroSlide, heroSlides, RibbonMessage, ribbonMessages (+1 more)
 
-### Community 127 - "process.ts"
-Cohesion: 0.29
-Nodes (7): FORMATS, MAX_UPLOAD_BYTES, MIN_DIMENSION, originalKey(), ProcessedImage, processImage(), rejected()
-
-### Community 130 - "admin-auth.test.ts"
-Cohesion: 0.22
-Nodes (8): GRANTS, ORDERS, Permission, PERMISSIONS, READ_ALL, ROLES, staffSessions, TEST_PASSWORD
-
-### Community 131 - "password.ts"
-Cohesion: 0.33
-Nodes (8): derive(), dummyPasswordHash(), hashPassword(), MIN_PASSWORD_LENGTH, PARAMS, verifyPassword(), adminAccountRoutes(), changeOwnPassword()
-
-### Community 133 - "errors.ts"
-Cohesion: 0.38
-Nodes (5): ErrorCode, errorHandler(), FieldError, notFoundHandler(), send()
-
 ### Community 134 - "5. Admin endpoints — Milestone 1 (outline)"
-Cohesion: 0.40
-Nodes (5): 5.2.1 Milestone 3 step 1: fulfilment steps, cancellations, refunds (implemented 25 Sep 2026), 5.2.3 Milestone 3 step 3: returns and GST credit notes (implemented 25 Sep 2026), 5.2.4 Milestone 3 step 4: customer notifications (implemented 25 Sep 2026), 5. Admin endpoints — Milestone 1 (outline), FulfilmentStatus
+Cohesion: 0.22
+Nodes (8): 5.2.1 Milestone 3 step 1: fulfilment steps, cancellations, refunds (implemented 25 Sep 2026), 5.2.3 Milestone 3 step 3: returns and GST credit notes (implemented 25 Sep 2026), 5.2.4 Milestone 3 step 4: customer notifications (implemented 25 Sep 2026), 5.3 Product videos (implemented 26 Sep 2026, at Codex's request), 5.4 Milestone 4: discount codes and reports (implemented 25 Sep 2026), 5. Admin endpoints — Milestone 1 (outline), AdminProductVideo, FulfilmentStatus
 
 ## Knowledge Gaps
-- **669 isolated node(s):** `nextConfig`, `name`, `version`, `private`, `description` (+664 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 918 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **685 isolated node(s):** `nextConfig`, `name`, `version`, `private`, `description` (+680 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 945 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `drizzle-orm` connect `helpers.ts` to `admin-auth.test.ts`, `store-account.ts`, `admin-auth.ts`, `commerce-api/package.json`, `admin-campaigns.test.ts`, `catalogue/admin-service.ts`, `client.ts`, `app.ts`, `cart/service.ts`, `campaigns/service.ts`, `lifecycle.ts`, `orders/service.ts`, `store-cart.ts`, `store-account.test.ts`, `ApiError`, `db/seed-demo.ts`, `videos.ts`, `admin-orders.ts`, `schema.ts`, `store-catalogue.ts`, `collections.ts`, `quote.ts`, `shipments.ts`, `admin-shipments.test.ts`, `media/service.ts`, `catalogue-import.ts`, `returns/service.ts`, `settings/service.ts`, `admin-catalogue.ts`, `ref_vitest`, `orders/admin.ts`, `queries.ts`, `staff/service.ts`, `Database`?**
-  _High betweenness centrality (0.038) - this node is a cross-community bridge._
-- **Why does `ApiError` connect `ApiError` to `errors.ts`, `store-account.ts`, `admin-auth.ts`, `catalogue/admin-service.ts`, `cart/service.ts`, `campaigns/service.ts`, `lifecycle.ts`, `orders/service.ts`, `store-cart.ts`, `videos.ts`, `store-catalogue.ts`, `collections.ts`, `quote.ts`, `shipments.ts`, `media/service.ts`, `catalogue-import.ts`, `returns/service.ts`, `admin-media-collections.ts`, `settings/service.ts`, `admin-catalogue.ts`, `staff/service.ts`, `video.ts`, `process.ts`?**
-  _High betweenness centrality (0.028) - this node is a cross-community bridge._
-- **Why does `MediaStorage` connect `Database` to `videos.ts`, `client.ts`, `app.ts`, `media/service.ts`, `ADR 0002: Phase 0 commerce decisions (26 September 2026)`, `admin-media-collections.ts`, `Log (newest last)`?**
-  _High betweenness centrality (0.024) - this node is a cross-community bridge._
+- **Why does `drizzle-orm` connect `drizzle-orm` to `store-account.ts`, `admin-auth.ts`, `admin-campaigns.test.ts`, `app.ts`, `commerce-api/package.json`, `client.ts`, `cart/service.ts`, `campaigns/service.ts`, `invoices/service.ts`, `orders/service.ts`, `store-cart.ts`, `store-account.test.ts`, `ApiError`, `videos.ts`, `admin-orders.ts`, `schema.ts`, `db/seed-demo.ts`, `index.ts`, `collections.ts`, `quote.ts`, `recordAudit`, `admin-shipments.test.ts`, `media/service.ts`, `admin-staff.ts`, `catalogue-import.ts`, `returns/service.ts`, `Database`, `admin-catalogue.ts`, `helpers.ts`, `shipments.ts`, `discounts/service.ts`?**
+  _High betweenness centrality (0.046) - this node is a cross-community bridge._
+- **Why does `Database` connect `Database` to `store-account.ts`, `admin-auth.ts`, `admin-reports.ts`, `app.ts`, `client.ts`, `cart/service.ts`, `campaigns/service.ts`, `invoices/service.ts`, `orders/service.ts`, `store-cart.ts`, `ApiError`, `drizzle-orm`, `videos.ts`, `admin-orders.ts`, `db/seed-demo.ts`, `index.ts`, `collections.ts`, `quote.ts`, `recordAudit`, `media/service.ts`, `admin-staff.ts`, `catalogue-import.ts`, `returns/service.ts`, `admin-media-collections.ts`, `admin-catalogue.ts`, `helpers.ts`, `shipments.ts`, `discounts/service.ts`?**
+  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+- **Why does `notFound()` connect `admin-catalogue.ts` to `videos.ts`, `admin-orders.ts`, `app.ts`, `index.ts`, `collections.ts`, `recordAudit`, `media/service.ts`, `admin-staff.ts`, `catalogue-import.ts`, `store-account.ts`, `returns/service.ts`, `campaigns/service.ts`, `orders/service.ts`, `ApiError`, `discounts/service.ts`?**
+  _High betweenness centrality (0.018) - this node is a cross-community bridge._
 - **What connects `nextConfig`, `name`, `version` to the rest of the system?**
-  _669 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _685 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Phase 0 Client Inputs and Account Ownership Checklist` be split into smaller, more focused modules?**
   _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
 - **Should `Kleawip Ecommerce Platform Implementation Plan` be split into smaller, more focused modules?**

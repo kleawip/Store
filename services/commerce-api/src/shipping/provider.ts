@@ -23,7 +23,7 @@ export type ShipmentRequest = {
   orderNumber: string;
   orderDate: Date;
   customer: { name: string; phone: string; email: string | null; line1: string; line2: string; city: string; stateName: string; pincode: string };
-  items: { name: string; sku: string; units: number; unitPricePaise: number; taxRatePercent: number; hsnCode: string | null }[];
+  items: { name: string; sku: string; units: number; unitPricePaise: number; taxRatePercent: number; hsnCode: string | null; discountPerUnitPaise?: number }[];
   /** Goods value of the parcel (GST-inclusive). */
   subTotalPaise: number;
   /** What the courier collects in cash: 0 for prepaid, the balance for partial COD. */
@@ -223,6 +223,7 @@ export class ShiprocketProvider implements ShippingProvider {
         sku: item.sku,
         units: item.units,
         selling_price: (item.unitPricePaise / 100).toFixed(2),
+        discount: ((item.discountPerUnitPaise ?? 0) / 100).toFixed(2),
         tax: item.taxRatePercent,
         hsn: item.hsnCode ?? "",
       })),

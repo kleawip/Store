@@ -26,6 +26,7 @@ import {
   refunds,
 } from "../db/schema";
 import { invoiceFor } from "../invoices/service";
+import { evaluateDiscount } from "../discounts/service";
 import { enqueueNotification } from "../notifications/outbox";
 import { rupees } from "../notifications/templates";
 import { orderTracking } from "../shipping/views";
@@ -73,7 +74,11 @@ export async function orderView(db: DbOrTx, order: OrderRow): Promise<Order> {
       quantity: line.quantity,
       unitPrice: inr(line.unitPricePaise),
       lineTotal: inr(line.lineTotalPaise),
+      discount: inr(line.discountPaise),
     })),
+    discount: order.discountCode
+      ? { code: order.discountCode, description: "", goods: inr(order.discountPaise), shipping: inr(order.shippingDiscountPaise), total: inr(order.discountPaise + order.shippingDiscountPaise) }
+      : null,
     merchandiseTotal: inr(order.merchandisePaise),
     shipping: inr(order.shippingPaise),
     total: inr(order.totalPaise),
@@ -191,6 +196,27 @@ export async function placeOrder(db: Database, gateway: PaymentGateway, customer
         }
       }
 
+      // The discount code must still be usable, and give the same amounts, with its row locked (last-use races).
+      if (snapshot.discount) {
+        let again;
+        try {
+          again = await evaluateDiscount(tx, {
+            code: snapshot.discount.code,
+            customerId,
+            merchandisePaise: snapshot.merchandisePaise,
+            shippingPaise: snapshot.shippingPaise + snapshot.discount.shippingPaise,
+            now,
+            lock: true,
+          });
+        } catch (error) {
+          if (error instanceof ApiError) throw conflict("discount_unavailable", `${error.detail} Please review your order again.`);
+          throw error;
+        }
+        if (again.merchandisePaise !== snapshot.discount.merchandisePaise || again.shippingPaise !== snapshot.discount.shippingPaise) {
+          throw conflict("quote_changed", "Your discount changed. Please review your order again.");
+        }
+      }
+
       // nextval() takes the sequence name as a literal (a bound text parameter would need a regclass cast).
       const sequenceName = sql.raw(`'${orderNumberSeq.seqName}'`);
       const [{ value: sequence }] = (await tx.execute<{ value: string }>(sql`SELECT nextval(${sequenceName}) AS value`)).rows as [{ value: string }];
@@ -209,6 +235,10 @@ export async function placeOrder(db: Database, gateway: PaymentGateway, customer
           },
           merchandisePaise: snapshot.merchandisePaise,
           shippingPaise: snapshot.shippingPaise,
+          discountId: snapshot.discount?.id ?? null,
+          discountCode: snapshot.discount?.code ?? null,
+          discountPaise: snapshot.discount?.merchandisePaise ?? 0,
+          shippingDiscountPaise: snapshot.discount?.shippingPaise ?? 0,
           totalPaise: quote.totalPaise,
           payNowPaise: quote.payNowPaise,
           codBalancePaise: quote.codBalancePaise,
@@ -233,6 +263,7 @@ export async function placeOrder(db: Database, gateway: PaymentGateway, customer
         taxRateBasisPoints: line.taxRateBasisPoints,
         hsnCode: line.hsnCode ?? null,
         lineTotalPaise: line.unitPricePaise * line.quantity,
+        discountPaise: line.discountPaise ?? 0,
       })));
       await tx.insert(payments).values({
         orderId: order!.id,

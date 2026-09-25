@@ -6,6 +6,7 @@ import { priceLines } from "../cart/service";
 import { addressFor } from "../customers/profile";
 import type { Database } from "../db/client";
 import { cartLines, carts, checkoutQuotes } from "../db/schema";
+import { allocateDiscount, evaluateDiscount, type AppliedDiscount } from "../discounts/service";
 import { partialCodSplit, splitGst } from "../domain/tax";
 import { ApiError } from "../errors";
 import { ShippingUnavailableError, type ShippingProvider } from "../shipping/provider";
@@ -29,9 +30,11 @@ export async function checkServiceability(shipping: ShippingProvider | null, set
 }
 
 export type QuoteSnapshot = {
-  lines: { variantId: string; sku: string; productTitle: string; optionsLabel: string; quantity: number; unitPricePaise: number; taxRateBasisPoints: number; hsnCode?: string; weightGrams?: number; inventoryItemId: string; inventoryUnitsPerSale: number }[];
+  lines: { variantId: string; sku: string; productTitle: string; optionsLabel: string; quantity: number; unitPricePaise: number; taxRateBasisPoints: number; hsnCode?: string; weightGrams?: number; inventoryItemId: string; inventoryUnitsPerSale: number; discountPaise?: number }[];
   merchandisePaise: number;
+  /** Shipping charged, after any free-shipping code. */
   shippingPaise: number;
+  discount?: AppliedDiscount | null;
   gst: { intraState: boolean; taxablePaise: number; cgstPaise: number; sgstPaise: number; igstPaise: number };
   deliveryPincode: string;
   deliveryStateCode: string;
@@ -43,7 +46,7 @@ export async function createQuote(
   shipping: ShippingProvider | null,
   settings: CommerceSettings,
   customerId: string,
-  input: { addressId: string; paymentMethod: "prepaid" | "partial_cod" },
+  input: { addressId: string; paymentMethod: "prepaid" | "partial_cod"; discountCode?: string | null },
   now = new Date(),
 ): Promise<CheckoutQuote> {
   const address = await addressFor(db, customerId, input.addressId).catch(() => {
@@ -61,8 +64,13 @@ export async function createQuote(
 
   const merchandisePaise = lines.reduce((sum, line) => sum + line.lineTotal.amount, 0);
   const weightGrams = lines.reduce((sum, line) => sum + (line.weightGrams ?? settings.defaultWeightGrams) * line.orderableQuantity, 0);
-  const shippingPaise = shippingChargePaise(settings, merchandisePaise);
-  const totalPaise = merchandisePaise + shippingPaise;
+  const grossShippingPaise = shippingChargePaise(settings, merchandisePaise);
+  const discount = input.discountCode
+    ? await evaluateDiscount(db, { code: input.discountCode, customerId, merchandisePaise, shippingPaise: grossShippingPaise, now })
+    : null;
+  const lineDiscounts = allocateDiscount(lines.map((line) => line.lineTotal.amount), discount?.merchandisePaise ?? 0);
+  const shippingPaise = grossShippingPaise - (discount?.shippingPaise ?? 0);
+  const totalPaise = merchandisePaise - (discount?.merchandisePaise ?? 0) + shippingPaise;
 
   // Courier check for the actual parcel.
   if (!shipping) throw blocked("delivery_unavailable", "Delivery checks aren't available right now. Please try again shortly.", "addressId");
@@ -88,15 +96,17 @@ export async function createQuote(
   // GST inside the goods, split by rate; shipping-charge GST treatment is TBC with the client's accountant.
   const intraState = address.stateCode === settings.sellerStateCode;
   const gst = lines.reduce(
-    (sum, line) => {
-      const split = splitGst(line.lineTotal.amount, line.taxRateBasisPoints!, intraState);
+    (sum, line, index) => {
+      // GST on what the customer actually pays for the line (after its share of any discount).
+      const split = splitGst(line.lineTotal.amount - lineDiscounts[index]!, line.taxRateBasisPoints!, intraState);
       return { taxablePaise: sum.taxablePaise + split.taxablePaise, cgstPaise: sum.cgstPaise + split.cgstPaise, sgstPaise: sum.sgstPaise + split.sgstPaise, igstPaise: sum.igstPaise + split.igstPaise };
     },
     { taxablePaise: 0, cgstPaise: 0, sgstPaise: 0, igstPaise: 0 },
   );
 
   const snapshot: QuoteSnapshot = {
-    lines: lines.map((line) => ({
+    lines: lines.map((line, index) => ({
+      discountPaise: lineDiscounts[index]!,
       variantId: line.variantId,
       sku: line.sku,
       productTitle: line.productTitle,
@@ -111,6 +121,7 @@ export async function createQuote(
     })),
     merchandisePaise,
     shippingPaise,
+    discount,
     gst: { intraState, ...gst },
     deliveryPincode: address.pincode,
     deliveryStateCode: address.stateCode,
@@ -131,9 +142,13 @@ export async function createQuote(
       quantity: line.quantity,
       unitPrice: inr(line.unitPricePaise),
       lineTotal: inr(line.unitPricePaise * line.quantity),
+      discount: inr(line.discountPaise ?? 0),
       gstRatePercent: line.taxRateBasisPoints / 100,
     })),
     merchandiseTotal: inr(merchandisePaise),
+    discount: discount
+      ? { code: discount.code, description: discount.description, goods: inr(discount.merchandisePaise), shipping: inr(discount.shippingPaise), total: inr(discount.merchandisePaise + discount.shippingPaise) }
+      : null,
     shipping: inr(shippingPaise),
     total: inr(totalPaise),
     gst: { intraState, taxable: inr(gst.taxablePaise), cgst: inr(gst.cgstPaise), sgst: inr(gst.sgstPaise), igst: inr(gst.igstPaise) },

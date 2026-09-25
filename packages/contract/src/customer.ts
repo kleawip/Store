@@ -140,6 +140,16 @@ export const Serviceability = z.object({
 export const CheckoutQuoteRequest = z.object({
   addressId: z.uuid(),
   paymentMethod: z.enum(["prepaid", "partial_cod"]),
+  // Milestone 4: optional discount code (case-insensitive). Errors come back on path "discountCode".
+  discountCode: z.string().trim().min(1).max(40).nullable().optional(),
+});
+
+export const AppliedDiscountView = z.object({
+  code: z.string(),
+  description: z.string(),
+  goods: z.object({ amount: z.number().int(), currency: z.literal("INR") }),
+  shipping: z.object({ amount: z.number().int(), currency: z.literal("INR") }),
+  total: z.object({ amount: z.number().int(), currency: z.literal("INR") }),
 });
 
 const QuoteMoney = z.object({ amount: z.number().int(), currency: z.literal("INR") });
@@ -154,9 +164,12 @@ export const CheckoutQuote = z.object({
     quantity: z.number().int(),
     unitPrice: QuoteMoney,
     lineTotal: QuoteMoney,
+    // This line's share of the discount (0 without a code).
+    discount: QuoteMoney,
     gstRatePercent: z.number(),
   })),
-  merchandiseTotal: QuoteMoney, // GST-inclusive
+  merchandiseTotal: QuoteMoney, // GST-inclusive, before discount
+  discount: AppliedDiscountView.nullable(),
   shipping: QuoteMoney,
   total: QuoteMoney,
   gst: z.object({
@@ -228,8 +241,10 @@ export const Order = z.object({
   confirmedAt: z.string().nullable(),
   // Pay before this time or the reservation lapses (pending_payment only).
   payBy: z.string().nullable(),
-  lines: z.array(z.object({ sku: z.string(), productTitle: z.string(), optionsLabel: z.string(), quantity: z.number().int(), unitPrice: QuoteMoney, lineTotal: QuoteMoney })),
+  lines: z.array(z.object({ sku: z.string(), productTitle: z.string(), optionsLabel: z.string(), quantity: z.number().int(), unitPrice: QuoteMoney, lineTotal: QuoteMoney, discount: QuoteMoney })),
   merchandiseTotal: QuoteMoney,
+  // Milestone 4 (additive): the code used and what it took off goods and shipping.
+  discount: AppliedDiscountView.nullable(),
   shipping: QuoteMoney,
   total: QuoteMoney,
   payNow: QuoteMoney,

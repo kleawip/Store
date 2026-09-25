@@ -599,6 +599,20 @@ Zod: `AdminNotification`, `AdminNotificationListQuery`; **additive** `AdminOrder
 
 Development writes messages to `services/commerce-api/.data/notification-outbox.log` (git-ignored). A channel with no configured provider is marked `skipped` (e.g. email without `RESEND_API_KEY` in production).
 
+### 5.4 Milestone 4: discount codes and reports (implemented 25 Sep 2026)
+
+**Discount codes.** One code per order, applied at checkout to the whole order. Kinds: `percentage` (optionally capped by `maxDiscountPaise`), `fixed_amount`, `free_shipping`. Limits: `minSubtotalPaise`, `startsAt`/`endsAt`, `usageLimit` (total), `perCustomerLimit` (default 1; null = unlimited), `firstOrderOnly`. A use is held by an order awaiting payment or confirmed; expired or cancelled orders give it back. At least ₹1 of goods always stays payable.
+
+- **Checkout:** `POST /v1/store/checkout/quote { addressId, paymentMethod, discountCode? }`. The quote gains `discount: { code, description, goods, shipping, total } | null` and each line gains `discount` (its share). `total`, `gst` and the partial-COD split are all after the discount; GST is charged on each line's discounted amount. Refusals are 422 on path `discountCode`: `discount_invalid`, `discount_not_started`, `discount_expired`, `discount_min_subtotal` (message says how much more to add), `discount_used_up`, `discount_already_used`, `discount_first_order`, `discount_no_effect` (free shipping when shipping is already free). Show the message under the code field.
+- **Placing the order** re-checks the code with it locked. If it's no longer usable: 409 `discount_unavailable` → re-quote (without the code or with another one).
+- **Orders (additive):** `Order.discount` (same shape, or null) and `Order.lines[].discount`. Invoices show a Discount column; return refunds and credit notes use discounted values.
+- **Admin** (`discounts.read`: owner, marketing, operations, support; `discounts.manage`: owner): `GET /v1/admin/discounts?q=&status=` · `GET /v1/admin/discounts/{id}` · `POST /v1/admin/discounts` (201) · `PUT /v1/admin/discounts/{id}` · `POST …/{id}/disable` · `POST …/{id}/enable`. Body `DiscountInput { code, description, kind, percent?, amountPaise?, maxDiscountPaise?, minSubtotalPaise, startsAt?, endsAt?, usageLimit?, perCustomerLimit?, firstOrderOnly }`. Codes are stored uppercase (`code_taken` 409). `AdminDiscount` includes `state` (active / scheduled / expired / disabled), `timesUsed`, `usesHeld` and `totalDiscounted`.
+
+**Reports** (`reports.read`, **owner only**). Dates are India-time calendar days `YYYY-MM-DD`, inclusive, with at most one year per request (`invalid_range`).
+- `GET /v1/admin/reports/sales?from=&to=&groupBy=day|month` → `SalesReport`: per period and in total, orders, units, gross sales, discounts, shipping, total sales, COD to collect, refunds, net sales and average order value. An order counts on the day it was paid; refunds count on the day they were made.
+- `GET /v1/admin/reports/products?from=&to=&limit=` → top SKUs by revenue (after discounts), with units, orders and returned units.
+- `GET /v1/admin/reports/gst?from=&to=` → `GstReport` built from issued invoices minus credit notes: totals (taxable, CGST, SGST, IGST), an HSN summary, a place-of-supply summary and the document register. Cancelled invoices are listed but not counted. Add `&format=csv&section=documents|hsn` to download CSV for the accountant; it opens in Excel, and customer-typed text is protected against formula injection.
+
 ### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
 
 These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
@@ -671,6 +685,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026 (M4): discount codes (checkout `discountCode`, `Order.discount`, line discounts, admin CRUD) and owner reports (sales, products, GST with CSV) (§5.4).
 - 25 Sep 2026 (M3 step 4): customer notifications outbox (WhatsApp templates + email, retries, admin list/retry); `AdminOrderDetail.notifications` (additive) (§5.2.4). Milestone 3 backend complete.
 - 25 Sep 2026 (M3 step 3): returns (customer requests within 7 days of delivery, staff approve/reject/receive/refund/close, RTO returns), restocking, GST credit notes; `AdminOrderDetail.returns` (additive) (§5.2.3).
 - 25 Sep 2026 (M3 step 2): shipments (book/retry/pickup/cancel), courier tracking webhook, GST invoices with seller details; `Order.tracking` + `Order.invoice` (additive); error code `COURIER_UNAVAILABLE` (§5.2.2).

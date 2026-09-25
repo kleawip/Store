@@ -30,6 +30,8 @@ import { devPaymentRoutes, paymentWebhookRoutes, storeOrderRoutes } from "./rout
 import { storeCatalogueRoutes } from "./routes/store-catalogue";
 import { courierWebhookRoutes, devCourierRoutes } from "./routes/courier-webhooks";
 import { adminReturnRoutes, storeReturnRoutes } from "./routes/returns";
+import { adminDiscountRoutes } from "./routes/admin-discounts";
+import { adminReportRoutes } from "./routes/admin-reports";
 
 export type AppOptions = {
   db: Database;
@@ -110,6 +112,8 @@ export async function buildApp({ db, storage, otpSender, shipping, commerce, pay
   await app.register(adminStaffRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminOrderRoutes(db, payments, shipping, commerce), { prefix: "/v1/admin" });
   await app.register(adminReturnRoutes(db, payments), { prefix: "/v1/admin" });
+  await app.register(adminDiscountRoutes(db), { prefix: "/v1/admin" });
+  await app.register(adminReportRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminSettingsRoutes(db, commerce.sellerStateCode), { prefix: "/v1/admin" });
   await app.register(adminAccountRoutes(db), { prefix: "/v1/admin/auth" });
   if (storage.read) await app.register(mediaFileRoutes(storage), { prefix: "/media" });

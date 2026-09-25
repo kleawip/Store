@@ -477,6 +477,12 @@ export const orders = pgTable("orders", {
   // Frozen at order time: later edits to the address book or catalogue never change a placed order.
   shippingAddress: jsonb("shipping_address").notNull(),
   merchandisePaise: integer("merchandise_paise").notNull(),
+  // Discount code (Milestone 4): the code as applied, and the amounts taken off goods and off shipping.
+  discountId: uuid("discount_id").references(() => discounts.id, { onDelete: "restrict" }),
+  discountCode: text("discount_code"),
+  discountPaise: integer("discount_paise").notNull().default(0),
+  shippingDiscountPaise: integer("shipping_discount_paise").notNull().default(0),
+  // Shipping actually charged (after any free-shipping code).
   shippingPaise: integer("shipping_paise").notNull(),
   totalPaise: integer("total_paise").notNull(),
   payNowPaise: integer("pay_now_paise").notNull(),
@@ -493,7 +499,8 @@ export const orders = pgTable("orders", {
   uniqueIndex("orders_quote_key").on(t.quoteId),
   uniqueIndex("orders_customer_idempotency_key").on(t.customerId, t.idempotencyKey),
   index("orders_status_created_idx").on(t.status, t.createdAt),
-  check("orders_amounts", sql`${t.payNowPaise} + ${t.codBalancePaise} = ${t.totalPaise} AND ${t.merchandisePaise} + ${t.shippingPaise} = ${t.totalPaise}`),
+  index("orders_discount_idx").on(t.discountId),
+  check("orders_amounts", sql`${t.payNowPaise} + ${t.codBalancePaise} = ${t.totalPaise} AND ${t.merchandisePaise} - ${t.discountPaise} + ${t.shippingPaise} = ${t.totalPaise} AND ${t.discountPaise} >= 0`),
 ]);
 
 export const orderLines = pgTable("order_lines", {
@@ -509,7 +516,9 @@ export const orderLines = pgTable("order_lines", {
   unitPricePaise: integer("unit_price_paise").notNull(),
   taxRateBasisPoints: integer("tax_rate_basis_points").notNull(),
   hsnCode: text("hsn_code"),
-  lineTotalPaise: integer("line_total_paise").notNull(),
+  lineTotalPaise: integer("line_total_paise").notNull(), // unit price × quantity, before any discount
+  // This line's share of an order discount code; GST is charged on lineTotal − discount.
+  discountPaise: integer("discount_paise").notNull().default(0),
 }, (t) => [index("order_lines_order_idx").on(t.orderId), check("order_lines_positive", sql`${t.quantity} > 0 AND ${t.inventoryUnits} > 0`)]);
 
 export const paymentStatus = pgEnum("payment_status", ["created", "captured", "failed"]);
@@ -760,4 +769,32 @@ export const notifications = pgTable("notifications", {
   uniqueIndex("notifications_dedupe_key").on(t.dedupeKey),
   index("notifications_due_idx").on(t.status, t.nextAttemptAt),
   index("notifications_order_idx").on(t.orderId),
+]);
+
+// ---- Discount codes (Milestone 4). One code per order, applied to the whole order at checkout. ----
+
+export const discountKind = pgEnum("discount_kind", ["percentage", "fixed_amount", "free_shipping"]);
+export const discountStatus = pgEnum("discount_status", ["active", "disabled"]);
+
+export const discounts = pgTable("discounts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  code: text("code").notNull(), // stored uppercase
+  description: text("description").notNull().default(""),
+  kind: discountKind("kind").notNull(),
+  percentBasisPoints: integer("percent_basis_points"),
+  amountPaise: integer("amount_paise"),
+  // Percentage codes: the most they can take off.
+  maxDiscountPaise: integer("max_discount_paise"),
+  minSubtotalPaise: integer("min_subtotal_paise").notNull().default(0),
+  startsAt: timestamp("starts_at", { withTimezone: true }).notNull().defaultNow(),
+  endsAt: timestamp("ends_at", { withTimezone: true }),
+  usageLimit: integer("usage_limit"),
+  perCustomerLimit: integer("per_customer_limit").default(1),
+  firstOrderOnly: boolean("first_order_only").notNull().default(false),
+  status: discountStatus("status").notNull().default("active"),
+  createdByStaffId: uuid("created_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex("discounts_code_key").on(t.code),
+  check("discounts_kind_value", sql`(${t.kind} = 'percentage' AND ${t.percentBasisPoints} BETWEEN 1 AND 10000) OR (${t.kind} = 'fixed_amount' AND ${t.amountPaise} > 0) OR ${t.kind} = 'free_shipping'`),
 ]);

@@ -121,6 +121,7 @@ async function shipmentRequest(tx: Tx, order: OrderRow, shipment: ShipmentRow): 
       unitPricePaise: line.unitPricePaise,
       taxRatePercent: line.taxRateBasisPoints / 100,
       hsnCode: line.hsnCode,
+      discountPerUnitPaise: Math.round(line.discountPaise / line.quantity),
     })),
     subTotalPaise: order.totalPaise,
     codAmountPaise: order.paymentMethod === "partial_cod" ? order.codBalancePaise : 0,
