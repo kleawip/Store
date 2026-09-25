@@ -525,6 +525,34 @@ New permissions: `orders.manage` (owner, operations) and `orders.refund` (**owne
 
 Refund statuses: `pending` → `processed` (Razorpay `refund.processed` webhook, deduped) or `failed` (the order is flagged `needsAttention`). The UI should show `refundedTotal` counting processed + pending refunds.
 
+### 5.2.2 Milestone 3 step 2: shipments, courier tracking, GST invoices (implemented 25 Sep 2026)
+
+Zod: `ShipmentStatus`, `OrderTracking`, `ShipmentBook`, `AdminShipment`, `AdminInvoiceSummary`, `AdminOrderDetail` (now exported from the contract), `SellerDetails`. **Additive:** `Order.tracking` (null until booked) and `Order.invoice` (`{ number, issuedAt }` or null); `AdminOrderDetail.shipments[]` and `.invoice`. New error code `COURIER_UNAVAILABLE` (503, safe to retry).
+
+**Seller details** (printed on every invoice; shipping is blocked until they exist):
+- `GET /v1/admin/settings/seller` (`orders.read`) → `{ seller: SellerDetails | null, sellerStateCode }`.
+- `PUT /v1/admin/settings/seller` (owner) `{ legalName, tradeName?, gstin, line1, line2?, city, stateCode, pincode, email?, phone? }`. `stateCode` must equal the server's seller state and the GSTIN must start with that state's number (`state_mismatch`).
+
+**Shipments** (`orders.manage`: owner, operations). Every action returns the updated `AdminOrderDetail`.
+
+| Endpoint | Notes |
+| --- | --- |
+| `POST /v1/admin/orders/{id}/shipment { weightGrams?, lengthCm?, breadthCm?, heightCm? }` | → 201. Confirmed orders before dispatch. Issues the GST invoice, sets `packed`, then books courier order → AWB → label. Status `ready` on success. Weight defaults to product weights; box defaults to 30×25×10 cm. Errors: `seller_details_missing`, `shipment_active`, `not_confirmed`, `already_shipped`, `courier_rejected` (422, courier's reason in the message), `COURIER_UNAVAILABLE` (503), `booking_in_progress` (409). |
+| `POST …/shipment/retry` | Continues a `pending` booking from where it stopped (`lastError` says why). Never creates a second courier order. `not_retryable`. |
+| `POST …/shipment/pickup` | `ready` → `pickup_requested`. `not_ready`. |
+| `POST …/shipment/cancel` | Before the courier has the parcel (`already_picked_up` after). Order returns to `packed`; booking again reuses the same invoice. |
+| `GET /v1/admin/orders/{id}/invoice` (`orders.read`) | Printable HTML tax invoice (open in a new tab; print with the browser). Cancelled invoices show CANCELLED. |
+
+While a shipment is live, manual fulfilment steps and staff order cancellation return `shipment_active`. Cancel the shipment first; cancelling the order then cancels its invoice (its number stays used).
+
+**Tracking** comes from the courier, never from staff: `in_transit` → order `shipped`, `out_for_delivery`, `delivered` (partial-COD balance counted as collected), `rto_initiated`, `returned_to_origin`. Updates only move forward and duplicates are ignored. Stock leaves the books (on hand and committed both drop) at the first movement. A failed delivery attempt, RTO or courier cancellation sets `needsAttention`.
+
+**Customers:** `Order.tracking = { courierName, awb, trackingUrl, status, events[{ status, location, occurredAt }] }`; `GET /v1/store/orders/{id}/invoice` returns their own issued invoice as HTML (404 before issue or once cancelled).
+
+**Webhook:** `POST /v1/webhooks/courier`, with header `x-api-key: <COURIER_WEBHOOK_TOKEN>` (401 otherwise); always 200 for a valid token. The path avoids the word "shiprocket" because Shiprocket's panel refuses such URLs. Mounted only when a token is configured.
+
+**Development only** (mock courier + dev payments): `POST /v1/dev/shipments/{awb}/track { status: "PICKED UP"|"OUT FOR DELIVERY"|"DELIVERED"|"UNDELIVERED"|"RTO INITIATED"|"RTO DELIVERED", location? }` simulates a courier update. Mock label URLs (`mock-courier.invalid`) don't open.
+
 ### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
 
 These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
@@ -597,6 +625,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026 (M3 step 2): shipments (book/retry/pickup/cancel), courier tracking webhook, GST invoices with seller details; `Order.tracking` + `Order.invoice` (additive); error code `COURIER_UNAVAILABLE` (§5.2.2).
 - 25 Sep 2026 (M3 step 1): admin fulfilment steps, staff cancellation with auto-refund, gateway/cash refunds, retry, resolve-attention; `Order.fulfilmentStatus` + `Order.refundedTotal` (additive) (§5.2.1).
 - 26 Sep 2026 (Codex video QA): video codec validation (H.264/AAC, VP8/9/AV1 + Opus/Vorbis; HEVC refused); Instagram embeds gated behind the owner setting `instagramEmbedsVerified` (`/v1/admin/settings`).
 - 26 Sep 2026: admin orders list/detail (`orders.read`), dashboard order counts. Milestone 2 backend complete.

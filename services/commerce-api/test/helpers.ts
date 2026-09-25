@@ -13,12 +13,14 @@ import { DEFAULT_COMMERCE_SETTINGS, type CommerceSettings } from "../src/checkou
 import { MockShippingProvider, type ShippingProvider } from "../src/shipping/provider";
 import { DevGateway, type PaymentGateway } from "../src/payments/gateway";
 
-export async function createTestApp({ rateLimits = false, shipping = new MockShippingProvider() as ShippingProvider | null, commerce = DEFAULT_COMMERCE_SETTINGS as CommerceSettings, payments = new DevGateway() as PaymentGateway } = {}) {
+export const TEST_COURIER_TOKEN = "test-courier-webhook-token-0123456789";
+
+export async function createTestApp({ rateLimits = false, shipping = new MockShippingProvider() as ShippingProvider | null, commerce = DEFAULT_COMMERCE_SETTINGS as CommerceSettings, payments = new DevGateway() as PaymentGateway, courierWebhookToken = TEST_COURIER_TOKEN as string | null } = {}) {
   const { db, close } = createDatabase(process.env.TEST_DATABASE_URL!);
   const mediaDir = mkdtempSync(join(tmpdir(), "kleawip-test-media-"));
   const storage = new LocalDiskStorage(mediaDir, "http://127.0.0.1:4000/media");
   const otp = new MemoryOtpSender();
-  const app = await buildApp({ db, storage, otpSender: new ChannelOtpSender({ whatsapp: otp, email: otp }), shipping, commerce, payments, storefrontOrigins: ["http://localhost:3000"], cookieSecure: false, rateLimits });
+  const app = await buildApp({ db, storage, otpSender: new ChannelOtpSender({ whatsapp: otp, email: otp }), shipping, commerce, payments, courierWebhookToken, storefrontOrigins: ["http://localhost:3000"], cookieSecure: false, rateLimits });
   return {
     app,
     db,
@@ -26,6 +28,7 @@ export async function createTestApp({ rateLimits = false, shipping = new MockShi
     mediaDir,
     otp,
     payments,
+    shipping,
     async close() {
       await app.close();
       await close();

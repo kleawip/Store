@@ -206,6 +206,16 @@ export const OrderStatus = z.enum(["pending_payment", "confirmed", "expired", "c
 
 export const FulfilmentStatus = z.enum(["unfulfilled", "processing", "packed", "shipped", "out_for_delivery", "delivered", "rto_initiated", "returned_to_origin"]);
 
+export const ShipmentStatus = z.enum(["pending", "ready", "pickup_requested", "in_transit", "out_for_delivery", "delivered", "rto_initiated", "returned_to_origin", "cancelled"]);
+
+export const OrderTracking = z.object({
+  courierName: z.string().nullable(),
+  awb: z.string().nullable(),
+  trackingUrl: z.string().nullable(),
+  status: ShipmentStatus,
+  events: z.array(z.object({ status: z.string(), location: z.string().nullable(), occurredAt: z.string() })),
+});
+
 export const Order = z.object({
   id: z.string(),
   number: z.string(),
@@ -226,6 +236,9 @@ export const Order = z.object({
   codBalance: QuoteMoney,
   gst: z.object({ intraState: z.boolean(), taxable: QuoteMoney, cgst: QuoteMoney, sgst: QuoteMoney, igst: QuoteMoney }),
   shippingAddress: z.object({ name: z.string(), phone: z.string(), line1: z.string(), line2: z.string(), landmark: z.string(), city: z.string(), stateCode: z.string(), stateName: z.string(), pincode: z.string() }),
+  // Milestone 3 (additive). Null until a shipment is booked / an invoice is issued.
+  tracking: OrderTracking.nullable(),
+  invoice: z.object({ number: z.string(), issuedAt: z.string() }).nullable(),
 });
 export type Order = z.infer<typeof Order>;
 

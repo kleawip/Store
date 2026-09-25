@@ -4,6 +4,8 @@ import { and, count, desc, eq, ilike, isNotNull, or, sql, type SQL } from "drizz
 import type { Database } from "../db/client";
 import { customers, orderLines, orders, payments } from "../db/schema";
 import { notFound } from "../errors";
+import { invoiceFor } from "../invoices/service";
+import { adminShipments } from "../shipping/views";
 import { refundList } from "./lifecycle";
 import { orderView } from "./service";
 
@@ -82,5 +84,12 @@ export async function adminOrder(db: Database, id: string) {
     cancelReason: row.cancelReason,
     codCollected: inr(row.codCollectedPaise),
     needsAttention: row.needsAttention,
+    shipments: await adminShipments(db, id),
+    invoice: await invoiceSummary(db, id),
   };
+}
+
+async function invoiceSummary(db: Database, orderId: string) {
+  const invoice = await invoiceFor(db, orderId);
+  return invoice ? { number: invoice.number, issuedAt: invoice.issuedAt.toISOString(), status: invoice.status } : null;
 }

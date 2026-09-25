@@ -1,6 +1,7 @@
 // Admin API schemas (API_CONTRACT §5, ADMIN_SCREENS_BRIEF). Kleawip staff only.
 // SHARED FILE: frontend (Codex) and backend (Claude Code). Change via the contract change process.
 import { z } from "zod";
+import { Order, OrderTracking, ShipmentStatus, StateCodeSchema } from "./customer";
 
 const Slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers and single hyphens.").max(80);
 const Code = z.string().regex(/^[a-z0-9]+([_-][a-z0-9]+)*$/, "Use lowercase letters, numbers, - or _.").max(40);
@@ -635,3 +636,63 @@ export const RefundCreate = z.object({
 export const OrderCancel = z.object({ reason: z.string().trim().min(3).max(300) });
 export const FulfilmentStep = z.object({ fulfilmentStatus: z.enum(["unfulfilled", "processing", "packed"]) });
 export const AttentionResolve = z.object({ note: z.string().trim().min(3).max(500) });
+
+// ---- Milestone 3 step 2: shipments, tracking, GST invoices ----
+
+export const ShipmentBook = z.object({
+  // Parcel as packed. Weight defaults to the product weights; dimensions to the standard box.
+  weightGrams: z.number().int().min(1).max(30_000).optional(),
+  lengthCm: z.number().int().min(1).max(200).optional(),
+  breadthCm: z.number().int().min(1).max(200).optional(),
+  heightCm: z.number().int().min(1).max(200).optional(),
+});
+
+export const AdminShipment = z.object({
+  id: z.string(),
+  provider: z.string(),
+  status: ShipmentStatus,
+  awb: z.string().nullable(),
+  courierName: z.string().nullable(),
+  labelUrl: z.string().nullable(),
+  trackingUrl: z.string().nullable(),
+  weightGrams: z.number().int(),
+  dimensionsCm: z.object({ length: z.number().int(), breadth: z.number().int(), height: z.number().int() }),
+  // Why booking stopped half-way (retry with …/shipment/retry).
+  lastError: z.string().nullable(),
+  events: OrderTracking.shape.events,
+  pickupRequestedAt: z.string().nullable(),
+  shippedAt: z.string().nullable(),
+  deliveredAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+export const AdminInvoiceSummary = z.object({ number: z.string(), issuedAt: z.string(), status: z.enum(["issued", "cancelled"]) });
+
+export const AdminOrderDetail = z.object({
+  order: Order,
+  customer: z.object({ id: z.string(), name: z.string(), phone: z.string(), email: z.string().nullable() }),
+  payments: z.array(AdminOrderPayment),
+  refunds: z.array(AdminRefund),
+  cancelReason: z.string().nullable(),
+  codCollected: AdminMoney,
+  needsAttention: z.string().nullable(),
+  shipments: z.array(AdminShipment),
+  invoice: AdminInvoiceSummary.nullable(),
+});
+
+const Gstin = z.string().trim().toUpperCase().regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, "Enter a valid 15-character GSTIN.");
+
+/** Printed on every tax invoice. Owner only. */
+export const SellerDetails = z.object({
+  legalName: z.string().trim().min(2).max(120),
+  tradeName: z.string().trim().max(120).default(""),
+  gstin: Gstin,
+  line1: z.string().trim().min(3).max(120),
+  line2: z.string().trim().max(120).default(""),
+  city: z.string().trim().min(2).max(60),
+  stateCode: StateCodeSchema,
+  pincode: z.string().trim().regex(/^[1-9]\d{5}$/),
+  email: z.string().trim().email().max(120).nullable().default(null),
+  phone: z.string().trim().max(20).nullable().default(null),
+});
+export type SellerDetails = z.infer<typeof SellerDetails>;

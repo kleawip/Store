@@ -5,12 +5,13 @@
 import { and, desc, eq, ne } from "drizzle-orm";
 import { recordAudit } from "../audit";
 import type { Database } from "../db/client";
-import { orders, payments, refunds, staffUsers } from "../db/schema";
+import { orders, payments, refunds, shipments, staffUsers } from "../db/schema";
+import { cancelInvoice } from "../invoices/service";
 import { ApiError, notFound } from "../errors";
 import { PaymentGatewayError, type PaymentGateway } from "../payments/gateway";
 import { release, type Tx } from "./service";
 
-const invalid = (path: string, code: string, message: string, status = 422) =>
+export const invalid = (path: string, code: string, message: string, status = 422) =>
   new ApiError(status, "VALIDATION_FAILED", "Not allowed", message, [{ path, code, message }]);
 
 type OrderRow = typeof orders.$inferSelect;
@@ -25,7 +26,13 @@ const MANUAL_STEPS: Partial<Record<FulfilmentStatus, FulfilmentStatus[]>> = {
 /** Before this point goods haven't left: cancelling is a simple stock release + refund. */
 export const CANCELLABLE_FULFILMENT: FulfilmentStatus[] = ["unfulfilled", "processing", "packed"];
 
-async function lockedOrder(tx: Tx, id: string) {
+/** A live (not cancelled) shipment blocks manual steps and cancellation: cancel the shipment first. */
+async function assertNoLiveShipment(tx: Tx, orderId: string) {
+  const [live] = await tx.select({ id: shipments.id }).from(shipments).where(and(eq(shipments.orderId, orderId), ne(shipments.status, "cancelled")));
+  if (live) throw invalid("shipment", "shipment_active", "This order has a courier booking. Cancel the shipment first.");
+}
+
+export async function lockedOrder(tx: Tx, id: string) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw notFound("Order not found.");
   const [order] = await tx.select().from(orders).where(eq(orders.id, id)).for("update");
   if (!order) throw notFound("Order not found.");
@@ -151,6 +158,7 @@ export async function setFulfilmentStep(db: Database, orderId: string, next: Ful
     if (!MANUAL_STEPS[order.fulfilmentStatus]?.includes(next)) {
       throw invalid("fulfilmentStatus", "invalid_transition", `An order that is "${order.fulfilmentStatus}" can't be moved to "${next}" by hand.`);
     }
+    await assertNoLiveShipment(tx, order.id);
     await tx.update(orders).set({ fulfilmentStatus: next, updatedAt: new Date() }).where(eq(orders.id, orderId));
     await recordAudit(tx, { entityType: "order", entityId: orderId, action: `fulfilment.${next}`, actorStaffId, before: { fulfilmentStatus: order.fulfilmentStatus }, after: { fulfilmentStatus: next } });
   });
@@ -168,7 +176,9 @@ export async function staffCancelOrder(db: Database, gateway: PaymentGateway, or
     if (!CANCELLABLE_FULFILMENT.includes(order.fulfilmentStatus)) {
       throw invalid("fulfilmentStatus", "already_shipped", "This order has left the warehouse. Stop the shipment with the courier (RTO) or process it as a return.");
     }
+    await assertNoLiveShipment(tx, order.id);
     await release(tx, order.id, `Cancelled by staff before dispatch (${order.number})`);
+    await cancelInvoice(tx, order.id);
     await tx.update(orders).set({ status: "cancelled", cancelReason: reason, closedAt: new Date(), updatedAt: new Date() }).where(eq(orders.id, order.id));
     const money = await moneySummary(tx, order);
     const ids = money.onlineRefundable > 0

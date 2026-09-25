@@ -1,23 +1,19 @@
-import { AdminOrderListItem, AdminOrderListQuery, AdminOrderPayment, AdminRefund, AttentionResolve, FulfilmentStep, Order, OrderCancel, RefundCreate } from "@kleawip/contract";
-import type { FastifyPluginAsync } from "fastify";
+import { AdminOrderDetail, AdminOrderListItem, AdminOrderListQuery, AttentionResolve, FulfilmentStep, OrderCancel, RefundCreate, ShipmentBook } from "@kleawip/contract";
+import type { FastifyPluginAsync, FastifyReply } from "fastify";
 import { z } from "zod";
 import { authorize, staffOf } from "../auth/guard";
 import type { Database } from "../db/client";
+import { notFound } from "../errors";
 import { adminOrder, listAdminOrders } from "../orders/admin";
 import { clearAttention, createRefund, retryRefund, setFulfilmentStep, staffCancelOrder } from "../orders/lifecycle";
+import type { CommerceSettings } from "../checkout/settings";
+import { invoiceFor, type InvoiceDocument } from "../invoices/service";
+import { renderInvoiceHtml } from "../invoices/render";
 import type { PaymentGateway } from "../payments/gateway";
+import type { ShippingProvider } from "../shipping/provider";
+import { bookShipment, cancelShipment, requestPickup, retryBooking } from "../shipping/shipments";
 
-const AdminOrderDetail = z.object({
-  order: Order,
-  customer: z.object({ id: z.string(), name: z.string(), phone: z.string(), email: z.string().nullable() }),
-  payments: z.array(AdminOrderPayment),
-  refunds: z.array(AdminRefund),
-  cancelReason: z.string().nullable(),
-  codCollected: z.object({ amount: z.number().int(), currency: z.literal("INR") }),
-  needsAttention: z.string().nullable(),
-});
-
-export const adminOrderRoutes = (db: Database, gateway: PaymentGateway): FastifyPluginAsync => async (app) => {
+export const adminOrderRoutes = (db: Database, gateway: PaymentGateway, shipping: ShippingProvider | null, settings: CommerceSettings): FastifyPluginAsync => async (app) => {
   app.addHook("onSend", async (_request, reply) => {
     reply.header("cache-control", "private, no-store");
   });
@@ -60,4 +56,37 @@ export const adminOrderRoutes = (db: Database, gateway: PaymentGateway): Fastify
     await clearAttention(db, request.params.id, AttentionResolve.parse(request.body).note, staffOf(request).staffId);
     return detail(request.params.id);
   });
+
+  // ---- Shipments (orders.manage) ----
+  app.post<IdParams>("/orders/:id/shipment", manage, async (request, reply) => {
+    await bookShipment(db, shipping, settings, request.params.id, ShipmentBook.parse(request.body ?? {}), staffOf(request).staffId);
+    return reply.status(201).send(await detail(request.params.id));
+  });
+  app.post<IdParams>("/orders/:id/shipment/retry", manage, async (request) => {
+    await retryBooking(db, shipping, request.params.id, staffOf(request).staffId);
+    return detail(request.params.id);
+  });
+  app.post<IdParams>("/orders/:id/shipment/pickup", manage, async (request) => {
+    await requestPickup(db, shipping, request.params.id, staffOf(request).staffId);
+    return detail(request.params.id);
+  });
+  app.post<IdParams>("/orders/:id/shipment/cancel", manage, async (request) => {
+    await cancelShipment(db, shipping, request.params.id, staffOf(request).staffId);
+    return detail(request.params.id);
+  });
+
+  // Printable GST invoice (HTML; staff print it into the parcel).
+  app.get<IdParams>("/orders/:id/invoice", read, async (request, reply) => {
+    const invoice = /^[0-9a-f-]{36}$/i.test(request.params.id) ? await invoiceFor(db, request.params.id) : null;
+    if (!invoice) throw notFound("No invoice has been issued for this order yet.");
+    return sendInvoice(reply, renderInvoiceHtml(invoice.document as InvoiceDocument, invoice.status));
+  });
 };
+
+/** HTML with a CSP that allows only the page's own inline styles: no scripts, no external loads. */
+export function sendInvoice(reply: FastifyReply, html: string) {
+  return reply
+    .header("content-type", "text/html; charset=utf-8")
+    .header("content-security-policy", "default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'none'")
+    .send(html);
+}

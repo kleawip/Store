@@ -34,7 +34,7 @@ const email: OtpSender | undefined = config.RESEND_API_KEY
 const otpSender = new ChannelOtpSender({ whatsapp, email });
 
 const shipping = config.SHIPROCKET_EMAIL && config.SHIPROCKET_PASSWORD
-  ? new ShiprocketProvider({ email: config.SHIPROCKET_EMAIL, password: config.SHIPROCKET_PASSWORD, pickupPincode: config.PICKUP_PINCODE })
+  ? new ShiprocketProvider({ email: config.SHIPROCKET_EMAIL, password: config.SHIPROCKET_PASSWORD, pickupPincode: config.PICKUP_PINCODE, pickupLocation: config.SHIPROCKET_PICKUP_LOCATION })
   : isProduction ? null : new MockShippingProvider(config.PICKUP_PINCODE);
 const payments = config.RAZORPAY_KEY_ID
   ? new RazorpayGateway({ keyId: config.RAZORPAY_KEY_ID, keySecret: config.RAZORPAY_KEY_SECRET!, webhookSecret: config.RAZORPAY_WEBHOOK_SECRET! })
@@ -52,6 +52,7 @@ const app = await buildApp({
   shipping,
   commerce,
   payments,
+  courierWebhookToken: config.COURIER_WEBHOOK_TOKEN ?? null,
   storefrontOrigins: config.STOREFRONT_ORIGIN.split(",").map((origin) => origin.trim()),
   cookieSecure: config.COOKIE_SECURE,
   trustedProxyHops: config.TRUST_PROXY,

@@ -616,3 +616,71 @@ export const refunds = pgTable("refunds", {
   check("refunds_amount_positive", sql`${t.amountPaise} > 0`),
   check("refunds_gateway_has_payment", sql`${t.method} = 'manual' OR ${t.paymentId} IS NOT NULL`),
 ]);
+
+// ---- Shipments (Milestone 3). Booking is saved step by step so a courier failure half-way can be resumed. ----
+
+export const shipmentStatus = pgEnum("shipment_status", [
+  "pending", "ready", "pickup_requested", "in_transit", "out_for_delivery", "delivered", "rto_initiated", "returned_to_origin", "cancelled",
+]);
+
+export const shipments = pgTable("shipments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),
+  provider: text("provider").notNull(),
+  status: shipmentStatus("status").notNull().default("pending"),
+  providerOrderId: text("provider_order_id"),
+  providerShipmentId: text("provider_shipment_id"),
+  awb: text("awb"),
+  courierName: text("courier_name"),
+  labelUrl: text("label_url"),
+  weightGrams: integer("weight_grams").notNull(),
+  lengthCm: integer("length_cm").notNull(),
+  breadthCm: integer("breadth_cm").notNull(),
+  heightCm: integer("height_cm").notNull(),
+  lastError: text("last_error"),
+  // Set once when the parcel first leaves (stock is taken off the shelf then).
+  stockFulfilledAt: timestamp("stock_fulfilled_at", { withTimezone: true }),
+  pickupRequestedAt: timestamp("pickup_requested_at", { withTimezone: true }),
+  shippedAt: timestamp("shipped_at", { withTimezone: true }),
+  deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+  createdByStaffId: uuid("created_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  ...timestamps,
+}, (t) => [
+  index("shipments_order_idx").on(t.orderId),
+  // One live shipment per order; cancelled ones stay for history.
+  uniqueIndex("shipments_active_order_key").on(t.orderId).where(sql`${t.status} <> 'cancelled'`),
+  uniqueIndex("shipments_provider_awb_key").on(t.provider, t.awb),
+]);
+
+// Courier tracking updates, recorded once each (couriers resend the same update).
+export const shipmentEvents = pgTable("shipment_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  shipmentId: uuid("shipment_id").notNull().references(() => shipments.id, { onDelete: "cascade" }),
+  dedupeKey: text("dedupe_key").notNull(),
+  courierStatus: text("courier_status").notNull(),
+  location: text("location"),
+  occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+  payload: jsonb("payload").notNull(),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("shipment_events_dedupe_key").on(t.dedupeKey), index("shipment_events_shipment_idx").on(t.shipmentId, t.occurredAt)]);
+
+// ---- GST tax invoices: one consecutive series per financial year (April–March, IST) ----
+
+export const invoiceSequences = pgTable("invoice_sequences", {
+  financialYear: text("financial_year").primaryKey(), // e.g. "26-27"
+  lastNumber: integer("last_number").notNull(),
+});
+
+export const invoiceStatus = pgEnum("invoice_status", ["issued", "cancelled"]);
+
+export const invoices = pgTable("invoices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),
+  number: text("number").notNull(),
+  financialYear: text("financial_year").notNull(),
+  status: invoiceStatus("status").notNull().default("issued"),
+  // Everything printed, frozen at issue: later changes to seller details or products never alter it.
+  document: jsonb("document").notNull(),
+  issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+  cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
+}, (t) => [uniqueIndex("invoices_number_key").on(t.number), uniqueIndex("invoices_order_key").on(t.orderId)]);

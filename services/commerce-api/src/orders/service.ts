@@ -25,6 +25,8 @@ import {
   payments,
   refunds,
 } from "../db/schema";
+import { invoiceFor } from "../invoices/service";
+import { orderTracking } from "../shipping/views";
 import { ApiError, notFound } from "../errors";
 import { PaymentGatewayError, type PaymentGateway } from "../payments/gateway";
 
@@ -46,6 +48,7 @@ export async function orderView(db: DbOrTx, order: OrderRow): Promise<Order> {
   const lines = await db.select().from(orderLines).where(eq(orderLines.orderId, order.id)).orderBy(asc(orderLines.sku));
   const orderPayments = await db.select().from(payments).where(eq(payments.orderId, order.id)).orderBy(desc(payments.createdAt));
   const refundRows = await db.select({ amountPaise: refunds.amountPaise, status: refunds.status }).from(refunds).where(eq(refunds.orderId, order.id));
+  const invoice = await invoiceFor(db, order.id);
   const address = order.shippingAddress as Order["shippingAddress"];
   const gst = order.gst as QuoteSnapshot["gst"];
   const paid = orderPayments.some((payment) => payment.status === "captured");
@@ -76,10 +79,12 @@ export async function orderView(db: DbOrTx, order: OrderRow): Promise<Order> {
     codBalance: inr(order.codBalancePaise),
     gst: { intraState: gst.intraState, taxable: inr(gst.taxablePaise), cgst: inr(gst.cgstPaise), sgst: inr(gst.sgstPaise), igst: inr(gst.igstPaise) },
     shippingAddress: address,
+    tracking: await orderTracking(db, order.id),
+    invoice: invoice && invoice.status === "issued" ? { number: invoice.number, issuedAt: invoice.issuedAt.toISOString() } : null,
   };
 }
 
-async function customerOrder(db: DbOrTx, customerId: string, orderId: string) {
+export async function customerOrder(db: DbOrTx, customerId: string, orderId: string) {
   if (!/^[0-9a-f-]{36}$/i.test(orderId)) throw notFound("Order not found.");
   const [order] = await db.select().from(orders).where(and(eq(orders.id, orderId), eq(orders.customerId, customerId)));
   if (!order) throw notFound("Order not found.");

@@ -27,6 +27,10 @@ const Env = z.object({
   SHIPROCKET_EMAIL: z.string().optional(),
   SHIPROCKET_PASSWORD: z.string().optional(),
   PICKUP_PINCODE: z.string().regex(/^[1-9]\d{5}$/).default("400001"),
+  // The pickup address name exactly as saved in the Shiprocket panel.
+  SHIPROCKET_PICKUP_LOCATION: z.string().default("Primary"),
+  // Shared secret Shiprocket sends in the x-api-key header of tracking webhooks (set the same value in its panel).
+  COURIER_WEBHOOK_TOKEN: z.string().min(24).optional(),
   // Commerce rules (TBC defaults; see src/checkout/settings.ts and ADR 0002).
   SELLER_STATE_CODE: z.string().regex(/^[A-Z]{2}$/).default("MH"),
   SHIPPING_FLAT_PAISE: z.coerce.number().int().min(0).default(0),
@@ -62,6 +66,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
   if (parsed.data.NODE_ENV === "production" && !(parsed.data.WHATSAPP_PHONE_NUMBER_ID && parsed.data.WHATSAPP_ACCESS_TOKEN)) {
     throw new Error("WhatsApp is not configured: customers could not sign in. Set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN.");
+  }
+  if (parsed.data.SHIPROCKET_EMAIL && parsed.data.NODE_ENV === "production" && !parsed.data.COURIER_WEBHOOK_TOKEN) {
+    throw new Error("Shiprocket is configured but COURIER_WEBHOOK_TOKEN is missing: tracking updates could not be verified.");
   }
   return parsed.data;
 }

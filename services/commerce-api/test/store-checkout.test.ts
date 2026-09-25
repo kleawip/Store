@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { DEFAULT_COMMERCE_SETTINGS } from "../src/checkout/settings";
 import { checkoutQuotes, inventoryItems, variants } from "../src/db/schema";
 import { seedDemoCatalogue } from "../src/db/seed-demo";
-import { ShiprocketProvider, ShippingUnavailableError, type ShippingProvider } from "../src/shipping/provider";
+import { MockShippingProvider, ShiprocketProvider, ShippingUnavailableError, type ShippingProvider } from "../src/shipping/provider";
 import { addVariantFixture } from "./fixtures";
 import { createTestApp, customerSignIn } from "./helpers";
 
@@ -122,7 +122,7 @@ describe("POST /v1/store/checkout/quote", () => {
   });
 
   it("reports delivery as unavailable when the courier check fails", async () => {
-    const failing: ShippingProvider = { name: "down", checkServiceability: async () => { throw new ShippingUnavailableError("down"); } };
+    const failing: ShippingProvider = Object.assign(new MockShippingProvider(), { name: "down", checkServiceability: async () => { throw new ShippingUnavailableError("down"); } });
     const down = await createTestApp({ shipping: failing });
     const saved = ctx;
     ctx = down;
@@ -149,7 +149,7 @@ describe("Shiprocket adapter", () => {
       if (url.endsWith("/auth/login")) return new Response(JSON.stringify({ token: "tok" }), { status: 200 });
       return new Response(JSON.stringify(serviceability), { status });
     }) as unknown as typeof fetch;
-    return { calls, provider: new ShiprocketProvider({ email: "e", password: "p", pickupPincode: "400001" }, fetchImpl) };
+    return { calls, provider: new ShiprocketProvider({ email: "e", password: "p", pickupPincode: "400001", pickupLocation: "Primary" }, fetchImpl) };
   }
 
   it("logs in once, queries serviceability and picks the cheapest courier", async () => {

@@ -186,9 +186,16 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Verification:** backend typecheck, 236 tests and 3 contract tests passed; dev DB migrated.
 - **Next:** step 2 Shiprocket shipments (AWB, label, pickup, tracking webhook → fulfilment statuses, COD collected on delivery) and GST invoices; step 3 returns; step 4 notifications.
 
+### 2026-09-25 — Claude Code (Milestone 3 step 2: shipments, tracking, GST invoices)
+- **Changed:** `services/`, `database/` (migration 0014), `packages/contract` (additive), API_CONTRACT §5.2.2. Staff book Shiprocket shipments in resumable steps (courier order → AWB → label), request pickup and cancel before pickup. A token-checked courier webhook (`/v1/webhooks/courier`) moves orders to shipped / out for delivery / delivered / RTO, takes stock off the books once and flags failed deliveries. GST tax invoices are numbered consecutively per financial year (`KLW/26-27/00001`) and issued at booking, as printable HTML for staff and customers. Seller details (GSTIN, address) are owner-only and validated. Dev simulator: `POST /v1/dev/shipments/{awb}/track`.
+- **Verification:** backend typecheck, 254 tests and 3 contract tests passed; dev DB migrated; admin app typechecks against the new contract. The storefront has 2 type errors in Codex's uncommitted work (`instagram-feature` module, product-detail props), unrelated to the contract.
+- **To verify with the client's Shiprocket account:** field names of the create/AWB/label/pickup/cancel calls; sending partial-COD balance as COD with the deposit as `total_discount`; webhook payload/time format; pickup location name (`SHIPROCKET_PICKUP_LOCATION`). COD is counted as collected on delivery; remittance reconciliation is later.
+- **Open with the client/accountant:** GST on the shipping charge (printed untaxed for now), invoice prefix `KLW`, invoice at booking vs dispatch, and the seller's real GSTIN and address.
+- **Next:** step 3 returns (request, approve, inspect/restock, refund, credit notes), then step 4 notifications.
+
 ## Git rules
 
-`WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.
+`WEBSITE DATA/project` is a git repository on branch `main`, pushed to **https://github.com/kleawip/Store** (remote `origin`, currently **public** for the demo; make it private before real client data or keys exist). The owner pushes; agents commit locally and `git pull --rebase origin main` only when told the remote moved.
 
 - Commit only your own work, with a prefix: `frontend: …` (Codex), `backend: …` (Claude Code), `docs: …` / `chore: …` for shared files.
 - Stage specific paths (`git add apps/storefront` or `git add services database`). Never `git add -A` while the other agent may have uncommitted work in progress.

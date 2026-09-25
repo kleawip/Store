@@ -13,6 +13,8 @@ export type CommerceSettings = {
   shipping: { flatPaise: number; freeAbovePaise: number | null };
   /** TBC: weight assumed for SKUs without a weight when asking the courier. */
   defaultWeightGrams: number;
+  /** TBC: the standard shipping box, used when staff don't enter dimensions. */
+  defaultParcelCm: { length: number; breadth: number; height: number };
   /** How long a checkout quote can be turned into an order. */
   quoteTtlMs: number;
 };
@@ -24,6 +26,7 @@ export const DEFAULT_COMMERCE_SETTINGS: CommerceSettings = {
   fullCodEnabled: false,
   shipping: { flatPaise: 0, freeAbovePaise: null },
   defaultWeightGrams: 500,
+  defaultParcelCm: { length: 30, breadth: 25, height: 10 },
   quoteTtlMs: 15 * 60 * 1000,
 };
 

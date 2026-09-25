@@ -3,9 +3,12 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { customerOf, customerSession } from "../customers/guard";
 import type { Database } from "../db/client";
-import { ApiError } from "../errors";
-import { cancelUnpaidOrder, getCustomerOrder, handleWebhook, listCustomerOrders, placeOrder, retryPayment, verifyPayment } from "../orders/service";
+import { ApiError, notFound } from "../errors";
+import { cancelUnpaidOrder, customerOrder, getCustomerOrder, handleWebhook, listCustomerOrders, placeOrder, retryPayment, verifyPayment } from "../orders/service";
+import { renderInvoiceHtml } from "../invoices/render";
+import { invoiceFor, type InvoiceDocument } from "../invoices/service";
 import { DevGateway, type PaymentGateway } from "../payments/gateway";
+import { sendInvoice } from "./admin-orders";
 
 type IdParams = { Params: { id: string } };
 const IdempotencyKey = z.string().regex(/^[A-Za-z0-9_-]{8,100}$/, "Send a unique Idempotency-Key header (8–100 letters, digits, - or _), e.g. a UUID.");
@@ -36,6 +39,14 @@ export const storeOrderRoutes = (db: Database, gateway: PaymentGateway): Fastify
   );
 
   app.post<IdParams>("/orders/:id/cancel", signedIn, async (request) => Order.parse(await cancelUnpaidOrder(db, customerOf(request).customerId, request.params.id)));
+
+  // The customer's own tax invoice (printable HTML), once issued. Cancelled invoices aren't offered.
+  app.get<IdParams>("/orders/:id/invoice", signedIn, async (request, reply) => {
+    const order = await customerOrder(db, customerOf(request).customerId, request.params.id);
+    const invoice = await invoiceFor(db, order.id);
+    if (!invoice || invoice.status !== "issued") throw notFound("The invoice for this order isn't ready yet.");
+    return sendInvoice(reply, renderInvoiceHtml(invoice.document as InvoiceDocument, invoice.status));
+  });
 };
 
 /** Razorpay → us. The raw body is needed for the signature, so this plugin parses JSON itself. */

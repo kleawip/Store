@@ -12,7 +12,7 @@ import { MAX_UPLOAD_BYTES } from "./media/process";
 import type { MediaStorage } from "./media/storage";
 import type { ChannelOtpSender } from "./messaging/otp-senders";
 import type { CommerceSettings } from "./checkout/settings";
-import type { ShippingProvider } from "./shipping/provider";
+import { MockShippingProvider, type ShippingProvider } from "./shipping/provider";
 import { DevGateway, type PaymentGateway } from "./payments/gateway";
 import { adminAuthRoutes } from "./routes/admin-auth";
 import { adminCampaignRoutes } from "./routes/admin-campaigns";
@@ -28,6 +28,7 @@ import { mergeGuestCartOnSignIn, storeCartRoutes } from "./routes/store-cart";
 import { storeCheckoutRoutes } from "./routes/store-checkout";
 import { devPaymentRoutes, paymentWebhookRoutes, storeOrderRoutes } from "./routes/store-orders";
 import { storeCatalogueRoutes } from "./routes/store-catalogue";
+import { courierWebhookRoutes, devCourierRoutes } from "./routes/courier-webhooks";
 
 export type AppOptions = {
   db: Database;
@@ -37,6 +38,8 @@ export type AppOptions = {
   shipping: ShippingProvider | null;
   commerce: CommerceSettings;
   payments: PaymentGateway;
+  /** Shared secret for the courier tracking webhook; null = webhook disabled. */
+  courierWebhookToken?: string | null;
   storefrontOrigins: string[];
   /** Mark the admin session cookie Secure (HTTPS only). True everywhere except local HTTP development and tests. */
   cookieSecure?: boolean;
@@ -47,7 +50,7 @@ export type AppOptions = {
   logger?: boolean;
 };
 
-export async function buildApp({ db, storage, otpSender, shipping, commerce, payments, storefrontOrigins, cookieSecure = true, rateLimits = true, trustedProxyHops = 0, logger = false }: AppOptions) {
+export async function buildApp({ db, storage, otpSender, shipping, commerce, payments, courierWebhookToken = null, storefrontOrigins, cookieSecure = true, rateLimits = true, trustedProxyHops = 0, logger = false }: AppOptions) {
   const app = Fastify({
     genReqId: () => `req_${randomUUID()}`,
     requestIdHeader: false,
@@ -94,14 +97,17 @@ export async function buildApp({ db, storage, otpSender, shipping, commerce, pay
   await app.register(storeOrderRoutes(db, payments), { prefix: "/v1/store" });
   await app.register(paymentWebhookRoutes(db, payments), { prefix: "/v1/webhooks" });
   if (payments instanceof DevGateway) await app.register(devPaymentRoutes(payments), { prefix: "/v1/dev" });
+  if (shipping && courierWebhookToken) await app.register(courierWebhookRoutes(db, shipping.name, courierWebhookToken), { prefix: "/v1/webhooks" });
+  // The dev tracking simulator exists only with both the mock courier and the dev payment gateway (never in production).
+  if (shipping instanceof MockShippingProvider && payments instanceof DevGateway) await app.register(devCourierRoutes(db, shipping), { prefix: "/v1/dev" });
   await app.register(adminAuthRoutes(db, { cookieSecure }), { prefix: "/v1/admin/auth" });
   await app.register(adminCatalogueRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminMediaCollectionRoutes(db, storage), { prefix: "/v1/admin" });
   await app.register(adminCampaignRoutes(db), { prefix: "/v1/admin/campaigns" });
   await app.register(adminImportRoutes(db), { prefix: "/v1/admin/imports" });
   await app.register(adminStaffRoutes(db), { prefix: "/v1/admin" });
-  await app.register(adminOrderRoutes(db, payments), { prefix: "/v1/admin" });
-  await app.register(adminSettingsRoutes(db), { prefix: "/v1/admin" });
+  await app.register(adminOrderRoutes(db, payments, shipping, commerce), { prefix: "/v1/admin" });
+  await app.register(adminSettingsRoutes(db, commerce.sellerStateCode), { prefix: "/v1/admin" });
   await app.register(adminAccountRoutes(db), { prefix: "/v1/admin/auth" });
   if (storage.read) await app.register(mediaFileRoutes(storage), { prefix: "/media" });
 
