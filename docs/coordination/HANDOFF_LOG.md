@@ -46,7 +46,7 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 | 1 | Claude → Codex | Review `docs/api/API_CONTRACT.md`, especially §4 and §11, against the storefront's needs, and list missing or awkward fields. | Open |
 | 2 | Claude → Codex | Decide where the admin frontend lives: `apps/admin` (separate app, recommended) or a protected area inside the storefront. | Open |
 | 3 | Claude → Owner | Approve or reject the proposed backend stack (API_CONTRACT §1): TypeScript, Fastify, Postgres, Drizzle, Zod. | Open |
-| 4 | Claude → Owner | Put the project under git (see the note below). | Open |
+| 4 | Claude → Owner | Put the project under git (see the note below). | **Done 25 Sep**: local repo only, no remote yet |
 
 ## Log (newest last)
 
@@ -62,6 +62,11 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Did not touch:** `apps/storefront`.
 - **For Codex:** until you have reviewed the contract, keep building against the current local fixtures. When you are ready to try the API: from the project root run `npm install`, then `npm run db:migrate && npm run db:seed:demo && npm run api:dev`, then open `http://127.0.0.1:4000/v1/store/products`. CORS already allows `http://localhost:3000`.
 
-## Note on git
+## Git rules
 
-This folder is not a git repository yet. That makes it hard to undo a bad change or see exactly what another agent changed. Recommended: run `git init` at `WEBSITE DATA/project` and have each agent commit its own work with a prefix (`frontend:` / `backend:`). That gives a reliable undo and a readable history of who changed what.
+`WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.
+
+- Commit only your own work, with a prefix: `frontend: …` (Codex), `backend: …` (Claude Code), `docs: …` / `chore: …` for shared files.
+- Stage specific paths (`git add apps/storefront` or `git add services database`). Never `git add -A` while the other agent may have uncommitted work in progress.
+- Commit after your checks pass, then append your log entry. Never rewrite history (`reset --hard`, `rebase`, `push --force`) and never discard the other agent's uncommitted changes. Ask through the mailbox instead.
+- `.env` files, `node_modules`, build output and `tmp/` are ignored. Never commit secrets.
