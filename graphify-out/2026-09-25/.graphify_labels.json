@@ -6,7 +6,7 @@
   "4": "Kleawip product page ↔ admin mapping (review draft)",
   "5": "products.ts",
   "6": "Google Stitch for Kleawip — read before design work",
-  "7": "package.json",
+  "7": "storefront/package.json",
   "8": "Q: How should Kleawip analytics SEO AEO GEO and pixel services be scoped?",
   "9": "Q: Which owner identity should Kleawip use for GitHub Vercel Railway and future Google services?",
   "10": "Q: What changed in Kleawip Phase 0 scope and page counts?",
@@ -20,8 +20,16 @@
   "18": "Kleawip storefront preview",
   "19": "Kleawip project build status",
   "20": "search.ts",
-  "21": "home-campaigns.ts",
+  "21": "store-catalogue.ts",
   "22": "Generated storefront hero assets — demo review",
   "23": "Kleawip commerce API contract — v1 proposal",
-  "24": "Kleawip build — frontend / backend task split"
+  "24": "Kleawip build — frontend / backend task split",
+  "25": "commerce-api/package.json",
+  "26": "contract/package.json",
+  "27": "scripts",
+  "28": "compilerOptions",
+  "29": "compilerOptions",
+  "30": "Data the frontend must be able to display",
+  "31": "Codex ↔ Claude Code handoff log",
+  "32": "Kleawip commerce API"
 }

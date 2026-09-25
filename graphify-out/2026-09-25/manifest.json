@@ -972,15 +972,15 @@
     "semantic_hash": ""
   },
   "FRONTEND_BACKEND_TASKS.md": {
-    "mtime": 1790327571.7035608,
-    "seen": 1790327842.4236841,
-    "ast_hash": "e29c017fcf66b87db7bb2f92c00aadcd",
+    "mtime": 1790328421.8432076,
+    "seen": 1790328449.839432,
+    "ast_hash": "adbd1a4844868cc26c4113654881f809",
     "semantic_hash": ""
   },
   "docs/api/API_CONTRACT.md": {
-    "mtime": 1790327835.5204291,
-    "seen": 1790327842.423688,
-    "ast_hash": "f63bc8e6897cefd990d3416737897837",
+    "mtime": 1790328404.1661727,
+    "seen": 1790328449.83956,
+    "ast_hash": "5ed2926735ee0928c7073752dade6aeb",
     "semantic_hash": ""
   },
   "apps/storefront/src/lib/wishlist.test.ts": {
@@ -993,6 +993,174 @@
     "mtime": 1790327904.9095914,
     "seen": 1790328002.058223,
     "ast_hash": "224a27b28fd1bb6e67eb05faf96aaea5",
+    "semantic_hash": ""
+  },
+  "database/migrations/meta/0000_snapshot.json": {
+    "mtime": 1790328309.550316,
+    "seen": 1790328449.83933,
+    "ast_hash": "f0816bd29a89fa78e7570149d6b9e72e",
+    "semantic_hash": ""
+  },
+  "database/migrations/meta/_journal.json": {
+    "mtime": 1790328309.5504825,
+    "seen": 1790328449.839332,
+    "ast_hash": "63bc07837781e02d393fa2fe259b8163",
+    "semantic_hash": ""
+  },
+  "database/seeds/demo/catalogue.json": {
+    "mtime": 1790328088.3454182,
+    "seen": 1790328449.839333,
+    "ast_hash": "618340d7278edba3bac91e5c7d5c09ac",
+    "semantic_hash": ""
+  },
+  "package.json": {
+    "mtime": 1790328095.4900446,
+    "seen": 1790328449.8393338,
+    "ast_hash": "ea95377bef58c40d009b0509c29bc25e",
+    "semantic_hash": ""
+  },
+  "packages/contract/package.json": {
+    "mtime": 1790328098.990781,
+    "seen": 1790328449.839335,
+    "ast_hash": "1cd0ce52cee47f18fbfceed4e2557e53",
+    "semantic_hash": ""
+  },
+  "packages/contract/src/index.test.ts": {
+    "mtime": 1790328143.032255,
+    "seen": 1790328449.839338,
+    "ast_hash": "33a1a42cfaea5a58ac5d2028da48ee98",
+    "semantic_hash": ""
+  },
+  "packages/contract/src/index.ts": {
+    "mtime": 1790328140.1388419,
+    "seen": 1790328449.839339,
+    "ast_hash": "9e73486f56927dfba357a9a03625a870",
+    "semantic_hash": ""
+  },
+  "packages/contract/tsconfig.json": {
+    "mtime": 1790328100.586081,
+    "seen": 1790328449.83934,
+    "ast_hash": "3755932f93a5f36209e925c24540d696",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/drizzle.config.ts": {
+    "mtime": 1790328163.818878,
+    "seen": 1790328449.83934,
+    "ast_hash": "4d4ab00d274c20f8e1b96f1521241e48",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/package.json": {
+    "mtime": 1790328158.2068121,
+    "seen": 1790328449.8393412,
+    "ast_hash": "00af4e4a435fee6177d6e79663dbe4df",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/scripts/migrate.ts": {
+    "mtime": 1790328221.6688836,
+    "seen": 1790328449.839342,
+    "ast_hash": "a6ec60abf3c2f8af8175c39d1e202b90",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/scripts/seed-demo.ts": {
+    "mtime": 1790328223.5744448,
+    "seen": 1790328449.839343,
+    "ast_hash": "ab2cc73f5484a1e7fb64ce5139affd8b",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/app.ts": {
+    "mtime": 1790328195.2418442,
+    "seen": 1790328449.839343,
+    "ast_hash": "ac12b2875e891c8a0e1d2e2330064836",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/config.ts": {
+    "mtime": 1790328166.676732,
+    "seen": 1790328449.839344,
+    "ast_hash": "2912ffa26c9a4cc7517c28dfead13302",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/db/client.ts": {
+    "mtime": 1790328184.185232,
+    "seen": 1790328449.839345,
+    "ast_hash": "29e27e31c9b93b75db45c571270097e4",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/db/schema.ts": {
+    "mtime": 1790328179.449579,
+    "seen": 1790328449.839345,
+    "ast_hash": "a139ad7837cd54aacf4cba04590330a0",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/db/seed-demo.ts": {
+    "mtime": 1790328219.9156218,
+    "seen": 1790328449.839346,
+    "ast_hash": "c311754f0bdbdd9b6f18694a49bcedcb",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/errors.ts": {
+    "mtime": 1790328191.6376128,
+    "seen": 1790328449.839347,
+    "ast_hash": "6c775418e505c19bc351d710ddc2da45",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/routes/store-catalogue.ts": {
+    "mtime": 1790328212.7712169,
+    "seen": 1790328449.839348,
+    "ast_hash": "c1bdbb0637e80b14ed7d6441fd92fdfd",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/src/server.ts": {
+    "mtime": 1790328197.6727238,
+    "seen": 1790328449.839348,
+    "ast_hash": "4a2f39728641602b0752ac96bf828f5e",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/test/global-setup.ts": {
+    "mtime": 1790328230.306768,
+    "seen": 1790328449.839349,
+    "ast_hash": "a51ff9866a06e4ecae123e37219ef059",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/test/helpers.ts": {
+    "mtime": 1790328232.0096939,
+    "seen": 1790328449.83935,
+    "ast_hash": "f5fca0926a41f6a269a6766ab7dc33f7",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/test/store-catalogue.test.ts": {
+    "mtime": 1790328246.6639142,
+    "seen": 1790328449.83935,
+    "ast_hash": "e494eaf8425bd3d4ce17702348939fc9",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/tsconfig.json": {
+    "mtime": 1790328160.164357,
+    "seen": 1790328449.839351,
+    "ast_hash": "4c00f1577dafd7b1350dc8ab1bcc8baf",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/vitest.config.ts": {
+    "mtime": 1790328227.585552,
+    "seen": 1790328449.8393521,
+    "ast_hash": "fc8ac87f973418fb72b2224c651d5552",
+    "semantic_hash": ""
+  },
+  "docs/coordination/HANDOFF_LOG.md": {
+    "mtime": 1790328440.5255878,
+    "seen": 1790328449.839561,
+    "ast_hash": "a5d054fa733f697b9934c8bd097022ae",
+    "semantic_hash": ""
+  },
+  "docs/phase-0/FRONTEND_DATA_HANDOFF.md": {
+    "mtime": 1790328161.3125758,
+    "seen": 1790328449.8397791,
+    "ast_hash": "8cd114ed4e45cfb428a1986629487314",
+    "semantic_hash": ""
+  },
+  "services/commerce-api/README.md": {
+    "mtime": 1790328418.0261242,
+    "seen": 1790328449.840084,
+    "ast_hash": "f6c2c93016b478363281ea28f348e403",
     "semantic_hash": ""
   }
 }

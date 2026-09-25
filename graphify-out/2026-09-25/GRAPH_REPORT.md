@@ -1,13 +1,13 @@
 # Graph Report - project  (2026-09-25)
 
 ## Corpus Check
-- 62 files · ~527,700 words
+- 91 files · ~535,383 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 4 file(s) not represented in the graph (top: (none) 3, .css 1)
+- Unclassified: 5 file(s) not represented in the graph (top: (none) 3, .css 1, .example 1)
 
 ## Summary
-- 407 nodes · 620 edges · 25 communities
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.88)
+- 599 nodes · 885 edges · 33 communities
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.87)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
@@ -18,7 +18,7 @@
 - Kleawip product page ↔ admin mapping (review draft)
 - products.ts
 - Google Stitch for Kleawip — read before design work
-- package.json
+- storefront/package.json
 - Q: How should Kleawip analytics SEO AEO GEO and pixel services be scoped?
 - Q: Which owner identity should Kleawip use for GitHub Vercel Railway and future Google services?
 - Q: What changed in Kleawip Phase 0 scope and page counts?
@@ -32,10 +32,18 @@
 - Kleawip storefront preview
 - Kleawip project build status
 - search.ts
-- home-campaigns.ts
+- store-catalogue.ts
 - Generated storefront hero assets — demo review
 - Kleawip commerce API contract — v1 proposal
 - Kleawip build — frontend / backend task split
+- commerce-api/package.json
+- contract/package.json
+- scripts
+- compilerOptions
+- compilerOptions
+- Data the frontend must be able to display
+- Codex ↔ Claude Code handoff log
+- Kleawip commerce API
 
 ## God Nodes (most connected - your core abstractions)
 1. `next` - 23 edges
@@ -64,7 +72,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (25 total, 0 thin omitted)
+## Communities (33 total, 0 thin omitted)
 
 ### Community 0 - "build_feature_expansion_addendum.py"
 Cohesion: 0.16
@@ -87,14 +95,14 @@ Cohesion: 0.29
 Nodes (6): Admin field mapping, Customer product-page order, Design-review caution, Interaction checks before implementation acceptance, Kleawip product page ↔ admin mapping (review draft), Publish gate
 
 ### Community 5 - "products.ts"
-Cohesion: 0.07
-Nodes (31): nextConfig, metadata, CartPage(), metadata, ProductPage(), CategoryPage(), metadata, SignInPage() (+23 more)
+Cohesion: 0.06
+Nodes (38): nextConfig, metadata, CartPage(), metadata, ProductPage(), CategoryPage(), metadata, SignInPage() (+30 more)
 
 ### Community 6 - "Google Stitch for Kleawip — read before design work"
 Cohesion: 0.29
 Nodes (6): Connect Stitch to Codex, Google Stitch for Kleawip — read before design work, If Stitch is not connected, Important content checks, Screen-design sequence, What we are doing
 
-### Community 7 - "package.json"
+### Community 7 - "storefront/package.json"
 Cohesion: 0.06
 Nodes (34): dependencies, lucide-react, next, react, react-dom, devDependencies, sharp, @types/node (+26 more)
 
@@ -119,8 +127,8 @@ Cohesion: 0.40
 Nodes (4): Caution, Decision to carry into design and implementation, Evidence / vendor references checked 2026-09-24, Kleawip shipping labels and print centre
 
 ### Community 13 - "store-provider.tsx"
-Cohesion: 0.12
-Nodes (17): apps_storefront_src_app_globals, inter, manrope, metadata, SiteFooter(), SiteHeader(), knownProductIds, StoreContext (+9 more)
+Cohesion: 0.11
+Nodes (18): apps_storefront_src_app_globals, inter, manrope, metadata, SiteFooter(), SiteHeader(), knownProductIds, StoreContext (+10 more)
 
 ### Community 14 - "compilerOptions"
 Cohesion: 0.11
@@ -147,12 +155,12 @@ Cohesion: 0.29
 Nodes (6): Built locally and verified, Designed or specified, but not built, Kleawip project build status, Next controlled increment, Phase position, Safety and ownership
 
 ### Community 20 - "search.ts"
-Cohesion: 0.44
-Nodes (8): SearchPage(), matches(), normalized(), score(), searchableProducts, searchProducts(), SearchSuggestion, searchSuggestions()
+Cohesion: 0.27
+Nodes (9): SearchPage(), SearchAutocomplete(), matches(), normalized(), score(), searchableProducts, searchProducts(), SearchSuggestion (+1 more)
 
-### Community 21 - "home-campaigns.ts"
-Cohesion: 0.29
-Nodes (8): AnnouncementRibbon(), campaignHref(), CampaignTarget, HeroSlide, heroSlides, RibbonMessage, ribbonMessages, CategoryId
+### Community 21 - "store-catalogue.ts"
+Cohesion: 0.06
+Nodes (54): RFC-9457, Availability, Category, CategoryListResponse, ErrorCode, Image, Money, Page (+46 more)
 
 ### Community 22 - "Generated storefront hero assets — demo review"
 Cohesion: 0.50
@@ -160,27 +168,59 @@ Nodes (3): Final files, Generated storefront hero assets — demo review, Prompt
 
 ### Community 23 - "Kleawip commerce API contract — v1 proposal"
 Cohesion: 0.11
-Nodes (17): 10. Questions for review, 1. Proposed backend structure and stack, 2. Conventions, 3. Catalogue data model and stable IDs, 4. Storefront endpoints — Milestone 1 (catalogue and campaigns), 5. Admin endpoints — Milestone 1 (outline), 6. Later milestones (outline only; blocked on Phase 0), 7. Mapping from the current storefront fixtures (+9 more)
+Nodes (18): 10. Questions for review, 11. Answers to Codex's frontend data handoff, 1. Proposed backend structure and stack, 2. Conventions, 3. Catalogue data model and stable IDs, 4. Storefront endpoints — Milestone 1 (catalogue and campaigns), 5. Admin endpoints — Milestone 1 (outline), 6. Later milestones (outline only; blocked on Phase 0) (+10 more)
 
 ### Community 24 - "Kleawip build — frontend / backend task split"
+Cohesion: 0.18
+Nodes (10): Handoff checklist for every milestone, Kleawip build — frontend / backend task split, Milestone 0 — decisions and contract (first, before real commerce), Milestone 1 — real catalogue and campaigns, Milestone 2 — identity, bag and checkout foundation, Milestone 3 — operations and launch readiness, Ownership — avoid editing each other's work, Progress log (+2 more)
+
+### Community 25 - "commerce-api/package.json"
+Cohesion: 0.05
+Nodes (35): drizzle-kit, @kleawip/contract, tsx, @types/pg, dependencies, drizzle-orm, fastify, @fastify/cors (+27 more)
+
+### Community 26 - "contract/package.json"
+Cohesion: 0.11
+Nodes (17): dependencies, zod, description, devDependencies, typescript, vitest, exports, typescript (+9 more)
+
+### Community 27 - "scripts"
+Cohesion: 0.14
+Nodes (13): description, engines, node, name, private, scripts, api:dev, api:test (+5 more)
+
+### Community 28 - "compilerOptions"
+Cohesion: 0.15
+Nodes (12): compilerOptions, allowImportingTsExtensions, module, moduleResolution, noEmit, noUncheckedIndexedAccess, resolveJsonModule, skipLibCheck (+4 more)
+
+### Community 29 - "compilerOptions"
+Cohesion: 0.18
+Nodes (10): compilerOptions, allowImportingTsExtensions, module, moduleResolution, noEmit, noUncheckedIndexedAccess, skipLibCheck, strict (+2 more)
+
+### Community 30 - "Data the frontend must be able to display"
 Cohesion: 0.20
-Nodes (9): Handoff checklist for every milestone, Kleawip build — frontend / backend task split, Milestone 0 — decisions and contract (first, before real commerce), Milestone 1 — real catalogue and campaigns, Milestone 2 — identity, bag and checkout foundation, Milestone 3 — operations and launch readiness, Ownership — avoid editing each other's work, Rules for both builders (+1 more)
+Nodes (9): Bag, identity and orders, Contract questions Claude Code should answer before implementation, Data the frontend must be able to display, Existing preview sources to replace gradually, First integration test gate, Frontend data handoff for Claude Code, Product detail and selection, Product discovery (+1 more)
+
+### Community 31 - "Codex ↔ Claude Code handoff log"
+Cohesion: 0.22
+Nodes (8): 2026-09-25 — Claude Code, Checks each side runs before handing off, Codex ↔ Claude Code handoff log, Log (newest last), Note on git, Open requests, Path ownership, Protocol — both agents follow this every session
+
+### Community 32 - "Kleawip commerce API"
+Cohesion: 0.33
+Nodes (5): Commands (run from `WEBSITE DATA/project`), Demo data, Kleawip commerce API, Known issue, Requirements
 
 ## Knowledge Gaps
-- **206 isolated node(s):** `nextConfig`, `name`, `version`, `private`, `dev` (+201 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 255 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **320 isolated node(s):** `nextConfig`, `name`, `version`, `private`, `dev` (+315 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 375 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `products.ts` to `home-campaigns.ts`, `store-provider.tsx`, `package.json`?**
-  _High betweenness centrality (0.041) - this node is a cross-community bridge._
+- **Why does `drizzle-orm` connect `store-catalogue.ts` to `commerce-api/package.json`?**
+  _High betweenness centrality (0.042) - this node is a cross-community bridge._
 - **Why does `Product` connect `products.ts` to `search.ts`, `Kleawip commerce API contract — v1 proposal`?**
-  _High betweenness centrality (0.035) - this node is a cross-community bridge._
+  _High betweenness centrality (0.029) - this node is a cross-community bridge._
 - **Why does `7. Mapping from the current storefront fixtures` connect `Kleawip commerce API contract — v1 proposal` to `products.ts`?**
-  _High betweenness centrality (0.033) - this node is a cross-community bridge._
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **What connects `nextConfig`, `name`, `version` to the rest of the system?**
-  _206 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _320 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Phase 0 Client Inputs and Account Ownership Checklist` be split into smaller, more focused modules?**
   _Cohesion score 0.07692307692307693 - nodes in this community are weakly interconnected._
 - **Should `Kleawip Ecommerce Platform Implementation Plan` be split into smaller, more focused modules?**
