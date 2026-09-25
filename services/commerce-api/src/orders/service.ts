@@ -23,6 +23,7 @@ import {
   orders,
   paymentEvents,
   payments,
+  refunds,
 } from "../db/schema";
 import { ApiError, notFound } from "../errors";
 import { PaymentGatewayError, type PaymentGateway } from "../payments/gateway";
@@ -36,15 +37,15 @@ const conflict = (code: string, message: string, status = 409) =>
 
 type OrderRow = typeof orders.$inferSelect;
 type PaymentRow = typeof payments.$inferSelect;
-type Tx = Parameters<Parameters<Database["transaction"]>[0]>[0];
+export type Tx = Parameters<Parameters<Database["transaction"]>[0]>[0];
 
 // ---- Views ----
 
 export async function orderView(db: DbOrTx, order: OrderRow): Promise<Order> {
-  const [lines, orderPayments] = await Promise.all([
-    db.select().from(orderLines).where(eq(orderLines.orderId, order.id)).orderBy(asc(orderLines.sku)),
-    db.select().from(payments).where(eq(payments.orderId, order.id)).orderBy(desc(payments.createdAt)),
-  ]);
+  // Sequential: may run inside a transaction.
+  const lines = await db.select().from(orderLines).where(eq(orderLines.orderId, order.id)).orderBy(asc(orderLines.sku));
+  const orderPayments = await db.select().from(payments).where(eq(payments.orderId, order.id)).orderBy(desc(payments.createdAt));
+  const refundRows = await db.select({ amountPaise: refunds.amountPaise, status: refunds.status }).from(refunds).where(eq(refunds.orderId, order.id));
   const address = order.shippingAddress as Order["shippingAddress"];
   const gst = order.gst as QuoteSnapshot["gst"];
   const paid = orderPayments.some((payment) => payment.status === "captured");
@@ -53,6 +54,8 @@ export async function orderView(db: DbOrTx, order: OrderRow): Promise<Order> {
     id: order.id,
     number: order.number,
     status: order.status,
+    fulfilmentStatus: order.fulfilmentStatus,
+    refundedTotal: inr(refundRows.filter((r) => r.status !== "failed").reduce((sum, r) => sum + r.amountPaise, 0)),
     paymentMethod: order.paymentMethod,
     paymentStatus: paid ? "paid" : failed ? "failed" : "awaiting",
     placedAt: order.createdAt.toISOString(),
@@ -107,7 +110,7 @@ async function paymentSession(db: DbOrTx, gateway: PaymentGateway, order: OrderR
 // ---- Stock reservation ----
 
 /** Reserves stock for order lines. Locks inventory rows in id order so concurrent orders can't deadlock. */
-async function reserve(tx: Tx, orderId: string, lines: { inventoryItemId: string; units: number }[], actorNote: string) {
+export async function reserve(tx: Tx, orderId: string, lines: { inventoryItemId: string; units: number }[], actorNote: string) {
   const needed = new Map<string, number>();
   for (const line of lines) needed.set(line.inventoryItemId, (needed.get(line.inventoryItemId) ?? 0) + line.units);
   const ids = [...needed.keys()].sort();
@@ -127,7 +130,7 @@ async function reserve(tx: Tx, orderId: string, lines: { inventoryItemId: string
   return true;
 }
 
-async function release(tx: Tx, orderId: string, note: string) {
+export async function release(tx: Tx, orderId: string, note: string) {
   const lines = await tx.select().from(orderLines).where(eq(orderLines.orderId, orderId));
   const needed = new Map<string, number>();
   for (const line of lines) needed.set(line.inventoryItemId, (needed.get(line.inventoryItemId) ?? 0) + line.inventoryUnits);
@@ -221,6 +224,7 @@ export async function placeOrder(db: Database, gateway: PaymentGateway, customer
         quantity: line.quantity,
         unitPricePaise: line.unitPricePaise,
         taxRateBasisPoints: line.taxRateBasisPoints,
+        hsnCode: line.hsnCode ?? null,
         lineTotalPaise: line.unitPricePaise * line.quantity,
       })));
       await tx.insert(payments).values({
@@ -331,7 +335,10 @@ export async function verifyPayment(
 
 type RazorpayWebhook = {
   event?: string;
-  payload?: { payment?: { entity?: { id?: string; order_id?: string; error_description?: string; error_reason?: string } } };
+  payload?: {
+    payment?: { entity?: { id?: string; order_id?: string; error_description?: string; error_reason?: string } };
+    refund?: { entity?: { id?: string; payment_id?: string; status?: string } };
+  };
 };
 
 /** Razorpay webhook: signature-checked, recorded once per event id, then applied. */
@@ -350,6 +357,10 @@ export async function handleWebhook(db: Database, gateway: PaymentGateway, rawBo
     const [recorded] = await tx.insert(paymentEvents).values({ provider: gateway.provider, eventId, type, payload: body }).onConflictDoNothing().returning({ id: paymentEvents.id });
     if (!recorded) return { status: 200 as const, result: "duplicate" };
 
+    if (type.startsWith("refund.")) {
+      const { applyRefundEvent } = await import("./lifecycle");
+      return { status: 200 as const, result: await applyRefundEvent(tx, type, body.payload?.refund?.entity) };
+    }
     const entity = body.payload?.payment?.entity;
     if (!entity?.order_id || !entity.id) return { status: 200 as const, result: "ignored" };
     const [payment] = await tx.select().from(payments).where(and(eq(payments.provider, gateway.provider), eq(payments.providerOrderId, entity.order_id))).for("update");

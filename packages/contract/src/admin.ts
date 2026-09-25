@@ -609,3 +609,29 @@ export const AdminOrderPayment = z.object({
   createdAt: z.string(),
   capturedAt: z.string().nullable(),
 });
+
+export const AdminRefund = z.object({
+  id: z.string(),
+  method: z.enum(["gateway", "manual"]),
+  amount: AdminMoney,
+  reason: z.string(),
+  note: z.string().nullable(),
+  status: z.enum(["pending", "processed", "failed"]),
+  providerRefundId: z.string().nullable(),
+  failureReason: z.string().nullable(),
+  createdBy: z.string().nullable(),
+  createdAt: z.string(),
+  processedAt: z.string().nullable(),
+});
+
+export const RefundCreate = z.object({
+  amountPaise: z.number().int().positive(),
+  // gateway = back to the original online payment (Razorpay); manual = cash already returned by staff (COD).
+  method: z.enum(["gateway", "manual"]),
+  reason: z.string().trim().min(3).max(300),
+  note: z.string().trim().max(300).nullable().default(null),
+});
+
+export const OrderCancel = z.object({ reason: z.string().trim().min(3).max(300) });
+export const FulfilmentStep = z.object({ fulfilmentStatus: z.enum(["unfulfilled", "processing", "packed"]) });
+export const AttentionResolve = z.object({ note: z.string().trim().min(3).max(500) });

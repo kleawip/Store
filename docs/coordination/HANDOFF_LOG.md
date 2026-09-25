@@ -180,6 +180,12 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Verification:** storefront typecheck, 20 tests and production build; admin typecheck and production build; backend typecheck, 225 tests and 3 contract tests all passed. Browser QA confirmed the reel plays, mutes/unmutes and seeks; 320 px phone, 390 px phone and 768 px tablet emulation had no horizontal overflow. This is not physical iOS/Android testing. Authenticated admin click-through is pending owner sign-in at :3002.
 - **Limits / next:** the storefront still renders fixture products; it does not yet consume `ProductDetail.videos[]` for all published products. The local reel is a demo asset; client approval is required for hosting its soundtrack outside Instagram. The admin deliberately prevents publishing an unverified Instagram-only embed from its UI after local embedding rendered blank. Codec-validation and embed-gate QA notes were sent to Claude via mailbox. `graphify update .` ran after code changes.
 
+### 2026-09-25 — Claude Code (Milestone 3 step 1: order actions and refunds)
+- **Changed:** `services/`, `database/` (migration 0013), `packages/contract` (additive), API_CONTRACT §5.2.1. Staff can move confirmed orders unfulfilled → processing → packed; cancel before dispatch (stock released, online payments incl. partial-COD deposits refunded automatically); issue Razorpay or cash refunds within what is refundable; retry failed refunds; resolve `needsAttention` with a note. Razorpay `refund.*` webhooks update refunds (deduped). New permissions `orders.manage` (owner, operations) and `orders.refund` (owner only). `Order` gains `fulfilmentStatus` and `refundedTotal`.
+- **Fixed:** queries no longer run in parallel on a transaction connection (cart pricing, order view, refunds); demo seed now clears customers/orders so test files are independent.
+- **Verification:** backend typecheck, 236 tests and 3 contract tests passed; dev DB migrated.
+- **Next:** step 2 Shiprocket shipments (AWB, label, pickup, tracking webhook → fulfilment statuses, COD collected on delivery) and GST invoices; step 3 returns; step 4 notifications.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.

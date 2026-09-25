@@ -204,10 +204,14 @@ export const PaymentVerifyRequest = z.object({
 
 export const OrderStatus = z.enum(["pending_payment", "confirmed", "expired", "cancelled"]);
 
+export const FulfilmentStatus = z.enum(["unfulfilled", "processing", "packed", "shipped", "out_for_delivery", "delivered", "rto_initiated", "returned_to_origin"]);
+
 export const Order = z.object({
   id: z.string(),
   number: z.string(),
   status: OrderStatus,
+  fulfilmentStatus: FulfilmentStatus,
+  refundedTotal: QuoteMoney,
   paymentMethod: z.enum(["prepaid", "partial_cod"]),
   paymentStatus: z.enum(["awaiting", "paid", "failed"]),
   placedAt: z.string(),

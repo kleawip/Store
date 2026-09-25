@@ -12,6 +12,8 @@ export const PERMISSIONS = [
   "campaigns.write",
   "campaigns.publish",
   "orders.read",
+  "orders.manage",
+  "orders.refund",
   "inventory.read",
   "inventory.adjust",
   "audit.read",
@@ -29,7 +31,8 @@ const GRANTS: Record<Role, readonly Permission[]> = {
   catalogue_manager: [...READ_ALL, "catalogue.write", "catalogue.publish", "media.write", "audit.comment"],
   // Marketing editors draft campaigns; publishing stays with the Owner until the client decides (HOMEPAGE_CAMPAIGNS_SPEC).
   marketing_editor: [...READ_ALL, "media.write", "campaigns.write", "audit.comment"],
-  operations: [...READ_ALL, ...ORDERS, "inventory.adjust", "audit.comment"],
+  // Operations run fulfilment; refunds and cancelling paid orders stay with the Owner (TBC with the client).
+  operations: [...READ_ALL, ...ORDERS, "orders.manage", "inventory.adjust", "audit.comment"],
   support: [...READ_ALL, ...ORDERS, "audit.comment"],
   viewer: READ_ALL,
 };

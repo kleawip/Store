@@ -509,6 +509,22 @@ Rules:
 - `needsAttention` holds staff instructions for money problems: late or duplicate payments that need a refund.
 - The dashboard gains `orders { confirmedToday (IST), awaitingPayment, needsAttention }`.
 
+### 5.2.1 Milestone 3 step 1: fulfilment steps, cancellations, refunds (implemented 25 Sep 2026)
+
+Zod: `FulfilmentStatus`, `FulfilmentStep`, `OrderCancel`, `RefundCreate`, `AttentionResolve`, `AdminRefund`. **Additive:** `Order.fulfilmentStatus` and `Order.refundedTotal` (store and admin); `AdminOrderDetail` gains `refunds[]`, `cancelReason`, `codCollected`.
+
+New permissions: `orders.manage` (owner, operations) and `orders.refund` (**owner only**). Every action returns the updated `AdminOrderDetail` and is audited.
+
+| Endpoint | Permission / notes |
+| --- | --- |
+| `POST /v1/admin/orders/{id}/fulfilment { fulfilmentStatus: "unfulfilled"\|"processing"\|"packed" }` | `orders.manage`. Confirmed orders only, one step at a time (`invalid_transition`). `shipped` and later will come only from the courier (step 2). |
+| `POST /v1/admin/orders/{id}/cancel { reason }` | `orders.refund`. Before dispatch only (`already_shipped` after). Releases stock and **automatically refunds everything paid online** (incl. a partial-COD deposit). Errors: `already_cancelled`, `not_confirmed`. |
+| `POST /v1/admin/orders/{id}/refunds { amountPaise, method: "gateway"\|"manual", reason, note? }` | `orders.refund` → 201. `gateway` = back to the Razorpay payment(s), capped at what is still refundable online. `manual` = cash already handed back by staff; needs `note` and is capped at the COD cash collected. Errors: `exceeds_refundable`, `not_paid`, `required`. |
+| `POST /v1/admin/orders/{id}/refunds/{refundId}/retry` | `orders.refund`. Failed gateway refunds only (`not_retryable`). |
+| `POST /v1/admin/orders/{id}/resolve-attention { note }` | `orders.refund`. Clears `needsAttention` with a note in the timeline. |
+
+Refund statuses: `pending` → `processed` (Razorpay `refund.processed` webhook, deduped) or `failed` (the order is flagged `needsAttention`). The UI should show `refundedTotal` counting processed + pending refunds.
+
 ### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
 
 These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
@@ -581,6 +597,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026 (M3 step 1): admin fulfilment steps, staff cancellation with auto-refund, gateway/cash refunds, retry, resolve-attention; `Order.fulfilmentStatus` + `Order.refundedTotal` (additive) (§5.2.1).
 - 26 Sep 2026 (Codex video QA): video codec validation (H.264/AAC, VP8/9/AV1 + Opus/Vorbis; HEVC refused); Instagram embeds gated behind the owner setting `instagramEmbedsVerified` (`/v1/admin/settings`).
 - 26 Sep 2026: admin orders list/detail (`orders.read`), dashboard order counts. Milestone 2 backend complete.
 - 26 Sep 2026: product videos (upload or Instagram, rights confirmation, Range-served files, `ProductDetail.videos`) (§5.3).

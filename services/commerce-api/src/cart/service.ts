@@ -28,7 +28,7 @@ export type CartOwner = { customerId: string } | { guestToken: string };
 
 // ---- Loading and pricing lines ----
 
-export type PricedLine = CartLine & { variantId: string; taxRateBasisPoints: number | null; inventoryItemId: string; inventoryUnitsPerSale: number; weightGrams: number | null };
+export type PricedLine = CartLine & { variantId: string; taxRateBasisPoints: number | null; hsnCode: string | null; inventoryItemId: string; inventoryUnitsPerSale: number; weightGrams: number | null };
 
 /** Prices stored lines against the live catalogue. Also used by checkout, so both agree to the paisa. */
 export async function priceLines(db: DbOrTx, stored: { variantId: string; quantity: number; pricePaiseWhenAdded: number | null }[]): Promise<PricedLine[]> {
@@ -40,20 +40,19 @@ export async function priceLines(db: DbOrTx, stored: { variantId: string; quanti
     .innerJoin(products, eq(products.id, variants.productId))
     .innerJoin(inventoryItems, eq(inventoryItems.id, variants.inventoryItemId))
     .where(inArray(variants.id, ids));
-  const [labels, images] = await Promise.all([
-    db
-      .select({ variantId: variantOptionValues.variantId, option: productOptions.label, value: productOptionValues.label, position: productOptions.position })
-      .from(variantOptionValues)
-      .innerJoin(productOptionValues, eq(productOptionValues.id, variantOptionValues.optionValueId))
-      .innerJoin(productOptions, eq(productOptions.id, productOptionValues.optionId))
-      .where(inArray(variantOptionValues.variantId, ids))
-      .orderBy(asc(productOptions.position)),
-    db
-      .select({ productId: productMedia.productId, url: productMedia.url, alt: productMedia.alt, optionValueId: productMedia.optionValueId, position: productMedia.position })
-      .from(productMedia)
-      .where(inArray(productMedia.productId, rows.map((row) => row.product.id)))
-      .orderBy(asc(productMedia.position)),
-  ]);
+  // Sequential on purpose: this also runs inside transactions, where one connection can't run queries in parallel.
+  const labels = await db
+    .select({ variantId: variantOptionValues.variantId, option: productOptions.label, value: productOptionValues.label, position: productOptions.position })
+    .from(variantOptionValues)
+    .innerJoin(productOptionValues, eq(productOptionValues.id, variantOptionValues.optionValueId))
+    .innerJoin(productOptions, eq(productOptions.id, productOptionValues.optionId))
+    .where(inArray(variantOptionValues.variantId, ids))
+    .orderBy(asc(productOptions.position));
+  const images = await db
+    .select({ productId: productMedia.productId, url: productMedia.url, alt: productMedia.alt, optionValueId: productMedia.optionValueId, position: productMedia.position })
+    .from(productMedia)
+    .where(inArray(productMedia.productId, rows.map((row) => row.product.id)))
+    .orderBy(asc(productMedia.position));
   const valueLinks = await db.select().from(variantOptionValues).where(inArray(variantOptionValues.variantId, ids));
 
   return stored.flatMap((line) => {
@@ -80,6 +79,7 @@ export async function priceLines(db: DbOrTx, stored: { variantId: string; quanti
       inventoryUnitsPerSale: variant.inventoryUnitsPerSale,
       weightGrams: variant.weightGrams,
       taxRateBasisPoints: variant.taxRateBasisPoints,
+      hsnCode: variant.hsnCode,
       sku: variant.sku,
       productSlug: product.slug,
       productTitle: product.title,
@@ -126,7 +126,7 @@ export async function getCart(db: Database, owner: CartOwner | null): Promise<Ca
   const subtotal = lines.reduce((sum, line) => sum + line.lineTotal.amount, 0);
   const gst = lines.reduce((sum, line) => sum + (line.taxRateBasisPoints === null ? 0 : gstIncluded(line.lineTotal.amount, line.taxRateBasisPoints)), 0);
   return {
-    lines: lines.map(({ variantId: _v, taxRateBasisPoints: _t, inventoryItemId: _i, inventoryUnitsPerSale: _u, weightGrams: _w, ...line }) => line),
+    lines: lines.map(({ variantId: _v, taxRateBasisPoints: _t, hsnCode: _h, inventoryItemId: _i, inventoryUnitsPerSale: _u, weightGrams: _w, ...line }) => line),
     itemCount: lines.reduce((sum, line) => sum + line.orderableQuantity, 0),
     subtotal: inr(subtotal),
     gstIncluded: inr(gst),

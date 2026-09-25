@@ -100,7 +100,7 @@ export async function buildApp({ db, storage, otpSender, shipping, commerce, pay
   await app.register(adminCampaignRoutes(db), { prefix: "/v1/admin/campaigns" });
   await app.register(adminImportRoutes(db), { prefix: "/v1/admin/imports" });
   await app.register(adminStaffRoutes(db), { prefix: "/v1/admin" });
-  await app.register(adminOrderRoutes(db), { prefix: "/v1/admin" });
+  await app.register(adminOrderRoutes(db, payments), { prefix: "/v1/admin" });
   await app.register(adminSettingsRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminAccountRoutes(db), { prefix: "/v1/admin/auth" });
   if (storage.read) await app.register(mediaFileRoutes(storage), { prefix: "/media" });

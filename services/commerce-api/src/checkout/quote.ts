@@ -29,7 +29,7 @@ export async function checkServiceability(shipping: ShippingProvider | null, set
 }
 
 export type QuoteSnapshot = {
-  lines: { variantId: string; sku: string; productTitle: string; optionsLabel: string; quantity: number; unitPricePaise: number; taxRateBasisPoints: number; hsnCode?: string; inventoryItemId: string; inventoryUnitsPerSale: number }[];
+  lines: { variantId: string; sku: string; productTitle: string; optionsLabel: string; quantity: number; unitPricePaise: number; taxRateBasisPoints: number; hsnCode?: string; weightGrams?: number; inventoryItemId: string; inventoryUnitsPerSale: number }[];
   merchandisePaise: number;
   shippingPaise: number;
   gst: { intraState: boolean; taxablePaise: number; cgstPaise: number; sgstPaise: number; igstPaise: number };
@@ -104,6 +104,8 @@ export async function createQuote(
       quantity: line.orderableQuantity,
       unitPricePaise: line.unitPrice!.amount,
       taxRateBasisPoints: line.taxRateBasisPoints!,
+      hsnCode: line.hsnCode ?? undefined,
+      weightGrams: line.weightGrams ?? undefined,
       inventoryItemId: line.inventoryItemId,
       inventoryUnitsPerSale: line.inventoryUnitsPerSale,
     })),

@@ -456,6 +456,10 @@ export const checkoutQuotes = pgTable("checkout_quotes", {
 export const orderNumberSeq = pgSequence("order_number_seq", { startWith: 100001 });
 
 export const orderStatus = pgEnum("order_status", ["pending_payment", "confirmed", "expired", "cancelled"]);
+// Physical progress, separate from the commercial status (as Shopify separates payment and fulfilment).
+export const fulfilmentStatus = pgEnum("fulfilment_status", [
+  "unfulfilled", "processing", "packed", "shipped", "out_for_delivery", "delivered", "rto_initiated", "returned_to_origin",
+]);
 
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -465,7 +469,11 @@ export const orders = pgTable("orders", {
   quoteId: uuid("quote_id").notNull().references(() => checkoutQuotes.id, { onDelete: "restrict" }),
   idempotencyKey: text("idempotency_key").notNull(),
   status: orderStatus("status").notNull().default("pending_payment"),
+  fulfilmentStatus: fulfilmentStatus("fulfilment_status").notNull().default("unfulfilled"),
   paymentMethod: paymentMethod("payment_method").notNull(),
+  // Cash the courier collected on delivery (partial COD balance); set when delivery is confirmed.
+  codCollectedPaise: integer("cod_collected_paise").notNull().default(0),
+  cancelReason: text("cancel_reason"),
   // Frozen at order time: later edits to the address book or catalogue never change a placed order.
   shippingAddress: jsonb("shipping_address").notNull(),
   merchandisePaise: integer("merchandise_paise").notNull(),
@@ -500,6 +508,7 @@ export const orderLines = pgTable("order_lines", {
   quantity: integer("quantity").notNull(),
   unitPricePaise: integer("unit_price_paise").notNull(),
   taxRateBasisPoints: integer("tax_rate_basis_points").notNull(),
+  hsnCode: text("hsn_code"),
   lineTotalPaise: integer("line_total_paise").notNull(),
 }, (t) => [index("order_lines_order_idx").on(t.orderId), check("order_lines_positive", sql`${t.quantity} > 0 AND ${t.inventoryUnits} > 0`)]);
 
@@ -580,3 +589,30 @@ export const siteSettings = pgTable("site_settings", {
   updatedByStaffId: uuid("updated_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// ---- Refunds (Milestone 3). Online refunds go back through Razorpay; cash (COD) refunds are paid manually. ----
+
+export const refundStatus = pgEnum("refund_status", ["pending", "processed", "failed"]);
+export const refundMethod = pgEnum("refund_method", ["gateway", "manual"]);
+
+export const refunds = pgTable("refunds", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),
+  paymentId: uuid("payment_id").references(() => payments.id, { onDelete: "restrict" }),
+  method: refundMethod("method").notNull(),
+  amountPaise: integer("amount_paise").notNull(),
+  reason: text("reason").notNull(),
+  // Manual refunds record how the money was sent (e.g. "UPI ref 1234").
+  note: text("note"),
+  status: refundStatus("status").notNull().default("pending"),
+  providerRefundId: text("provider_refund_id"),
+  failureReason: text("failure_reason"),
+  createdByStaffId: uuid("created_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  processedAt: timestamp("processed_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  index("refunds_order_idx").on(t.orderId),
+  uniqueIndex("refunds_provider_refund_key").on(t.providerRefundId),
+  check("refunds_amount_positive", sql`${t.amountPaise} > 0`),
+  check("refunds_gateway_has_payment", sql`${t.method} = 'manual' OR ${t.paymentId} IS NOT NULL`),
+]);

@@ -4,6 +4,7 @@ import { and, count, desc, eq, ilike, isNotNull, or, sql, type SQL } from "drizz
 import type { Database } from "../db/client";
 import { customers, orderLines, orders, payments } from "../db/schema";
 import { notFound } from "../errors";
+import { refundList } from "./lifecycle";
 import { orderView } from "./service";
 
 const inr = (amount: number) => ({ amount, currency: "INR" as const });
@@ -73,5 +74,13 @@ export async function adminOrder(db: Database, id: string) {
     createdAt: payment.createdAt.toISOString(),
     capturedAt: payment.capturedAt?.toISOString() ?? null,
   }));
-  return { order: await orderView(db, row), customer: customer!, payments: paymentsOut, needsAttention: row.needsAttention };
+  return {
+    order: await orderView(db, row),
+    customer: customer!,
+    payments: paymentsOut,
+    refunds: await refundList(db, id),
+    cancelReason: row.cancelReason,
+    codCollected: inr(row.codCollectedPaise),
+    needsAttention: row.needsAttention,
+  };
 }

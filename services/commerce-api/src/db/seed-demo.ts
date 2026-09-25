@@ -24,7 +24,8 @@ const DemoCatalogue = z.object({
 export const DEMO_SEEDABLE_DATABASE = /_(dev|test)$/;
 
 /**
- * DESTRUCTIVE: replaces all catalogue rows with the demo fixture. Every row is marked isDemo.
+ * DESTRUCTIVE: replaces all catalogue rows with the demo fixture (every row marked isDemo) and clears
+ * customers and their carts, quotes, orders, payments and refunds.
  * Refuses to run in production or against any database whose real name (asked from Postgres,
  * not from configuration) does not end in _dev or _test.
  */
@@ -38,6 +39,9 @@ export async function seedDemoCatalogue(db: Database) {
   const catalogue = DemoCatalogue.parse(JSON.parse(await readFile(demoCataloguePath, "utf8")));
 
   await db.transaction(async (tx) => {
+    // Customers, carts, quotes, orders, payments and refunds all point at catalogue rows, so a demo reset
+    // clears them too. Only ever runs on *_dev / *_test databases (checked above).
+    await tx.execute(sql`TRUNCATE customers, otp_challenges, payment_events RESTART IDENTITY CASCADE`);
     await tx.delete(heroSlides);
     await tx.delete(ribbonMessages);
     await tx.delete(collections);

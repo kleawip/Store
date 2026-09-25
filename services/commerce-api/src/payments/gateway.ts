@@ -13,6 +13,8 @@ export interface PaymentGateway {
   verifyPaymentSignature(input: { providerOrderId: string; providerPaymentId: string; signature: string }): boolean;
   /** Webhooks: X-Razorpay-Signature = HMAC_SHA256(raw request body, webhook_secret). */
   verifyWebhookSignature(rawBody: string, signature: string): boolean;
+  /** Refunds part or all of a captured payment back to the customer's original method. */
+  refund(input: { providerPaymentId: string; amountPaise: number; receipt: string; notes: Record<string, string> }): Promise<{ providerRefundId: string; status: "processed" | "pending" }>;
 }
 
 export class PaymentGatewayError extends Error {}
@@ -55,6 +57,21 @@ export class RazorpayGateway implements PaymentGateway {
     return safeEqualHex(hmacHex(this.config.keySecret, `${providerOrderId}|${providerPaymentId}`), signature);
   }
 
+  async refund({ providerPaymentId, amountPaise, receipt, notes }: { providerPaymentId: string; amountPaise: number; receipt: string; notes: Record<string, string> }) {
+    const auth = Buffer.from(`${this.config.keyId}:${this.config.keySecret}`).toString("base64");
+    const response = await this.fetchImpl(`${this.config.baseUrl ?? "https://api.razorpay.com"}/v1/payments/${encodeURIComponent(providerPaymentId)}/refund`, {
+      method: "POST",
+      headers: { authorization: `Basic ${auth}`, "content-type": "application/json" },
+      body: JSON.stringify({ amount: amountPaise, speed: "normal", receipt: receipt.slice(0, 40), notes }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const body = (await response.json().catch(() => null)) as { id?: string; status?: string; error?: { code?: string; description?: string } } | null;
+    if (!response.ok || !body?.id || body.status === "failed") {
+      throw new PaymentGatewayError(`Razorpay refund failed (${response.status}${body?.error?.code ? `, ${body.error.code}` : ""})`);
+    }
+    return { providerRefundId: body.id, status: body.status === "processed" ? ("processed" as const) : ("pending" as const) };
+  }
+
   verifyWebhookSignature(rawBody: string, signature: string) {
     return safeEqualHex(hmacHex(this.config.webhookSecret, rawBody), signature);
   }
@@ -88,5 +105,16 @@ export class DevGateway implements PaymentGateway {
 
   verifyWebhookSignature(rawBody: string, signature: string) {
     return safeEqualHex(this.signWebhook(rawBody), signature);
+  }
+
+  /** Test hook: make the next refund fail like a gateway outage. */
+  failNextRefund = false;
+
+  async refund() {
+    if (this.failNextRefund) {
+      this.failNextRefund = false;
+      throw new PaymentGatewayError("simulated refund failure");
+    }
+    return { providerRefundId: `rfnd_dev_${randomBytes(8).toString("hex")}`, status: "processed" as const };
   }
 }
