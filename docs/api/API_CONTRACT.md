@@ -419,6 +419,24 @@ The admin app needs a public `/setup?token=…` page that posts to `/v1/admin/au
 
 Order and revenue cards arrive in Milestone 2.
 
+### 5.2 Milestone 2: customer accounts (implemented 26 Sep 2026)
+
+Zod: `packages/contract/src/customer.ts`.
+
+**CSRF:** every state-changing `/v1/store/*` request must send `X-Kleawip-Client: storefront`, or it gets 403. Use `credentials: "include"`.
+
+**Sign-in (ADR 0002 R1):** the phone number is the identity, verified by a code over WhatsApp. Email codes are available only for accounts that already have a verified email.
+
+| Endpoint | Notes |
+| --- | --- |
+| `POST /v1/store/auth/otp/request { phone, channel?: "whatsapp"\|"email" }` | Accepts any Indian mobile format; → 201 `OtpChallenge { challengeId, channel, sentTo (masked), expiresAt, resendAfterSeconds }`. Limits: one code per 30 s and 5 per hour per number (429 `RATE_LIMITED`, `detail` says when). Delivery failure → 503 `DELIVERY_FAILED`. |
+| `POST /v1/store/auth/otp/verify { challengeId, code }` | 6 digits, 5-minute expiry, 5 attempts. Errors: `incorrect` (message says the attempts left), `too_many_attempts`, `expired`. → `CustomerSession { customer, isNewCustomer }` and sets the `klw_session` cookie (httpOnly, SameSite=Lax, Path=/, 30 days; ends after 14 idle days). |
+| `POST /v1/store/auth/logout` | 204 |
+| `GET` / `PATCH /v1/store/me { name?, email? }` | A changed email becomes unverified. |
+| `GET` / `POST /v1/store/me/addresses`, `GET` / `PATCH` / `DELETE /v1/store/me/addresses/{id}` | `AddressInput`: Indian mobile, 6-digit pincode, `stateCode` from `INDIAN_STATES`; at most 20 addresses; exactly one default. Another customer's address → 404. |
+
+Development: with no WhatsApp or Resend keys set, codes are written to `services/commerce-api/.data/otp-outbox.log` (git-ignored). Production refuses to start without WhatsApp configured.
+
 ---
 
 ## 6. Later milestones (outline only; blocked on Phase 0)
@@ -467,6 +485,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 26 Sep 2026: Milestone 2 customer accounts: WhatsApp OTP sign-in, sessions, profile, addresses (§5.2). Error code `DELIVERY_FAILED` added.
 - 25 Sep 2026: staff management (invite links, roles, disable, self password change, activity log) implemented.
 - 25 Sep 2026: catalogue CSV import (validate → review → all-or-nothing commit) implemented.
 - 25 Sep 2026: homepage campaigns (slides + ribbon, IST scheduling, publish checklist, offer-claim guard) and `GET /v1/store/home` implemented. Slide images carry per-device `alt`. Permissions `campaigns.write` / `campaigns.publish` added.

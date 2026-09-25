@@ -8,17 +8,20 @@ import { hashPassword } from "../src/auth/password";
 import { createDatabase, type Database } from "../src/db/client";
 import { staffUsers } from "../src/db/schema";
 import { LocalDiskStorage } from "../src/media/storage";
+import { ChannelOtpSender, MemoryOtpSender } from "../src/messaging/otp-senders";
 
 export async function createTestApp({ rateLimits = false } = {}) {
   const { db, close } = createDatabase(process.env.TEST_DATABASE_URL!);
   const mediaDir = mkdtempSync(join(tmpdir(), "kleawip-test-media-"));
   const storage = new LocalDiskStorage(mediaDir, "http://127.0.0.1:4000/media");
-  const app = await buildApp({ db, storage, storefrontOrigins: ["http://localhost:3000"], cookieSecure: false, rateLimits });
+  const otp = new MemoryOtpSender();
+  const app = await buildApp({ db, storage, otpSender: new ChannelOtpSender({ whatsapp: otp, email: otp }), storefrontOrigins: ["http://localhost:3000"], cookieSecure: false, rateLimits });
   return {
     app,
     db,
     storage,
     mediaDir,
+    otp,
     async close() {
       await app.close();
       await close();

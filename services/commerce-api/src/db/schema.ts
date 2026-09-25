@@ -329,3 +329,71 @@ export const catalogueImports = pgTable("catalogue_imports", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   committedAt: timestamp("committed_at", { withTimezone: true }),
 });
+
+// ---- Customers (Milestone 2): phone is the identity, verified by WhatsApp OTP (ADR 0002 R1) ----
+
+export const customerStatus = pgEnum("customer_status", ["active", "blocked"]);
+
+export const customers = pgTable("customers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // E.164, Indian mobiles only for now: +91 followed by 10 digits starting 6–9.
+  phone: text("phone").notNull(),
+  phoneVerifiedAt: timestamp("phone_verified_at", { withTimezone: true }),
+  name: text("name").notNull().default(""),
+  email: text("email"),
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+  status: customerStatus("status").notNull().default("active"),
+  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex("customers_phone_key").on(t.phone),
+  uniqueIndex("customers_email_key").on(t.email),
+  check("customers_phone_format", sql`${t.phone} ~ '^\\+91[6-9][0-9]{9}$'`),
+  check("customers_email_lowercase", sql`${t.email} IS NULL OR ${t.email} = lower(${t.email})`),
+]);
+
+export const otpChannel = pgEnum("otp_channel", ["whatsapp", "email"]);
+
+// One sign-in attempt. Only a hash of the code is stored; codes expire in minutes and allow few guesses.
+export const otpChallenges = pgTable("otp_challenges", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  phone: text("phone").notNull(),
+  channel: otpChannel("channel").notNull(),
+  codeHash: text("code_hash").notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  consumedAt: timestamp("consumed_at", { withTimezone: true }),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("otp_challenges_phone_created_idx").on(t.phone, t.createdAt)]);
+
+export const customerSessions = pgTable("customer_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  customerId: uuid("customer_id").notNull().references(() => customers.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull(),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+}, (t) => [uniqueIndex("customer_sessions_token_hash_key").on(t.tokenHash), index("customer_sessions_customer_idx").on(t.customerId)]);
+
+export const addresses = pgTable("addresses", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  customerId: uuid("customer_id").notNull().references(() => customers.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  line1: text("line1").notNull(),
+  line2: text("line2").notNull().default(""),
+  landmark: text("landmark").notNull().default(""),
+  city: text("city").notNull(),
+  // ISO 3166-2:IN subdivision code without the "IN-" prefix, e.g. "MH", "KA", "DL".
+  stateCode: text("state_code").notNull(),
+  pincode: text("pincode").notNull(),
+  isDefault: boolean("is_default").notNull().default(false),
+  ...timestamps,
+}, (t) => [
+  index("addresses_customer_idx").on(t.customerId),
+  check("addresses_pincode_format", sql`${t.pincode} ~ '^[1-9][0-9]{5}$'`),
+  check("addresses_phone_format", sql`${t.phone} ~ '^\\+91[6-9][0-9]{9}$'`),
+]);

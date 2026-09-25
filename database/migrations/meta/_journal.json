@@ -50,6 +50,13 @@
       "when": 1790333201616,
       "tag": "0006_staff_invites",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790337916034,
+      "tag": "0007_customers_otp_addresses",
+      "breakpoints": true
     }
   ]
 }

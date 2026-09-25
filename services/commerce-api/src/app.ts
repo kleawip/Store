@@ -10,6 +10,7 @@ import type { Database } from "./db/client";
 import { errorHandler, notFoundHandler } from "./errors";
 import { MAX_UPLOAD_BYTES } from "./media/process";
 import type { MediaStorage } from "./media/storage";
+import type { ChannelOtpSender } from "./messaging/otp-senders";
 import { adminAuthRoutes } from "./routes/admin-auth";
 import { adminCampaignRoutes } from "./routes/admin-campaigns";
 import { adminCatalogueRoutes } from "./routes/admin-catalogue";
@@ -17,11 +18,13 @@ import { adminImportRoutes } from "./routes/admin-imports";
 import { adminAccountRoutes, adminStaffRoutes } from "./routes/admin-staff";
 import { adminMediaCollectionRoutes } from "./routes/admin-media-collections";
 import { mediaFileRoutes } from "./routes/media-files";
+import { storeAccountRoutes } from "./routes/store-account";
 import { storeCatalogueRoutes } from "./routes/store-catalogue";
 
 export type AppOptions = {
   db: Database;
   storage: MediaStorage;
+  otpSender: ChannelOtpSender;
   storefrontOrigins: string[];
   /** Mark the admin session cookie Secure (HTTPS only). True everywhere except local HTTP development and tests. */
   cookieSecure?: boolean;
@@ -32,7 +35,7 @@ export type AppOptions = {
   logger?: boolean;
 };
 
-export async function buildApp({ db, storage, storefrontOrigins, cookieSecure = true, rateLimits = true, trustedProxyHops = 0, logger = false }: AppOptions) {
+export async function buildApp({ db, storage, otpSender, storefrontOrigins, cookieSecure = true, rateLimits = true, trustedProxyHops = 0, logger = false }: AppOptions) {
   const app = Fastify({
     genReqId: () => `req_${randomUUID()}`,
     requestIdHeader: false,
@@ -73,6 +76,7 @@ export async function buildApp({ db, storage, storefrontOrigins, cookieSecure = 
     }
   });
   await app.register(storeCatalogueRoutes(db), { prefix: "/v1/store" });
+  await app.register(storeAccountRoutes(db, { otpSender, cookieSecure }), { prefix: "/v1/store" });
   await app.register(adminAuthRoutes(db, { cookieSecure }), { prefix: "/v1/admin/auth" });
   await app.register(adminCatalogueRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminMediaCollectionRoutes(db, storage), { prefix: "/v1/admin" });

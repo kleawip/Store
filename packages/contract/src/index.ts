@@ -27,6 +27,7 @@ export const ErrorCode = z.enum([
   "QUANTITY_EXCEEDS_MAX",
   "PRICE_PENDING",
   "INVALID_OPTION_COMBINATION",
+  "DELIVERY_FAILED",
   "INTERNAL_ERROR",
 ]);
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -213,3 +214,4 @@ export const HomeResponse = z.object({
   featuredProducts: z.array(ProductListItem),
 });
 export type HomeResponse = z.infer<typeof HomeResponse>;
+export * from "./customer";
