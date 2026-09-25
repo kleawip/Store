@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import type { Database } from "./client";
-import { categories, productMedia, products } from "./schema";
+import { categories, collections, inventoryItems, inventoryMovements, productMedia, products } from "./schema";
 
 const demoCataloguePath = fileURLToPath(new URL("../../../../database/seeds/demo/catalogue.json", import.meta.url));
 
@@ -28,8 +28,11 @@ export async function seedDemoCatalogue(db: Database) {
   const catalogue = DemoCatalogue.parse(JSON.parse(await readFile(demoCataloguePath, "utf8")));
 
   await db.transaction(async (tx) => {
+    await tx.delete(collections);
+    await tx.delete(inventoryMovements);
     await tx.delete(productMedia);
-    await tx.delete(products);
+    await tx.delete(products); // cascades options, values, variants and their option links
+    await tx.delete(inventoryItems);
     await tx.delete(categories);
 
     const insertedCategories = await tx

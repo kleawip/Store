@@ -62,6 +62,13 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Did not touch:** `apps/storefront`.
 - **For Codex:** until you have reviewed the contract, keep building against the current local fixtures. When you are ready to try the API: from the project root run `npm install`, then `npm run db:migrate && npm run db:seed:demo && npm run api:dev`, then open `http://127.0.0.1:4000/v1/store/products`. CORS already allows `http://localhost:3000`.
 
+### 2026-09-25 (later): Claude Code
+- **Changed:** catalogue domain schema (migration `0001`): option groups/values, variants (SKU, price/MRP in paise, GST basis points, HSN, pack quantity, **inventory units per sale** for shared vs pre-packed stock), inventory items (on hand / committed / unavailable / incoming, DB-enforced non-negative available), inventory movement ledger, collections, audit events. Pure availability rules in `services/commerce-api/src/domain/availability.ts`. New endpoint `GET /v1/store/products/{slug}`; the product list now derives `priceFrom`/`availability` from variants. Added `docs/api/ADMIN_SCREENS_BRIEF.md` and `docs/research/SHOPIFY_ADMIN_REFERENCE.md`.
+- **Tests:** typecheck clean; 43/43 passing (unit rules + Postgres integration, including duplicate SKU / duplicate combination / MRP < price / negative available all rejected by the database).
+- **Demo data:** the seeded catalogue still has **no variants**, so every product stays `not_for_sale` with pending prices. The priced `DEMO-SKU-A/B/C` fixture exists **only inside tests** (`test/fixtures.ts`).
+- **For Codex:** `ProductDetail` Zod type is exported from `packages/contract`. Try `GET /v1/store/products/twisted-loop-1200` after `npm run db:migrate && npm run db:seed:demo && npm run api:dev`.
+- **Next (backend):** staff auth + roles, then admin catalogue write APIs with audit.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.

@@ -87,3 +87,59 @@ export const ProductListQuery = z.object({
   cursor: z.string().optional(),
 });
 export type ProductListQuery = z.infer<typeof ProductListQuery>;
+
+// §4 GET /v1/store/products/{slug}
+export const OptionValue = z.object({
+  code: z.string(),
+  label: z.string(),
+  swatch: z.string().optional(),
+});
+
+export const OptionGroup = z.object({
+  code: z.string(),
+  label: z.string(),
+  values: z.array(OptionValue),
+});
+
+export const ProductImage = Image.extend({
+  id: z.string(),
+  // The option value this image belongs to, as "optionCode:valueCode", or null when it always shows.
+  optionValue: z.string().nullable(),
+});
+
+export const Variant = z.object({
+  sku: z.string(),
+  options: z.record(z.string(), z.string()),
+  packQuantity: z.number().int().positive(),
+  price: Money.nullable(),
+  mrp: Money.nullable(),
+  unitPrice: Money.nullable(),
+  priceStatus: PriceStatus,
+  availability: Availability,
+  // Present only when availability is "low_stock".
+  stockLeft: z.number().int().nonnegative().optional(),
+  maxOrderQuantity: z.number().int().nonnegative(),
+  imageIds: z.array(z.string()),
+});
+export type Variant = z.infer<typeof Variant>;
+
+export const ProductDetail = z.object({
+  slug: z.string(),
+  title: z.string(),
+  category: z.object({ slug: z.string(), title: z.string() }),
+  detail: z.string(),
+  spec: z.string(),
+  summary: z.string(),
+  images: z.array(ProductImage),
+  optionGroups: z.array(OptionGroup),
+  variants: z.array(Variant),
+  defaultSku: z.string().nullable(),
+  priceFrom: Money.nullable(),
+  priceStatus: PriceStatus,
+  availability: Availability,
+  specifications: z.array(z.object({ label: z.string(), value: z.string() })),
+  contentSections: z.array(z.object({ code: z.string(), title: z.string(), bodyHtml: z.string() })),
+  related: z.array(z.string()),
+  isDemo: z.boolean(),
+});
+export type ProductDetail = z.infer<typeof ProductDetail>;

@@ -1,5 +1,6 @@
 import {
   CategoryListResponse,
+  ProductDetail,
   ProductListQuery,
   ProductListResponse,
   type ProductListItem,
@@ -9,7 +10,8 @@ import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import type { Database } from "../db/client";
 import { categories, productMedia, products } from "../db/schema";
-import { ApiError } from "../errors";
+import { productDetail, productSummaries } from "../catalogue/queries";
+import { ApiError, notFound } from "../errors";
 
 const PUBLIC_CACHE = "public, max-age=60, stale-while-revalidate=300";
 
@@ -67,8 +69,8 @@ export const storeCatalogueRoutes = (db: Database): FastifyPluginAsync => async 
       filters.push(sql`(${products.position}, ${products.slug}) > (${cursor.p}, ${cursor.s})`);
     }
 
-    // Only "featured" ordering exists until variants and prices are approved. Every price is
-    // pending, so price_asc/price_desc would be ties and fall back to this same order.
+    // Only "featured" ordering is implemented. price_asc/price_desc fall back to it until approved
+    // prices exist; a keyset cursor over computed prices lands with the admin price editor.
     const rows = await db
       .select({
         id: products.id,
@@ -98,6 +100,8 @@ export const storeCatalogueRoutes = (db: Database): FastifyPluginAsync => async 
           .orderBy(asc(productMedia.position))
       : [];
 
+    const summaries = await productSummaries(db, pageRows.map((row) => row.id));
+
     const data: ProductListItem[] = pageRows.map((row) => ({
       slug: row.slug,
       title: row.title,
@@ -107,14 +111,20 @@ export const storeCatalogueRoutes = (db: Database): FastifyPluginAsync => async 
       images: media
         .filter((image) => image.productId === row.id)
         .map(({ url, alt, width, height }) => ({ url, alt, width, height })),
-      // No approved variants or prices exist yet (Phase 0), so nothing is purchasable.
-      priceFrom: null,
-      priceStatus: "pending",
-      availability: "not_for_sale",
+      priceFrom: summaries.get(row.id)!.priceFrom,
+      priceStatus: summaries.get(row.id)!.priceFrom ? "approved" : "pending",
+      availability: summaries.get(row.id)!.availability,
       isDemo: row.isDemo,
     }));
 
     reply.header("cache-control", PUBLIC_CACHE);
     return ProductListResponse.parse({ data, page: { nextCursor } });
+  });
+
+  app.get<{ Params: { slug: string } }>("/products/:slug", async (request, reply) => {
+    const detail = await productDetail(db, request.params.slug);
+    if (!detail) throw notFound(`No published product "${request.params.slug}".`);
+    reply.header("cache-control", PUBLIC_CACHE);
+    return ProductDetail.parse(detail);
   });
 };

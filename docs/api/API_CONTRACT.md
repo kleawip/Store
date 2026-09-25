@@ -1,6 +1,6 @@
 # Kleawip commerce API contract — v1 proposal
 
-Status: **Proposed — for review by Codex (frontend) and the project owner. Not approved.** Implemented so far against demo fixtures only: `GET /v1/store/categories` and `GET /v1/store/products` (see §11 and `services/commerce-api/README.md`).
+Status: **Proposed — for review by Codex (frontend) and the project owner. Not approved.** Implemented so far against demo fixtures only: `GET /v1/store/categories`, `GET /v1/store/products` and `GET /v1/store/products/{slug}` (see §11 and `services/commerce-api/README.md`).
 Owner: Claude Code (backend). Prepared 25 September 2026 for Milestone 0 of `FRONTEND_BACKEND_TASKS.md`.
 
 This file fulfils the Milestone 0 backend tasks: proposed backend structure, contract conventions, stable IDs, the product / variant / SKU / inventory / price / offer / campaign model, and server-side money rules. Endpoints for Milestone 1 (catalogue and campaigns) are specified in detail. Later milestones are outlined only, because their behaviour depends on Phase 0 decisions that have not been made yet.
@@ -295,6 +295,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026: `GET /v1/store/products/{slug}` implemented. The product detail additionally carries `detail`, `spec`, `priceFrom`, `priceStatus` and `availability` at product level; `images[].optionValue` is `"optionCode:valueCode"`; `maxOrderQuantity` is the quantity orderable *now* (min of the max and sellable stock). A SKU with a pending price reports `availability: "not_for_sale"`. Additive only. Zod: `ProductDetail` in `packages/contract`.
 - 25 Sep 2026: added §11 answering `docs/phase-0/FRONTEND_DATA_HANDOFF.md`. Additive fields: `badge`, `facets`, `totalCount` on the product list, and `kind` + `href` on search suggestions. `GET /v1/store/categories` and `GET /v1/store/products` are implemented in `services/commerce-api` against demo fixtures.
 
 ---
