@@ -26,6 +26,8 @@ import {
   refunds,
 } from "../db/schema";
 import { invoiceFor } from "../invoices/service";
+import { enqueueNotification } from "../notifications/outbox";
+import { rupees } from "../notifications/templates";
 import { orderTracking } from "../shipping/views";
 import { ApiError, notFound } from "../errors";
 import { PaymentGatewayError, type PaymentGateway } from "../payments/gateway";
@@ -296,6 +298,13 @@ async function capturePayment(tx: Tx, payment: PaymentRow, providerPaymentId: st
     await tx.update(orders).set({ status: "confirmed", confirmedAt: new Date(), closedAt: null, updatedAt: new Date() }).where(eq(orders.id, order.id));
     await removePurchasedFromCart(tx, order);
     await recordAudit(tx, { entityType: "order", entityId: order.id, action: "order.confirmed", actorStaffId: null, after: { payment: providerPaymentId, source } });
+    await enqueueNotification(tx, {
+      event: "order_confirmed",
+      customerId: order.customerId,
+      orderId: order.id,
+      ref: order.id,
+      params: { orderNumber: order.number, total: rupees(order.totalPaise), codBalance: order.codBalancePaise > 0 ? rupees(order.codBalancePaise) : null },
+    });
   };
 
   if (order.status === "pending_payment") return confirm();

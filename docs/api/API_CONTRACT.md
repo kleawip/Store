@@ -580,6 +580,25 @@ Flow: `requested` → `approved` | `rejected` → `received` (inspected, restock
 | `POST /v1/admin/returns/{id}/close { note }` | From `received`, without a refund. |
 | `GET /v1/admin/returns/{id}/credit-note` | Printable HTML credit note. |
 
+### 5.2.4 Milestone 3 step 4: customer notifications (implemented 25 Sep 2026)
+
+An outbox: each message is written in the same transaction as its event, then a worker (every 15 s) sends it with retries after 1 min, 5 min, 30 min, 2 h and 6 h, then marks it `failed`. One message per event and channel, never duplicated. WhatsApp always (to the sign-in phone); email as well when the customer has an email. Staff-recorded returns (RTO, phone) don't message the customer.
+
+| Event | WhatsApp template (to be approved by Meta, "utility") | Body variables |
+| --- | --- | --- |
+| Order confirmed (payment captured) | `kleawip_order_confirmed` | first name, order no., total, COD balance or "-" |
+| First courier movement | `kleawip_order_shipped` | first name, order no., courier, AWB, tracking URL |
+| Out for delivery | `kleawip_out_for_delivery` | first name, order no., COD balance or "-" |
+| Delivered | `kleawip_order_delivered` | first name, order no. |
+| Staff cancellation | `kleawip_order_cancelled` | first name, order no., refund amount or "-" |
+| Customer return approved / rejected / refunded | `kleawip_return_approved` / `_rejected` / `_refunded` | first name, return no., order no., refund or rejection reason |
+
+Zod: `AdminNotification`, `AdminNotificationListQuery`; **additive** `AdminOrderDetail.notifications[]` (recipient masked).
+- `GET /v1/admin/notifications?status=pending|sent|failed|skipped` (`orders.read`).
+- `POST /v1/admin/notifications/{id}/retry` (`orders.manage`): failed or skipped messages only (404 otherwise).
+
+Development writes messages to `services/commerce-api/.data/notification-outbox.log` (git-ignored). A channel with no configured provider is marked `skipped` (e.g. email without `RESEND_API_KEY` in production).
+
 ### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
 
 These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
@@ -652,6 +671,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026 (M3 step 4): customer notifications outbox (WhatsApp templates + email, retries, admin list/retry); `AdminOrderDetail.notifications` (additive) (§5.2.4). Milestone 3 backend complete.
 - 25 Sep 2026 (M3 step 3): returns (customer requests within 7 days of delivery, staff approve/reject/receive/refund/close, RTO returns), restocking, GST credit notes; `AdminOrderDetail.returns` (additive) (§5.2.3).
 - 25 Sep 2026 (M3 step 2): shipments (book/retry/pickup/cancel), courier tracking webhook, GST invoices with seller details; `Order.tracking` + `Order.invoice` (additive); error code `COURIER_UNAVAILABLE` (§5.2.2).
 - 25 Sep 2026 (M3 step 1): admin fulfilment steps, staff cancellation with auto-refund, gateway/cash refunds, retry, resolve-attention; `Order.fulfilmentStatus` + `Order.refundedTotal` (additive) (§5.2.1).

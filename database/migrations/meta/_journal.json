@@ -113,6 +113,13 @@
       "when": 1790352829447,
       "tag": "0015_returns_credit_notes",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790353227641,
+      "tag": "0016_notifications_outbox",
+      "breakpoints": true
     }
   ]
 }

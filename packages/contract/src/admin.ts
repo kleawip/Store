@@ -679,6 +679,7 @@ export const AdminOrderDetail = z.object({
   shipments: z.array(AdminShipment),
   invoice: AdminInvoiceSummary.nullable(),
   returns: z.array(z.lazy(() => AdminReturn)),
+  notifications: z.array(z.lazy(() => AdminNotification)),
 });
 
 const Gstin = z.string().trim().toUpperCase().regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, "Enter a valid 15-character GSTIN.");
@@ -759,3 +760,25 @@ export const ReturnRefund = z.object({
   note: z.string().trim().max(300).nullable().default(null),
 });
 export const ReturnClose = z.object({ note: z.string().trim().min(3).max(500) });
+
+// ---- Milestone 3 step 4: customer notifications ----
+
+export const NotificationStatus = z.enum(["pending", "sent", "failed", "skipped"]);
+export const AdminNotification = z.object({
+  id: z.string(),
+  orderId: z.string().nullable(),
+  event: z.string(),
+  channel: z.enum(["whatsapp", "email"]),
+  // Masked (last 4 digits / first letter of the email).
+  recipient: z.string(),
+  status: NotificationStatus,
+  attempts: z.number().int(),
+  lastError: z.string().nullable(),
+  sentAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+export const AdminNotificationListQuery = z.object({
+  status: NotificationStatus.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});

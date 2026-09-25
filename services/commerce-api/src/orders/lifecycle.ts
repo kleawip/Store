@@ -7,6 +7,8 @@ import { recordAudit } from "../audit";
 import type { Database } from "../db/client";
 import { orders, payments, refunds, shipments, staffUsers } from "../db/schema";
 import { cancelInvoice } from "../invoices/service";
+import { enqueueNotification } from "../notifications/outbox";
+import { rupees } from "../notifications/templates";
 import { ApiError, notFound } from "../errors";
 import { PaymentGatewayError, type PaymentGateway } from "../payments/gateway";
 import { release, type Tx } from "./service";
@@ -185,6 +187,13 @@ export async function staffCancelOrder(db: Database, gateway: PaymentGateway, or
       ? await recordRefunds(tx, order, { amountPaise: money.onlineRefundable, method: "gateway", reason: `Order cancelled: ${reason}`, note: null }, actorStaffId)
       : [];
     await recordAudit(tx, { entityType: "order", entityId: order.id, action: "order.cancelled_by_staff", actorStaffId, after: { reason, refundedOnlinePaise: money.onlineRefundable } });
+    await enqueueNotification(tx, {
+      event: "order_cancelled",
+      customerId: order.customerId,
+      orderId: order.id,
+      ref: order.id,
+      params: { orderNumber: order.number, refund: money.onlineRefundable > 0 ? rupees(money.onlineRefundable) : null },
+    });
     return ids;
   });
   await sendPendingRefunds(db, gateway, refundIds);

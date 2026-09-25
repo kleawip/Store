@@ -200,6 +200,12 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Open with the client:** return window (7 days), which reasons are allowed, whether shipping is refunded, who pays return shipping, reverse-pickup via Shiprocket (not built), credit note format with the accountant.
 - **Next:** step 4 notifications (order confirmed, shipped, delivered, return/refund updates by WhatsApp/email with an outbox and retries).
 
+### 2026-09-25 — Claude Code (Milestone 3 step 4: customer notifications — Milestone 3 backend complete)
+- **Changed:** `services/`, `database/` (migration 0016), `packages/contract` (additive), API_CONTRACT §5.2.4. Transactional outbox for customer messages: order confirmed, shipped, out for delivery, delivered, staff cancellation (with refund amount), and customer return approved/rejected/refunded. WhatsApp templates + email (Resend), a 15 s worker with lease + `SKIP LOCKED`, exponential backoff (5 retries), then `failed`. Admin can list messages and retry failed/skipped ones. Development writes to `.data/notification-outbox.log`.
+- **Verification:** backend typecheck, 266 tests and 3 contract tests passed; dev DB migrated; admin app typechecks. One earlier full run stalled on 5 tests in other files; I couldn't reproduce it (the rerun and those files alone pass). Watch for it.
+- **Client actions:** submit the 8 WhatsApp "utility" templates (names and variables in §5.2.4) in the client's WhatsApp Business account; verify the email sending domain in Resend; approve the message wording (`src/notifications/templates.ts`).
+- **Next (Milestone 4 candidates):** discounts/coupons, reports (sales, GST summary export), abandoned-cart reminders, Shiprocket reverse pickup, COD remittance reconciliation.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a git repository on branch `main`, pushed to **https://github.com/kleawip/Store** (remote `origin`, currently **public** for the demo; make it private before real client data or keys exist). The owner pushes; agents commit locally and `git pull --rebase origin main` only when told the remote moved.

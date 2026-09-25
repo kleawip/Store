@@ -732,3 +732,32 @@ export const creditNotes = pgTable("credit_notes", {
   document: jsonb("document").notNull(),
   issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("credit_notes_number_key").on(t.number), uniqueIndex("credit_notes_return_key").on(t.returnId)]);
+
+// ---- Customer notifications outbox (Milestone 3 step 4). Written in the same transaction as the event, sent by a
+// background worker with retries, so a message is never lost and never sent twice for the same event. ----
+
+export const notificationStatus = pgEnum("notification_status", ["pending", "sent", "failed", "skipped"]);
+export const notificationChannel = pgEnum("notification_channel", ["whatsapp", "email"]);
+
+export const notifications = pgTable("notifications", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  customerId: uuid("customer_id").notNull().references(() => customers.id, { onDelete: "cascade" }),
+  orderId: uuid("order_id").references(() => orders.id, { onDelete: "cascade" }),
+  event: text("event").notNull(),
+  channel: notificationChannel("channel").notNull(),
+  recipient: text("recipient").notNull(),
+  params: jsonb("params").notNull(),
+  // One message per event and channel, e.g. "order_shipped:<orderId>:whatsapp".
+  dedupeKey: text("dedupe_key").notNull(),
+  status: notificationStatus("status").notNull().default("pending"),
+  attempts: integer("attempts").notNull().default(0),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
+  lastError: text("last_error"),
+  providerMessageId: text("provider_message_id"),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex("notifications_dedupe_key").on(t.dedupeKey),
+  index("notifications_due_idx").on(t.status, t.nextAttemptAt),
+  index("notifications_order_idx").on(t.orderId),
+]);

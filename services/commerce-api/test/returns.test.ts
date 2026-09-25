@@ -2,7 +2,7 @@ import { PlaceOrderResponse, Problem } from "@kleawip/contract";
 import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { inventoryItems, shipments, variants } from "../src/db/schema";
+import { inventoryItems, notifications, shipments, variants } from "../src/db/schema";
 import { seedDemoCatalogue } from "../src/db/seed-demo";
 import { financialYear } from "../src/invoices/service";
 import { addVariantFixture } from "./fixtures";
@@ -134,6 +134,8 @@ describe("staff handling", () => {
     expect((await customer.call("GET", `/v1/store/orders/${order.id}/returns`)).json().data[0]).toMatchObject({ status: "rejected", rejectionReason: "Used item" });
     expect(problem(await owner.request("POST", `/v1/admin/returns/${ret.id}/approve`, {})).errors![0]!.code).toBe("invalid_transition");
     expect((await customer.call("GET", `/v1/store/orders/${order.id}/returns/eligibility`)).json().lines[0].returnableQuantity).toBe(2);
+    const [message] = await ctx.db.select().from(notifications).where(eq(notifications.event, "return_update"));
+    expect(message!.params).toMatchObject({ returnStatus: "rejected", detail: "Used item" });
   });
 
   it("RTO parcel: staff record the return; partial COD refunds only what was paid online", async () => {
@@ -157,6 +159,8 @@ describe("staff handling", () => {
     expect(problem(await owner.request("POST", `/v1/admin/returns/${ret.id}/refund`, { method: "gateway" })).errors![0]!.code).toBe("exceeds_refundable");
     const refunded = (await owner.request("POST", `/v1/admin/returns/${ret.id}/refund`, { method: "gateway", amountPaise: order.payNow.amount })).json();
     expect(refunded).toMatchObject({ status: "refunded", refundedTotal: { amount: order.payNow.amount } });
+    // Staff-recorded returns don't message the customer.
+    expect(await ctx.db.select().from(notifications).where(eq(notifications.event, "return_update"))).toHaveLength(0);
   });
 
   it("close without refund; staff returns only after dispatch; permissions", async () => {

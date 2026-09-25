@@ -12,6 +12,8 @@ import { ApiError } from "../errors";
 import { issueInvoice } from "../invoices/service";
 import { CANCELLABLE_FULFILMENT, invalid, lockedOrder } from "../orders/lifecycle";
 import type { Tx } from "../orders/service";
+import { enqueueNotification } from "../notifications/outbox";
+import { rupees } from "../notifications/templates";
 import { getSeller } from "../settings/service";
 import { ShippingRejectedError, ShippingUnavailableError, trackingUrlFor, type ShipmentRequest, type ShippingProvider } from "./provider";
 
@@ -344,6 +346,17 @@ export async function applyTrackingUpdate(db: Database, provider: string, update
     await tx.update(shipments).set(patch).where(eq(shipments.id, shipment!.id));
     await tx.update(orders).set(orderPatch).where(eq(orders.id, order.id));
     await recordAudit(tx, { entityType: "order", entityId: order.id, action: `shipment.${mapped}`, actorStaffId: null, before: { status: current }, after: { status: mapped, courierStatus: update.courierStatus } });
+    const notice = ({ in_transit: "order_shipped", out_for_delivery: "order_out_for_delivery", delivered: "order_delivered" } as const)[mapped as "in_transit" | "out_for_delivery" | "delivered"];
+    if (notice) {
+      const codDue = order.paymentMethod === "partial_cod" && notice !== "order_delivered" ? rupees(order.codBalancePaise) : null;
+      await enqueueNotification(tx, {
+        event: notice,
+        customerId: order.customerId,
+        orderId: order.id,
+        ref: order.id,
+        params: { orderNumber: order.number, courier: shipment!.courierName, awb: shipment!.awb, trackingUrl: trackingUrlFor(shipment!.provider, shipment!.awb), codBalance: codDue },
+      });
+    }
     return "applied" as const;
   });
 }

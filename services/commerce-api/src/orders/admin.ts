@@ -6,6 +6,7 @@ import { customers, orderLines, orders, payments } from "../db/schema";
 import { notFound } from "../errors";
 import { invoiceFor } from "../invoices/service";
 import { adminShipments } from "../shipping/views";
+import { orderNotifications } from "../notifications/outbox";
 import { orderReturns } from "../returns/service";
 import { refundList } from "./lifecycle";
 import { orderView } from "./service";
@@ -88,6 +89,7 @@ export async function adminOrder(db: Database, id: string) {
     shipments: await adminShipments(db, id),
     invoice: await invoiceSummary(db, id),
     returns: await orderReturns(db, id),
+    notifications: await orderNotifications(db, id),
   };
 }
 

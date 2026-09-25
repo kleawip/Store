@@ -31,6 +31,8 @@ const Env = z.object({
   EMAIL_FROM: z.string().default("Kleawip <no-reply@kleawip.com>"),
   // Development only: where codes are written when no provider is configured.
   OTP_OUTBOX_FILE: z.string().default(".data/otp-outbox.log"),
+  // Development only: where customer notifications are written when no provider is configured.
+  NOTIFICATION_OUTBOX_FILE: z.string().default(".data/notification-outbox.log"),
   // Shiprocket (ADR 0002 R2). Without credentials, development uses a mock courier; production has none.
   SHIPROCKET_EMAIL: z.string().optional(),
   SHIPROCKET_PASSWORD: z.string().optional(),

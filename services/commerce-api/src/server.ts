@@ -6,6 +6,8 @@ import { DEFAULT_COMMERCE_SETTINGS } from "./checkout/settings";
 import { MockShippingProvider, ShiprocketProvider } from "./shipping/provider";
 import { DevGateway, RazorpayGateway } from "./payments/gateway";
 import { expireUnpaidOrders } from "./orders/service";
+import { deliverDueNotifications } from "./notifications/outbox";
+import { ChannelNotificationSender, fileOutboxChannel, resendEmailChannel, whatsAppCloudChannel } from "./notifications/senders";
 import { ChannelOtpSender, FileOutboxOtpSender, ResendEmailOtpSender, WhatsAppCloudOtpSender, type OtpSender } from "./messaging/otp-senders";
 
 const config = loadConfig();
@@ -56,6 +58,25 @@ const app = await buildApp({
   logger: true,
 });
 
+// Customer notifications: real channels when configured; in development, a local git-ignored file.
+const notifier = new ChannelNotificationSender({
+  whatsapp: config.WHATSAPP_PHONE_NUMBER_ID && config.WHATSAPP_ACCESS_TOKEN
+    ? whatsAppCloudChannel({ phoneNumberId: config.WHATSAPP_PHONE_NUMBER_ID, accessToken: config.WHATSAPP_ACCESS_TOKEN, languageCode: config.WHATSAPP_TEMPLATE_LANGUAGE, graphVersion: config.WHATSAPP_GRAPH_VERSION })
+    : isProduction ? undefined : fileOutboxChannel(config.NOTIFICATION_OUTBOX_FILE),
+  email: config.RESEND_API_KEY
+    ? resendEmailChannel({ apiKey: config.RESEND_API_KEY, from: config.EMAIL_FROM })
+    : isProduction ? undefined : fileOutboxChannel(config.NOTIFICATION_OUTBOX_FILE),
+});
+let delivering = false;
+const notificationTimer = setInterval(() => {
+  if (delivering) return;
+  delivering = true;
+  deliverDueNotifications(db, notifier)
+    .catch((error) => app.log.error({ err: error }, "notification delivery failed"))
+    .finally(() => { delivering = false; });
+}, 15_000);
+notificationTimer.unref();
+
 // Release stock held by unpaid orders once their payment window lapses (every minute).
 const expiryTimer = setInterval(() => {
   expireUnpaidOrders(db).catch((error) => app.log.error({ err: error }, "order expiry failed"));
@@ -64,6 +85,7 @@ expiryTimer.unref();
 
 app.addHook("onClose", async () => {
   clearInterval(expiryTimer);
+  clearInterval(notificationTimer);
   await close();
 });
 for (const signal of ["SIGINT", "SIGTERM"] as const) {

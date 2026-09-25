@@ -10,6 +10,8 @@ import { creditNotes, customers, inventoryItems, inventoryMovements, invoices, o
 import { splitGst } from "../domain/tax";
 import { notFound } from "../errors";
 import { nextInFinancialYear, type InvoiceDocument } from "../invoices/service";
+import { enqueueNotification } from "../notifications/outbox";
+import { rupees } from "../notifications/templates";
 import { invalid, lockedOrder, recordRefunds, sendPendingRefunds } from "../orders/lifecycle";
 import type { Tx } from "../orders/service";
 import type { PaymentGateway } from "../payments/gateway";
@@ -223,20 +225,22 @@ export async function staffCreateReturn(
 
 export async function approveReturn(db: Database, returnId: string, note: string | null, actorStaffId: string) {
   await db.transaction(async (tx) => {
-    const { ret } = await lockForAction(tx, returnId);
+    const { order, ret } = await lockForAction(tx, returnId);
     requireStatus(ret, ["requested"], "Only new return requests can be approved.");
     await tx.update(returns).set({ status: "approved", staffNote: note, decidedByStaffId: actorStaffId, decidedAt: new Date(), updatedAt: new Date() }).where(eq(returns.id, ret.id));
     await recordAudit(tx, { entityType: "order", entityId: ret.orderId, action: "return.approved", actorStaffId, after: { returnId: ret.id }, comment: note ?? undefined });
+    await notifyReturn(tx, order, ret, "approved", {});
   });
 }
 
 export async function rejectReturn(db: Database, returnId: string, reason: string, actorStaffId: string) {
   await db.transaction(async (tx) => {
-    const { ret } = await lockForAction(tx, returnId);
+    const { order, ret } = await lockForAction(tx, returnId);
     requireStatus(ret, ["requested"], "Only new return requests can be rejected.");
     const now = new Date();
     await tx.update(returns).set({ status: "rejected", rejectionReason: reason, decidedByStaffId: actorStaffId, decidedAt: now, closedAt: now, updatedAt: now }).where(eq(returns.id, ret.id));
     await recordAudit(tx, { entityType: "order", entityId: ret.orderId, action: "return.rejected", actorStaffId, after: { returnId: ret.id }, comment: reason });
+    await notifyReturn(tx, order, ret, "rejected", { detail: reason });
   });
 }
 
@@ -283,6 +287,7 @@ export async function refundReturn(
     await issueCreditNote(tx, order, ret, lines);
     await tx.update(returns).set({ status: "refunded", closedAt: new Date(), updatedAt: new Date() }).where(eq(returns.id, ret.id));
     await recordAudit(tx, { entityType: "order", entityId: order.id, action: "return.refunded", actorStaffId, after: { returnId: ret.id, amountPaise, method: input.method } });
+    await notifyReturn(tx, order, ret, "refunded", { refund: rupees(amountPaise) });
     return ids;
   });
   await sendPendingRefunds(db, gateway, refundIds);
@@ -295,6 +300,18 @@ export async function closeReturn(db: Database, returnId: string, note: string, 
     requireStatus(ret, ["received"], "Only received returns can be closed without a refund.");
     await tx.update(returns).set({ status: "closed", staffNote: note, closedAt: new Date(), updatedAt: new Date() }).where(eq(returns.id, ret.id));
     await recordAudit(tx, { entityType: "order", entityId: ret.orderId, action: "return.closed", actorStaffId, after: { returnId: ret.id }, comment: note });
+  });
+}
+
+/** Staff-recorded returns (RTO, phone) aren't announced: the customer didn't ask. Only customer requests get updates. */
+async function notifyReturn(tx: Tx, order: typeof orders.$inferSelect, ret: ReturnRow, status: "approved" | "rejected" | "refunded", extra: { detail?: string; refund?: string }) {
+  if (ret.source !== "customer") return;
+  await enqueueNotification(tx, {
+    event: "return_update",
+    customerId: order.customerId,
+    orderId: order.id,
+    ref: `${ret.id}:${status}`,
+    params: { orderNumber: order.number, returnNumber: ret.number, returnStatus: status, ...extra },
   });
 }
 

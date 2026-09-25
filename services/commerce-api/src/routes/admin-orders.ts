@@ -1,4 +1,4 @@
-import { AdminOrderDetail, AdminOrderListItem, AdminOrderListQuery, AttentionResolve, FulfilmentStep, OrderCancel, RefundCreate, ShipmentBook } from "@kleawip/contract";
+import { AdminNotification, AdminNotificationListQuery, AdminOrderDetail, AdminOrderListItem, AdminOrderListQuery, AttentionResolve, FulfilmentStep, OrderCancel, RefundCreate, ShipmentBook } from "@kleawip/contract";
 import type { FastifyPluginAsync, FastifyReply } from "fastify";
 import { z } from "zod";
 import { authorize, staffOf } from "../auth/guard";
@@ -11,6 +11,7 @@ import { invoiceFor, type InvoiceDocument } from "../invoices/service";
 import { renderInvoiceHtml } from "../invoices/render";
 import type { PaymentGateway } from "../payments/gateway";
 import type { ShippingProvider } from "../shipping/provider";
+import { listNotifications, retryNotification } from "../notifications/outbox";
 import { bookShipment, cancelShipment, requestPickup, retryBooking } from "../shipping/shipments";
 
 export const adminOrderRoutes = (db: Database, gateway: PaymentGateway, shipping: ShippingProvider | null, settings: CommerceSettings): FastifyPluginAsync => async (app) => {
@@ -73,6 +74,17 @@ export const adminOrderRoutes = (db: Database, gateway: PaymentGateway, shipping
   app.post<IdParams>("/orders/:id/shipment/cancel", manage, async (request) => {
     await cancelShipment(db, shipping, request.params.id, staffOf(request).staffId);
     return detail(request.params.id);
+  });
+
+  // ---- Customer notifications (WhatsApp/email outbox) ----
+  app.get("/notifications", read, async (request) => ({
+    data: z.array(AdminNotification).parse(await listNotifications(db, AdminNotificationListQuery.parse(request.query))),
+  }));
+  app.post<IdParams>("/notifications/:id/retry", manage, async (request) => {
+    if (!/^[0-9a-f-]{36}$/i.test(request.params.id) || !(await retryNotification(db, request.params.id))) {
+      throw notFound("No failed or skipped message with that id.");
+    }
+    return { status: "pending" };
   });
 
   // Printable GST invoice (HTML; staff print it into the parcel).
