@@ -1,0 +1,20 @@
+{
+  "name": "kleawip-platform",
+  "private": true,
+  "description": "Backend workspace root. apps/storefront is intentionally NOT a workspace member and keeps its own install.",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "api:dev": "npm run dev -w @kleawip/commerce-api",
+    "api:test": "npm test -w @kleawip/commerce-api && npm test -w @kleawip/contract",
+    "api:typecheck": "npm run typecheck -w @kleawip/contract && npm run typecheck -w @kleawip/commerce-api",
+    "db:generate": "npm run db:generate -w @kleawip/commerce-api",
+    "db:migrate": "npm run db:migrate -w @kleawip/commerce-api",
+    "db:seed:demo": "npm run db:seed:demo -w @kleawip/commerce-api"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

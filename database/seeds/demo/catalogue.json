@@ -1,0 +1,317 @@
+{
+  "_note": "DEMO FIXTURE. Copied from apps/storefront/src/data/catalogue.json on 2026-09-25. Not client-approved: no prices, SKUs or stock. Alt text is placeholder.",
+  "categories": [
+    {
+      "slug": "automotive",
+      "title": "Automotive Care",
+      "note": "Wash, dry & detail",
+      "tone": "automotive"
+    },
+    {
+      "slug": "bath",
+      "title": "Bath Towels",
+      "note": "Everyday softness",
+      "tone": "bath"
+    },
+    {
+      "slug": "household",
+      "title": "Household Cleaning",
+      "note": "Clean surfaces with ease",
+      "tone": "household"
+    },
+    {
+      "slug": "personal",
+      "title": "Personal Care",
+      "note": "Gentle daily essentials",
+      "tone": "personal"
+    },
+    {
+      "slug": "pet",
+      "title": "Pet Care",
+      "note": "For your companion",
+      "tone": "pet"
+    }
+  ],
+  "products": [
+    {
+      "slug": "makeup-removal-towel",
+      "title": "Makeup Removal Towel",
+      "detail": "25 × 25 cm · Reusable face cleaning cloth",
+      "category": "personal",
+      "spec": "25 × 25 cm",
+      "position": 0,
+      "images": [
+        {
+          "url": "/products/makeup-removal-towel-1.webp",
+          "alt": "Makeup Removal Towel, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/makeup-removal-towel-2.webp",
+          "alt": "Makeup Removal Towel, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/makeup-removal-towel-3.webp",
+          "alt": "Makeup Removal Towel, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "hair-wrap-towel",
+      "title": "Microfiber Hair Wrap Towel",
+      "detail": "Quick-dry hair turban",
+      "category": "bath",
+      "spec": "Hair wrap",
+      "position": 1,
+      "images": [
+        {
+          "url": "/products/hair-wrap-towel-1.webp",
+          "alt": "Microfiber Hair Wrap Towel, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/hair-wrap-towel-2.webp",
+          "alt": "Microfiber Hair Wrap Towel, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/hair-wrap-towel-3.webp",
+          "alt": "Microfiber Hair Wrap Towel, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "pet-towel",
+      "title": "Microfiber Pet Towel",
+      "detail": "140 × 70 cm · Drying towel",
+      "category": "pet",
+      "spec": "140 × 70 cm",
+      "position": 2,
+      "images": [
+        {
+          "url": "/products/pet-towel-1.webp",
+          "alt": "Microfiber Pet Towel, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/pet-towel-2.webp",
+          "alt": "Microfiber Pet Towel, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/pet-towel-3.webp",
+          "alt": "Microfiber Pet Towel, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "cleaning-gloves",
+      "title": "Microfiber Cleaning Gloves",
+      "detail": "Automotive car washing mitt",
+      "category": "automotive",
+      "spec": "Washing mitt",
+      "position": 3,
+      "images": [
+        {
+          "url": "/products/cleaning-gloves-1.webp",
+          "alt": "Microfiber Cleaning Gloves, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/cleaning-gloves-2.webp",
+          "alt": "Microfiber Cleaning Gloves, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/cleaning-gloves-3.webp",
+          "alt": "Microfiber Cleaning Gloves, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "twisted-loop-1200",
+      "title": "Twisted Loop Drying Towel",
+      "detail": "1200 GSM · Automotive car drying towel",
+      "category": "automotive",
+      "spec": "1200 GSM",
+      "position": 4,
+      "images": [
+        {
+          "url": "/products/twisted-loop-1200-1.webp",
+          "alt": "Twisted Loop Drying Towel, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/twisted-loop-1200-2.webp",
+          "alt": "Twisted Loop Drying Towel, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/twisted-loop-1200-3.webp",
+          "alt": "Twisted Loop Drying Towel, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "twisted-loop-800",
+      "title": "Twisted Loop Drying Towel",
+      "detail": "800 GSM · 50 × 80 cm",
+      "category": "automotive",
+      "spec": "800 GSM",
+      "position": 5,
+      "images": [
+        {
+          "url": "/products/twisted-loop-800-1.webp",
+          "alt": "Twisted Loop Drying Towel, photo 1",
+          "width": 604,
+          "height": 900
+        },
+        {
+          "url": "/products/twisted-loop-800-2.webp",
+          "alt": "Twisted Loop Drying Towel, photo 2",
+          "width": 604,
+          "height": 900
+        },
+        {
+          "url": "/products/twisted-loop-800-3.webp",
+          "alt": "Twisted Loop Drying Towel, photo 3",
+          "width": 604,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "coral-cloth",
+      "title": "Coral Microfiber Cleaning Cloth",
+      "detail": "400–600 GSM · Automotive detailing towel",
+      "category": "automotive",
+      "spec": "400–600 GSM",
+      "position": 6,
+      "images": [
+        {
+          "url": "/products/coral-cloth-1.webp",
+          "alt": "Coral Microfiber Cleaning Cloth, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/coral-cloth-2.webp",
+          "alt": "Coral Microfiber Cleaning Cloth, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/coral-cloth-3.webp",
+          "alt": "Coral Microfiber Cleaning Cloth, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "warp-300-400",
+      "title": "Warp Microfiber Cleaning Cloth",
+      "detail": "300–400 GSM · 40 × 60 cm",
+      "category": "household",
+      "spec": "300–400 GSM",
+      "position": 7,
+      "images": [
+        {
+          "url": "/products/warp-300-400-1.webp",
+          "alt": "Warp Microfiber Cleaning Cloth, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/warp-300-400-2.webp",
+          "alt": "Warp Microfiber Cleaning Cloth, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/warp-300-400-3.webp",
+          "alt": "Warp Microfiber Cleaning Cloth, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "weft-460",
+      "title": "Weft Microfiber Cleaning Cloth",
+      "detail": "460 GSM · 40 × 60 cm",
+      "category": "household",
+      "spec": "460 GSM",
+      "position": 8,
+      "images": [
+        {
+          "url": "/products/weft-460-1.webp",
+          "alt": "Weft Microfiber Cleaning Cloth, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/weft-460-2.webp",
+          "alt": "Weft Microfiber Cleaning Cloth, photo 2",
+          "width": 604,
+          "height": 900
+        },
+        {
+          "url": "/products/weft-460-3.webp",
+          "alt": "Weft Microfiber Cleaning Cloth, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    },
+    {
+      "slug": "weft-400",
+      "title": "Weft Microfiber Cleaning Cloth",
+      "detail": "400 GSM · 40 × 60 cm",
+      "category": "household",
+      "spec": "400 GSM",
+      "position": 9,
+      "images": [
+        {
+          "url": "/products/weft-400-1.webp",
+          "alt": "Weft Microfiber Cleaning Cloth, photo 1",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/weft-400-2.webp",
+          "alt": "Weft Microfiber Cleaning Cloth, photo 2",
+          "width": 900,
+          "height": 900
+        },
+        {
+          "url": "/products/weft-400-3.webp",
+          "alt": "Weft Microfiber Cleaning Cloth, photo 3",
+          "width": 900,
+          "height": 900
+        }
+      ]
+    }
+  ]
+}

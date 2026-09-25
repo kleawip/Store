@@ -1,0 +1,6 @@
+.codex/
+.claude/
+.agents/
+graphify-out/
+AGENTS.md
+CLAUDE.md

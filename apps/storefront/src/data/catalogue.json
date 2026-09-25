@@ -1,0 +1,12 @@
+[
+  {"id":"makeup-removal-towel","title":"Makeup Removal Towel","detail":"25 × 25 cm · Reusable face cleaning cloth","category":"personal","spec":"25 × 25 cm","images":["Picture-10.png","Pic-36.png","Pic-18.png"]},
+  {"id":"hair-wrap-towel","title":"Microfiber Hair Wrap Towel","detail":"Quick-dry hair turban","category":"bath","spec":"Hair wrap","images":["bath-towel-orange.png","bath-towel-baby-blue.png","bath-towel-green.png"]},
+  {"id":"pet-towel","title":"Microfiber Pet Towel","detail":"140 × 70 cm · Drying towel","category":"pet","spec":"140 × 70 cm","images":["Pic-41.png","Pic-2.png","Pic-51-1.png"]},
+  {"id":"cleaning-gloves","title":"Microfiber Cleaning Gloves","detail":"Automotive car washing mitt","category":"automotive","spec":"Washing mitt","images":["Stacked-Kleawip-Glove.png","Orange-Kleawip-Glove.png","Blue-Kleawip-Glove.png"]},
+  {"id":"twisted-loop-1200","title":"Twisted Loop Drying Towel","detail":"1200 GSM · Automotive car drying towel","category":"automotive","spec":"1200 GSM","images":["1200gsm-2-colors.png","1200gsm-blue.png","1200gsm-green.png"]},
+  {"id":"twisted-loop-800","title":"Twisted Loop Drying Towel","detail":"800 GSM · 50 × 80 cm","category":"automotive","spec":"800 GSM","images":["Picture-21.png","Picture-22.png","Picture-25.png"]},
+  {"id":"coral-cloth","title":"Coral Microfiber Cleaning Cloth","detail":"400–600 GSM · Automotive detailing towel","category":"automotive","spec":"400–600 GSM","images":["bath-towel-green.png","Bath-towel-navy-blue.png","bath-towel-orange.png"]},
+  {"id":"warp-300-400","title":"Warp Microfiber Cleaning Cloth","detail":"300–400 GSM · 40 × 60 cm","category":"household","spec":"300–400 GSM","images":["Picture-4.png","Picture-19.png","Picture-16.png"]},
+  {"id":"weft-460","title":"Weft Microfiber Cleaning Cloth","detail":"460 GSM · 40 × 60 cm","category":"household","spec":"460 GSM","images":["Copy-of-Picture-18.png","Copy-of-Picture-26.png","Copy-of-Picture-13.png"]},
+  {"id":"weft-400","title":"Weft Microfiber Cleaning Cloth","detail":"400 GSM · 40 × 60 cm","category":"household","spec":"400 GSM","images":["Copy-of-Picture-11.png","Copy-of-Picture-13.png","Copy-of-Picture-12.png"]}
+]

@@ -1,0 +1,21 @@
+{
+  "name": "@kleawip/contract",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SHARED between frontend (Codex) and backend (Claude Code). Zod schemas and types for docs/api/API_CONTRACT.md. Changes follow the contract change process.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.2"
+  }
+}

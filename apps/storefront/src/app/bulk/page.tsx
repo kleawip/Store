@@ -1,0 +1,7 @@
+import Link from "next/link";
+import { ArrowRight, Boxes, ClipboardList, Mail, PackageCheck } from "lucide-react";
+
+export const metadata = { title: "Bulk enquiries" };
+export default function BulkPage() {
+  return <div className="page-width inner-page business-page"><span className="section-overline">KLEAWIP FOR BUSINESS</span><h1>Better buying for bigger needs.</h1><p className="business-lead">Whether you are stocking a workshop, retail operation or professional team, tell Kleawip what you need and start a direct conversation.</p><div className="business-steps"><div><Boxes/><strong>Explore the range</strong><p>Find the product types and specifications suited to your use.</p></div><div><ClipboardList/><strong>Share your requirements</strong><p>Send expected quantities and any packaging or delivery needs.</p></div><div><PackageCheck/><strong>Review a tailored response</strong><p>Kleawip can confirm availability and commercial terms directly.</p></div></div><div className="business-cta"><div><span className="section-overline">START AN ENQUIRY</span><h2>Let’s talk about your requirements.</h2><p>Online bulk checkout, minimum quantities and tiered pricing are still being defined. Until approved, enquiries go to the Kleawip team.</p></div><a className="button button-primary" href="mailto:sales@kleawip.com?subject=Kleawip%20bulk%20enquiry">Email Kleawip <Mail size={18}/></a></div><Link className="inline-link" href="/shop">Browse products first <ArrowRight size={17}/></Link></div>;
+}
