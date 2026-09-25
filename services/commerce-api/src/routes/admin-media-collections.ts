@@ -10,7 +10,12 @@ import {
   ProductMediaAttach,
   ProductMediaOrder,
   ProductMediaUpdate,
+  AdminProductVideo,
+  ProductVideoInput,
+  ProductVideoUpdate,
+  VideoAsset,
 } from "@kleawip/contract";
+import { z } from "zod";
 import type { FastifyPluginAsync } from "fastify";
 import { authorize, staffOf } from "../auth/guard";
 import { adminProduct } from "../catalogue/admin-service";
@@ -37,6 +42,18 @@ import {
   uploadAsset,
 } from "../media/service";
 import type { MediaStorage } from "../media/storage";
+import { MAX_VIDEO_BYTES } from "../media/video";
+import {
+  createProductVideo,
+  deleteProductVideo,
+  deleteVideoAsset,
+  listProductVideos,
+  listVideoAssets,
+  reorderProductVideos,
+  setProductVideoStatus,
+  updateProductVideo,
+  uploadVideo,
+} from "../media/videos";
 
 type IdParams = { Params: { id: string } };
 type ProductMediaParams = { Params: { id: string; mediaId: string } };
@@ -85,6 +102,28 @@ export const adminMediaCollectionRoutes = (db: Database, storage: MediaStorage):
     return reply.status(duplicate ? 200 : 201).send(MediaAsset.parse(asset));
   });
 
+  // multipart/form-data with one "file" part: MP4 (H.264) or WebM, up to 100 MB.
+  app.post("/media/videos", media, async (request, reply) => {
+    const fail = (code: string, message: string) => new ApiError(422, "VALIDATION_FAILED", "Validation failed", message, [{ path: "file", code, message }]);
+    if (!request.isMultipart()) throw fail("required", "Send the video as multipart/form-data with a \"file\" part.");
+    let file: { buffer: Buffer; filename: string } | undefined;
+    for await (const part of request.parts({ limits: { fileSize: MAX_VIDEO_BYTES, files: 1 } })) {
+      if (part.type === "file" && part.fieldname === "file") {
+        const buffer = await part.toBuffer();
+        if (part.file.truncated) throw fail("too_large", "Videos must be 100 MB or smaller.");
+        file = { buffer, filename: part.filename || "video" };
+      }
+    }
+    if (!file) throw fail("required", "Choose a video to upload.");
+    const { asset, duplicate } = await uploadVideo(db, storage, file, staffOf(request).staffId);
+    return reply.status(duplicate ? 200 : 201).send(VideoAsset.parse(asset));
+  });
+  app.get("/media/videos", read, async () => ({ data: z.array(VideoAsset).parse(await listVideoAssets(db)) }));
+  app.delete<IdParams>("/media/videos/:id", media, async (request, reply) => {
+    await deleteVideoAsset(db, storage, request.params.id);
+    return reply.status(204).send();
+  });
+
   app.get("/media", read, async (request) => listAssets(db, MediaListQuery.parse(request.query)));
   app.get<IdParams>("/media/:id", read, async (request) => MediaAsset.parse(await getAsset(db, request.params.id)));
 
@@ -119,6 +158,29 @@ export const adminMediaCollectionRoutes = (db: Database, storage: MediaStorage):
     await reorderProductMedia(db, request.params.id, ProductMediaOrder.parse(request.body).mediaIds, staffOf(request).staffId);
     return AdminProduct.parse(await adminProduct(db, request.params.id));
   });
+
+  // ---- Product videos ----
+
+  type VideoParams = { Params: { id: string; videoId: string } };
+  app.get<IdParams>("/products/:id/videos", read, async (request) => ({ data: z.array(AdminProductVideo).parse(await listProductVideos(db, request.params.id)) }));
+  app.post<IdParams>("/products/:id/videos", write, async (request, reply) =>
+    reply.status(201).send(AdminProductVideo.parse(await createProductVideo(db, request.params.id, ProductVideoInput.parse(request.body), staffOf(request).staffId))),
+  );
+  app.put<IdParams>("/products/:id/videos/order", write, async (request) => ({
+    data: z.array(AdminProductVideo).parse(await reorderProductVideos(db, request.params.id, z.object({ videoIds: z.array(z.uuid()).min(1).max(10) }).parse(request.body).videoIds, staffOf(request).staffId)),
+  }));
+  app.patch<VideoParams>("/products/:id/videos/:videoId", write, async (request) =>
+    AdminProductVideo.parse(await updateProductVideo(db, request.params.id, request.params.videoId, ProductVideoUpdate.parse(request.body), staffOf(request).staffId)),
+  );
+  app.delete<VideoParams>("/products/:id/videos/:videoId", write, async (request, reply) => {
+    await deleteProductVideo(db, request.params.id, request.params.videoId, staffOf(request).staffId);
+    return reply.status(204).send();
+  });
+  for (const [path, status] of [["publish", "published"], ["unpublish", "draft"]] as const) {
+    app.post<VideoParams>(`/products/:id/videos/:videoId/${path}`, publish, async (request) =>
+      AdminProductVideo.parse(await setProductVideoStatus(db, request.params.id, request.params.videoId, status, staffOf(request).staffId)),
+    );
+  }
 
   // ---- Collections ----
 

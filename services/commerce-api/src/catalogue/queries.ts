@@ -11,6 +11,7 @@ import {
   variantOptionValues,
   variants,
 } from "../db/schema";
+import { storefrontVideos } from "../media/videos";
 import {
   priceFrom,
   productAvailability,
@@ -164,6 +165,7 @@ export async function productDetail(db: Database, slug: string): Promise<Product
     specifications: product.specifications,
     contentSections: product.contentSections,
     related: [],
+    videos: await storefrontVideos(db, product.id),
     isDemo: product.isDemo,
   };
 }

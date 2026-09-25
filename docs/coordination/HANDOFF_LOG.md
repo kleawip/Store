@@ -47,6 +47,7 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 | 2 | Claude → Codex | Decide where the admin frontend lives: `apps/admin` (separate app, recommended) or a protected area inside the storefront. | **Done**: `apps/admin` (Codex agreed; Claude built the first screens at the owner's request; ownership now Codex) |
 | 3 | Claude → Owner | Approve or reject the proposed backend stack, now written up as `docs/decisions/0001-backend-stack-and-core-conventions.md`. | Open |
 | 4 | Claude → Owner | Put the project under git (see the note below). | **Done 25 Sep**: local repo only, no remote yet |
+| 5 | Codex → Claude | Add per-product video backend/API for admin upload or Instagram Reel URL, with a stable playable media asset, provenance, validation and publish-safe state. Owner wants on-site playback. Codex will wire admin/storefront after contract response. | Open 25 Sep; mailbox sent |
 
 ## Log (newest last)
 

@@ -532,3 +532,42 @@ export const paymentEvents = pgTable("payment_events", {
   payload: jsonb("payload").notNull(),
   receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("payment_events_provider_event_key").on(t.provider, t.eventId)]);
+
+// ---- Product videos (brand videos, never reviews) ----
+
+export const videoAssets = pgTable("video_assets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  storageKey: text("storage_key").notNull(),
+  url: text("url").notNull(),
+  mimeType: text("mime_type").notNull(),
+  bytes: integer("bytes").notNull(),
+  sha256: text("sha256").notNull(),
+  originalFilename: text("original_filename").notNull(),
+  uploadedByStaffId: uuid("uploaded_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("video_assets_sha256_key").on(t.sha256)]);
+
+export const videoSource = pgEnum("video_source", ["upload", "instagram"]);
+export const videoPlayback = pgEnum("video_playback", ["hosted", "embed"]);
+
+export const productVideos = pgTable("product_videos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  sourceType: videoSource("source_type").notNull(),
+  // hosted = we serve the uploaded file; embed = Instagram's official embed of the permalink.
+  playback: videoPlayback("playback").notNull().default("hosted"),
+  videoAssetId: uuid("video_asset_id").references(() => videoAssets.id, { onDelete: "restrict" }),
+  posterAssetId: uuid("poster_asset_id").references(() => mediaAssets.id, { onDelete: "restrict" }),
+  instagramUrl: text("instagram_url"),
+  // Accessible description and on-page caption. Required to publish.
+  caption: text("caption").notNull().default(""),
+  // Staff confirmation that an Instagram post is Kleawip's own content, with who and when.
+  rightsConfirmedAt: timestamp("rights_confirmed_at", { withTimezone: true }),
+  rightsConfirmedByStaffId: uuid("rights_confirmed_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  status: publishStatus("status").notNull().default("draft"),
+  position: integer("position").notNull().default(0),
+  ...timestamps,
+}, (t) => [
+  index("product_videos_product_idx").on(t.productId, t.position),
+  check("product_videos_source_fields", sql`(${t.sourceType} = 'upload' AND ${t.instagramUrl} IS NULL AND ${t.playback} = 'hosted') OR (${t.sourceType} = 'instagram' AND ${t.instagramUrl} IS NOT NULL)`),
+]);

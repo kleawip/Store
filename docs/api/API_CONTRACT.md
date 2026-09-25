@@ -501,6 +501,29 @@ Rules:
 
 **Development without Razorpay keys:** the dev gateway is used. `POST /v1/dev/payments/{providerOrderId}/succeed` returns the same fields as Razorpay's success handler; post them to `/payments/verify`. This route doesn't exist when real keys are set, and live keys are refused outside production.
 
+### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
+
+These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
+
+| Endpoint | Permission / notes |
+| --- | --- |
+| `POST /v1/admin/media/videos` (multipart `file`) | `media.write`. MP4 (H.264) or WebM, checked by bytes, ≤ 100 MB; QuickTime `.mov` is rejected (`quicktime`). → 201 `VideoAsset`, or 200 for an identical file. |
+| `GET /v1/admin/media/videos` · `DELETE /v1/admin/media/videos/{id}` | Delete → 422 `in_use` while a product uses the video. |
+| `GET` / `POST /v1/admin/products/{id}/videos` | `catalogue.write`. Body: `{ sourceType: "upload"\|"instagram", playback: "hosted"\|"embed", videoAssetId?, posterAssetId?, instagramUrl?, caption, rightsConfirmed? }` → `AdminProductVideo` with `publishChecklist[]`. At most 10 videos per product. |
+| `PATCH` / `DELETE /v1/admin/products/{id}/videos/{videoId}` · `PUT …/videos/order { videoIds }` | Changing `instagramUrl` clears the rights confirmation. A published video that stops meeting the rules goes back to draft. |
+| `POST …/videos/{videoId}/publish` · `/unpublish` | `catalogue.publish` |
+
+**Instagram links:**
+- Only `https://www.instagram.com/(reel|p|tv)/{code}/` permalinks are accepted. They're normalised, and CDN media URLs are refused.
+- `rightsConfirmed: true` records the staff member and time ("this is Kleawip's own post").
+
+**Publish checklist:**
+- a caption of at least 3 characters;
+- `hosted` playback: the video file and a poster from the media library;
+- `instagram` source: rights confirmed.
+
+**Storefront:** `GET /v1/store/products/{slug}` now includes `videos[]`, published and complete only, in order: `{ id, caption, source, instagramUrl, playback: { kind: "hosted", url, mimeType, poster } | { kind: "instagram_embed", permalink, poster | null } }`. Hosted files are served with HTTP Range support (`Accept-Ranges: bytes`, 206 responses).
+
 ---
 
 ## 6. Later milestones (outline only; blocked on Phase 0)
@@ -549,6 +572,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 26 Sep 2026: product videos (upload or Instagram, rights confirmation, Range-served files, `ProductDetail.videos`) (§5.3).
 - 26 Sep 2026: orders + Razorpay (idempotent placement, stock reservation, signature-verified confirmation, webhooks, expiry, late/duplicate payment handling). Error code `PAYMENT_UNAVAILABLE` added.
 - 26 Sep 2026: pincode serviceability + checkout quote (GST split, 30/70 partial COD, Shiprocket adapter with mock).
 - 26 Sep 2026: server cart (guest + merge on sign-in, honest warnings, GST-inclusive totals) and wishlist.

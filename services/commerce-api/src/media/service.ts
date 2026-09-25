@@ -2,7 +2,7 @@ import type { MediaAsset } from "@kleawip/contract";
 import { and, asc, count, desc, eq, ilike, inArray, max, or, sql } from "drizzle-orm";
 import { recordAudit } from "../audit";
 import type { Database } from "../db/client";
-import { collections, heroSlides, mediaAssets, productMedia, productOptionValues, productOptions, products } from "../db/schema";
+import { collections, heroSlides, productVideos, mediaAssets, productMedia, productOptionValues, productOptions, products } from "../db/schema";
 import { ApiError, notFound } from "../errors";
 import { deliveryKey, originalKey, processImage } from "./process";
 import type { MediaStorage } from "./storage";
@@ -15,7 +15,7 @@ type AssetRow = typeof mediaAssets.$inferSelect;
 
 async function usageFor(db: Database, assetIds: string[]) {
   if (!assetIds.length) return new Map<string, MediaAsset["usedBy"]>();
-  const [productUses, collectionUses, slideUses] = await Promise.all([
+  const [productUses, collectionUses, slideUses, posterUses] = await Promise.all([
     db
       .selectDistinct({ assetId: productMedia.assetId, id: products.id, title: products.title })
       .from(productMedia)
@@ -29,10 +29,19 @@ async function usageFor(db: Database, assetIds: string[]) {
       .select({ id: heroSlides.id, title: heroSlides.internalTitle, desktop: heroSlides.desktopAssetId, tablet: heroSlides.tabletAssetId, mobile: heroSlides.mobileAssetId })
       .from(heroSlides)
       .where(or(inArray(heroSlides.desktopAssetId, assetIds), inArray(heroSlides.tabletAssetId, assetIds), inArray(heroSlides.mobileAssetId, assetIds))),
+    db
+      .selectDistinct({ assetId: productVideos.posterAssetId, id: products.id, title: products.title })
+      .from(productVideos)
+      .innerJoin(products, eq(products.id, productVideos.productId))
+      .where(inArray(productVideos.posterAssetId, assetIds)),
   ]);
   const usage = new Map<string, MediaAsset["usedBy"]>(assetIds.map((id) => [id, []]));
   for (const use of productUses) usage.get(use.assetId!)!.push({ type: "product", id: use.id, title: use.title });
   for (const use of collectionUses) usage.get(use.assetId!)!.push({ type: "collection", id: use.id, title: use.title });
+  for (const use of posterUses) {
+    const list = usage.get(use.assetId!)!;
+    if (!list.some((entry) => entry.type === "product" && entry.id === use.id)) list.push({ type: "product", id: use.id, title: use.title });
+  }
   for (const slide of slideUses) {
     for (const assetId of new Set([slide.desktop, slide.tablet, slide.mobile])) {
       if (assetId && usage.has(assetId)) usage.get(assetId)!.push({ type: "hero_slide", id: slide.id, title: slide.title });
@@ -112,6 +121,7 @@ export async function uploadAsset(
 export async function listAssets(db: Database, query: { q?: string; unused?: "true" | "false"; limit: number; offset: number }) {
   const used = sql`(EXISTS (SELECT 1 FROM product_media pm WHERE pm.asset_id = ${mediaAssets.id})
     OR EXISTS (SELECT 1 FROM collections c WHERE c.banner_asset_id = ${mediaAssets.id})
+    OR EXISTS (SELECT 1 FROM product_videos v WHERE v.poster_asset_id = ${mediaAssets.id})
     OR EXISTS (SELECT 1 FROM hero_slides h WHERE ${mediaAssets.id} IN (h.desktop_asset_id, h.tablet_asset_id, h.mobile_asset_id)))`;
   const where = and(
     query.q ? or(ilike(mediaAssets.originalFilename, `%${query.q}%`), ilike(mediaAssets.alt, `%${query.q}%`)) : undefined,

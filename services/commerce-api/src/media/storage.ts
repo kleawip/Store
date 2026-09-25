@@ -11,11 +11,11 @@ export interface MediaStorage {
   put(key: string, body: Buffer, contentType: string): Promise<void>;
   remove(key: string): Promise<void>;
   publicUrl(key: string): string;
-  /** Only the local development store serves files itself; cloud stores return null. */
-  read?(key: string): Promise<{ stream: Readable; size: number } | null>;
+  /** Only the local development store serves files itself; cloud stores return null. `range` is inclusive. */
+  read?(key: string, range?: { start: number; end: number }): Promise<{ stream: Readable; size: number } | null>;
 }
 
-export const STORAGE_KEY = /^(media|originals)\/[0-9a-f]{2}\/[0-9a-f]{64}\.(webp|jpg|png)$/;
+export const STORAGE_KEY = /^(media|originals|videos)\/[0-9a-f]{2}\/[0-9a-f]{64}\.(webp|jpg|png|mp4|webm)$/;
 
 /** Development storage on local disk, served by the API under /media/. Not for production. */
 export class LocalDiskStorage implements MediaStorage {
@@ -46,12 +46,12 @@ export class LocalDiskStorage implements MediaStorage {
     return `${this.publicBaseUrl.replace(/\/$/, "")}/${key}`;
   }
 
-  async read(key: string) {
+  async read(key: string, range?: { start: number; end: number }) {
     if (!STORAGE_KEY.test(key)) return null;
     const path = this.pathFor(key);
     try {
       const info = await stat(path);
-      return { stream: createReadStream(path), size: info.size };
+      return { stream: createReadStream(path, range), size: info.size };
     } catch {
       return null;
     }

@@ -522,3 +522,50 @@ export const DashboardResponse = z.object({
   recentActivity: z.array(ActivityEvent),
 });
 export type DashboardResponse = z.infer<typeof DashboardResponse>;
+
+// ---- Product videos ----
+
+export const VideoAsset = z.object({
+  id: z.string(),
+  url: z.string(),
+  mimeType: z.string(),
+  bytes: z.number().int(),
+  originalFilename: z.string(),
+  createdAt: z.string(),
+  usedBy: z.array(z.object({ productId: z.string(), productTitle: z.string() })),
+});
+
+export const ProductVideoInput = z.object({
+  sourceType: z.enum(["upload", "instagram"]),
+  playback: z.enum(["hosted", "embed"]).default("hosted"),
+  videoAssetId: z.uuid().nullable().default(null),
+  posterAssetId: z.uuid().nullable().default(null),
+  instagramUrl: z.string().max(300).nullable().default(null),
+  caption: z.string().trim().max(300).default(""),
+  // Staff confirm an Instagram post is Kleawip's own content; recorded with who and when.
+  rightsConfirmed: z.boolean().default(false),
+});
+
+export const ProductVideoUpdate = z.object({
+  playback: z.enum(["hosted", "embed"]),
+  videoAssetId: z.uuid().nullable(),
+  posterAssetId: z.uuid().nullable(),
+  instagramUrl: z.string().max(300).nullable(),
+  caption: z.string().trim().max(300),
+  rightsConfirmed: z.boolean(),
+}).partial();
+
+export const AdminProductVideo = z.object({
+  id: z.string(),
+  sourceType: z.enum(["upload", "instagram"]),
+  playback: z.enum(["hosted", "embed"]),
+  video: z.object({ id: z.string(), url: z.string(), mimeType: z.string() }).nullable(),
+  poster: z.object({ id: z.string(), url: z.string(), width: z.number(), height: z.number() }).nullable(),
+  instagramUrl: z.string().nullable(),
+  caption: z.string(),
+  rightsConfirmed: z.object({ at: z.string(), byName: z.string().nullable() }).nullable(),
+  status: PublishStatus,
+  position: z.number().int(),
+  publishChecklist: z.array(PublishCheck),
+});
+export type AdminProductVideo = z.infer<typeof AdminProductVideo>;

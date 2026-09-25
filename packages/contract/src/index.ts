@@ -159,6 +159,22 @@ export const ProductDetail = z.object({
   specifications: z.array(z.object({ label: z.string(), value: z.string() })),
   contentSections: z.array(z.object({ code: z.string(), title: z.string(), bodyHtml: z.string() })),
   related: z.array(z.string()),
+  // Brand product videos (never reviews), published only, in order. Label them "Product video" / "From our Instagram".
+  videos: z.array(z.object({
+    id: z.string(),
+    caption: z.string(),
+    source: z.enum(["upload", "instagram"]),
+    instagramUrl: z.string().nullable(),
+    playback: z.discriminatedUnion("kind", [
+      z.object({
+        kind: z.literal("hosted"),
+        url: z.string(),
+        mimeType: z.string(),
+        poster: z.object({ url: z.string(), width: z.number(), height: z.number() }),
+      }),
+      z.object({ kind: z.literal("instagram_embed"), permalink: z.string(), poster: z.object({ url: z.string(), width: z.number(), height: z.number() }).nullable() }),
+    ]),
+  })),
   isDemo: z.boolean(),
 });
 export type ProductDetail = z.infer<typeof ProductDetail>;
