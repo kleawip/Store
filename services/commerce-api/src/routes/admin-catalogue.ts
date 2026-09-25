@@ -14,7 +14,8 @@ import {
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { listAudit, recordAudit } from "../audit";
-import { authorize, staffOf } from "../auth/guard";
+import { authorize, forbidden, staffOf } from "../auth/guard";
+import { can } from "../auth/permissions";
 import {
   adminProduct,
   createProduct,
@@ -32,7 +33,7 @@ import { notFound } from "../errors";
 type IdParams = { Params: { id: string } };
 type SkuParams = { Params: { sku: string } };
 
-const AUDIT_ENTITY_TYPES = ["product", "inventory_item", "collection"] as const;
+const AUDIT_ENTITY_TYPES = ["product", "inventory_item", "collection", "order"] as const;
 
 export const adminCatalogueRoutes = (db: Database): FastifyPluginAsync => async (app) => {
   app.addHook("onSend", async (_request, reply) => {
@@ -106,12 +107,14 @@ export const adminCatalogueRoutes = (db: Database): FastifyPluginAsync => async 
   app.get<{ Params: { entityType: string; id: string } }>("/timeline/:entityType/:id", { preHandler: authorize(db, "audit.read") }, async (request) => {
     const params = TimelineParams.safeParse(request.params);
     if (!params.success) throw notFound("Timeline not found.");
+    if (params.data.entityType === "order" && !can(staffOf(request).role, "orders.read")) throw forbidden("Your role can't view orders.");
     return { data: z.array(AuditEvent).parse(await listAudit(db, params.data.entityType, params.data.id)) };
   });
 
   app.post<{ Params: { entityType: string; id: string } }>("/timeline/:entityType/:id/comments", { preHandler: authorize(db, "audit.comment") }, async (request, reply) => {
     const params = TimelineParams.safeParse(request.params);
     if (!params.success) throw notFound("Timeline not found.");
+    if (params.data.entityType === "order" && !can(staffOf(request).role, "orders.read")) throw forbidden("Your role can't view orders.");
     const { comment } = AuditCommentCreate.parse(request.body);
     await recordAudit(db, { entityType: params.data.entityType, entityId: params.data.id, action: "comment", actorStaffId: staffOf(request).staffId, comment });
     return reply.status(201).send({ ok: true });

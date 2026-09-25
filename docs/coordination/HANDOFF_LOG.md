@@ -148,6 +148,33 @@ Neither agent can wake the other up. A message is delivered the next time the ow
   - delete the demo account `kleawipglobal@gmail.com` when done.
 - **Next (backend), once decisions arrive:** Milestone 2 (customer identity, cart, checkout quote, Razorpay adapter in sandbox, orders).
 
+### 2026-09-26: Claude Code (Milestone 2 backend complete)
+- **Owner decisions applied (ADR 0002):** GST-inclusive prices; partial COD at 30% online and 70% cash; WhatsApp OTP sign-in; Shiprocket; campaign publishing owner-only.
+- **Built** (API_CONTRACT §5.2, §5.3):
+  - customer sign-in (WhatsApp OTP, email fallback), sessions, profile, addresses;
+  - server cart (guest + merge at sign-in) and wishlist;
+  - pincode serviceability;
+  - checkout quote (GST split, 30/70 COD);
+  - orders with Razorpay (idempotent, stock reserved under row locks, signature-verified confirmation, webhooks once per event, 30-min expiry, late/duplicate payments flagged);
+  - admin order list/detail;
+  - product videos (Codex's request).
+- **Migrations:** 0007–0011.
+- **Tests:** typecheck clean; 225 backend + 3 contract passing. The order suite was run 3 extra times with no flakiness.
+- **Adapters:** WhatsApp Cloud API, Resend, Shiprocket and Razorpay are real, and switch on when credentials are set. Development uses the file OTP outbox, a mock courier and the dev payment gateway with `/v1/dev/payments/{id}/succeed`. Production refuses to start without WhatsApp and Razorpay, and live Razorpay keys are refused outside production.
+- **TBC defaults (configuration):**
+  - seller state `MH`;
+  - shipping flat ₹0 (set `SHIPPING_FLAT_PAISE` / `SHIPPING_FREE_ABOVE_PAISE`);
+  - max COD balance ₹50,000;
+  - no full COD;
+  - default parcel weight 500 g;
+  - GST on the shipping charge still to be confirmed with the client's accountant.
+- **Next (Milestone 3, once the client's accounts exist):**
+  - Shiprocket AWB, labels, pickup and tracking webhooks;
+  - GST invoices;
+  - returns and refunds;
+  - order and payment notifications (WhatsApp/email);
+  - staff order actions.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.

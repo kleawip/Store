@@ -2,7 +2,7 @@
 // Milestone 2; nothing here estimates or invents numbers.
 import { and, count, eq, gt, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import type { Database } from "../db/client";
-import { heroSlides, inventoryItems, productMedia, products, ribbonMessages, variants } from "../db/schema";
+import { heroSlides, inventoryItems, orders, productMedia, products, ribbonMessages, variants } from "../db/schema";
 import { activityLog } from "../staff/service";
 
 export async function dashboard(db: Database, now = new Date()) {
@@ -15,6 +15,7 @@ export async function dashboard(db: Database, now = new Date()) {
     [outOfStock],
     upcoming,
     recent,
+    [orderCounts],
   ] = await Promise.all([
     db
       .select({
@@ -50,6 +51,14 @@ export async function dashboard(db: Database, now = new Date()) {
         .where(and(eq(ribbonMessages.status, "published"), or(gt(ribbonMessages.startsAt, now), gt(ribbonMessages.endsAt, now)))),
     ]),
     activityLog(db, { limit: 10 }),
+    db
+      .select({
+        // "Today" in India time.
+        confirmedToday: sql<number>`count(*) filter (where ${orders.status} = 'confirmed' and (${orders.confirmedAt} at time zone 'Asia/Kolkata')::date = (now() at time zone 'Asia/Kolkata')::date)::int`,
+        awaitingPayment: sql<number>`count(*) filter (where ${orders.status} = 'pending_payment')::int`,
+        needsAttention: sql<number>`count(*) filter (where ${orders.needsAttention} is not null)::int`,
+      })
+      .from(orders),
   ]);
 
   // Next start or end for each scheduled campaign, soonest first.
@@ -69,6 +78,7 @@ export async function dashboard(db: Database, now = new Date()) {
     products: statusCounts!,
     attention: { productsMissingPrice: missingPrice!.value, productsMissingImages: missingImages!.value },
     stock: { lowStockItems: lowStock!.value, outOfStockItems: outOfStock!.value },
+    orders: orderCounts!,
     campaignSchedule: schedule,
     recentActivity: recent,
   };

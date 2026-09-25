@@ -490,7 +490,7 @@ export const StaffSetupRequest = z.object({ token: z.string().min(20).max(200), 
 export const PasswordChange = z.object({ currentPassword: z.string().min(1).max(256), newPassword: NewPassword });
 
 export const ActivityQuery = z.object({
-  entityType: z.enum(["product", "inventory_item", "collection", "hero_slide", "ribbon_message", "staff"]).optional(),
+  entityType: z.enum(["product", "inventory_item", "collection", "hero_slide", "ribbon_message", "staff", "order"]).optional(),
   actorId: z.uuid().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),
   before: z.iso.datetime({ offset: true }).optional(),
@@ -512,6 +512,7 @@ export const DashboardResponse = z.object({
   products: z.object({ draft: z.number().int(), published: z.number().int(), archived: z.number().int() }),
   attention: z.object({ productsMissingPrice: z.number().int(), productsMissingImages: z.number().int() }),
   stock: z.object({ lowStockItems: z.number().int(), outOfStockItems: z.number().int() }),
+  orders: z.object({ confirmedToday: z.number().int(), awaitingPayment: z.number().int(), needsAttention: z.number().int() }),
   campaignSchedule: z.array(z.object({
     id: z.string(),
     kind: z.enum(["hero_slide", "ribbon_message"]),
@@ -569,3 +570,42 @@ export const AdminProductVideo = z.object({
   publishChecklist: z.array(PublishCheck),
 });
 export type AdminProductVideo = z.infer<typeof AdminProductVideo>;
+
+// ---- Orders (staff, read-only in Milestone 2; fulfilment and refunds arrive in Milestone 3) ----
+
+const AdminMoney = z.object({ amount: z.number().int(), currency: z.literal("INR") });
+
+export const AdminOrderListQuery = z.object({
+  status: z.enum(["pending_payment", "confirmed", "expired", "cancelled"]).optional(),
+  needsAttention: z.enum(["true"]).optional(),
+  q: z.string().trim().min(1).max(40).optional(), // order number or customer phone
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+export const AdminOrderListItem = z.object({
+  id: z.string(),
+  number: z.string(),
+  status: z.enum(["pending_payment", "confirmed", "expired", "cancelled"]),
+  paymentMethod: z.enum(["prepaid", "partial_cod"]),
+  paymentStatus: z.enum(["awaiting", "paid", "failed"]),
+  total: AdminMoney,
+  payNow: AdminMoney,
+  codBalance: AdminMoney,
+  customer: z.object({ id: z.string(), name: z.string(), phone: z.string() }),
+  itemCount: z.number().int(),
+  placedAt: z.string(),
+  needsAttention: z.string().nullable(),
+});
+
+export const AdminOrderPayment = z.object({
+  provider: z.string(),
+  purpose: z.enum(["full", "deposit"]),
+  providerOrderId: z.string(),
+  providerPaymentId: z.string().nullable(),
+  amount: AdminMoney,
+  status: z.enum(["created", "captured", "failed"]),
+  failureReason: z.string().nullable(),
+  createdAt: z.string(),
+  capturedAt: z.string().nullable(),
+});

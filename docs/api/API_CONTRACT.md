@@ -501,6 +501,14 @@ Rules:
 
 **Development without Razorpay keys:** the dev gateway is used. `POST /v1/dev/payments/{providerOrderId}/succeed` returns the same fields as Razorpay's success handler; post them to `/payments/verify`. This route doesn't exist when real keys are set, and live keys are refused outside production.
 
+**Admin orders** (read-only in Milestone 2; fulfilment, labels and refunds are Milestone 3). Permission `orders.read`: owner, operations, support. **Not** viewer, catalogue_manager or marketing_editor, because orders hold customers' personal data.
+
+- `GET /v1/admin/orders?status=&needsAttention=true&q=&limit=&offset=` → `{ data: AdminOrderListItem[], totalCount }`. `q` matches an order number or a customer phone.
+- `GET /v1/admin/orders/{id}` → `{ order, customer, payments: AdminOrderPayment[], needsAttention }`.
+- The order timeline is at `/v1/admin/timeline/order/{id}` and also needs `orders.read`.
+- `needsAttention` holds staff instructions for money problems: late or duplicate payments that need a refund.
+- The dashboard gains `orders { confirmedToday (IST), awaitingPayment, needsAttention }`.
+
 ### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
 
 These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
@@ -572,6 +580,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 26 Sep 2026: admin orders list/detail (`orders.read`), dashboard order counts. Milestone 2 backend complete.
 - 26 Sep 2026: product videos (upload or Instagram, rights confirmation, Range-served files, `ProductDetail.videos`) (§5.3).
 - 26 Sep 2026: orders + Razorpay (idempotent placement, stock reservation, signature-verified confirmation, webhooks, expiry, late/duplicate payment handling). Error code `PAYMENT_UNAVAILABLE` added.
 - 26 Sep 2026: pincode serviceability + checkout quote (GST split, 30/70 partial COD, Shiprocket adapter with mock).
