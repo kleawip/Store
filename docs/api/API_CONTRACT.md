@@ -459,6 +459,28 @@ Development: with no WhatsApp or Resend keys set, codes are written to `services
 
 Unpublished products are hidden.
 
+**Delivery check and checkout quote.** Zod: `Serviceability`, `CheckoutQuoteRequest`, `CheckoutQuote`.
+
+| Endpoint | Notes |
+| --- | --- |
+| `GET /v1/store/serviceability?pincode=` | Public. → `{ status: "serviceable" \| "not_serviceable" \| "unavailable", partialCodAvailable, estimatedDeliveryDays }`. `unavailable` means the courier check couldn't run: show a neutral message. |
+| `POST /v1/store/checkout/quote { addressId, paymentMethod: "prepaid" \| "partial_cod" }` | Signed-in. → 201 `CheckoutQuote`, valid for 15 minutes. |
+
+A quote contains:
+- `lines[]`;
+- `merchandiseTotal` (GST-inclusive), `shipping` and `total`;
+- `gst`: CGST+SGST when the delivery state equals the seller state, otherwise IGST;
+- `payment { payNow, codBalance, depositPercent }`: partial COD is 30% online, rounded up to the rupee, with the remainder in cash (ADR 0002 D2);
+- `delivery.estimatedDeliveryDays`;
+- `excluded[]`: lines that can't be ordered now;
+- `warnings[]`.
+
+Errors (`errors[0].code`): `unknown_address`, `empty_cart`, `tax_missing`, `not_serviceable`, `cod_unavailable`, `cod_limit`, `delivery_unavailable`.
+
+Rules and defaults:
+- **TBC defaults** (configuration; see `src/checkout/settings.ts`): seller state MH; shipping flat ₹0 unless configured; maximum COD balance ₹50,000; no full COD.
+- Shiprocket is used when credentials are set. Development uses a mock courier: 9xxxxx is not serviceable, and 79xxxx is prepaid-only.
+
 ---
 
 ## 6. Later milestones (outline only; blocked on Phase 0)
@@ -507,6 +529,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 26 Sep 2026: pincode serviceability + checkout quote (GST split, 30/70 partial COD, Shiprocket adapter with mock).
 - 26 Sep 2026: server cart (guest + merge on sign-in, honest warnings, GST-inclusive totals) and wishlist.
 - 26 Sep 2026: Milestone 2 customer accounts: WhatsApp OTP sign-in, sessions, profile, addresses (§5.2). Error code `DELIVERY_FAILED` added.
 - 25 Sep 2026: staff management (invite links, roles, disable, self password change, activity log) implemented.

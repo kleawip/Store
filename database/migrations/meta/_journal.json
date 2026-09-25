@@ -64,6 +64,13 @@
       "when": 1790338190051,
       "tag": "0008_cart_wishlist",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790338436162,
+      "tag": "0009_checkout_quotes",
+      "breakpoints": true
     }
   ]
 }

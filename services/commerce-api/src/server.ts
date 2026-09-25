@@ -2,6 +2,8 @@ import { buildApp } from "./app";
 import { loadConfig } from "./config";
 import { createDatabase } from "./db/client";
 import { LocalDiskStorage } from "./media/storage";
+import { DEFAULT_COMMERCE_SETTINGS } from "./checkout/settings";
+import { MockShippingProvider, ShiprocketProvider } from "./shipping/provider";
 import { ChannelOtpSender, FileOutboxOtpSender, ResendEmailOtpSender, WhatsAppCloudOtpSender, type OtpSender } from "./messaging/otp-senders";
 
 const config = loadConfig();
@@ -28,10 +30,22 @@ const email: OtpSender | undefined = config.RESEND_API_KEY
   ? new ResendEmailOtpSender({ apiKey: config.RESEND_API_KEY, from: config.EMAIL_FROM })
   : devOutbox;
 const otpSender = new ChannelOtpSender({ whatsapp, email });
+
+const shipping = config.SHIPROCKET_EMAIL && config.SHIPROCKET_PASSWORD
+  ? new ShiprocketProvider({ email: config.SHIPROCKET_EMAIL, password: config.SHIPROCKET_PASSWORD, pickupPincode: config.PICKUP_PINCODE })
+  : isProduction ? null : new MockShippingProvider(config.PICKUP_PINCODE);
+const commerce = {
+  ...DEFAULT_COMMERCE_SETTINGS,
+  sellerStateCode: config.SELLER_STATE_CODE,
+  maxCodBalancePaise: config.MAX_COD_BALANCE_PAISE,
+  shipping: { flatPaise: config.SHIPPING_FLAT_PAISE, freeAbovePaise: config.SHIPPING_FREE_ABOVE_PAISE ?? null },
+};
 const app = await buildApp({
   db,
   storage,
   otpSender,
+  shipping,
+  commerce,
   storefrontOrigins: config.STOREFRONT_ORIGIN.split(",").map((origin) => origin.trim()),
   cookieSecure: config.COOKIE_SECURE,
   trustedProxyHops: config.TRUST_PROXY,

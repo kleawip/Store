@@ -428,3 +428,25 @@ export const wishlistItems = pgTable("wishlist_items", {
   variantId: uuid("variant_id").references(() => variants.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("wishlist_items_customer_product_key").on(t.customerId, t.productId)]);
+
+// ---- Checkout quotes (Milestone 2): the exact amounts a customer agreed to, valid for 15 minutes ----
+
+export const paymentMethod = pgEnum("payment_method", ["prepaid", "partial_cod"]);
+
+export const checkoutQuotes = pgTable("checkout_quotes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  customerId: uuid("customer_id").notNull().references(() => customers.id, { onDelete: "cascade" }),
+  addressId: uuid("address_id").notNull().references(() => addresses.id, { onDelete: "cascade" }),
+  paymentMethod: paymentMethod("payment_method").notNull(),
+  // Snapshot of lines and totals: order creation must reproduce these exactly or ask for a new quote.
+  snapshot: jsonb("snapshot").notNull(),
+  totalPaise: integer("total_paise").notNull(),
+  payNowPaise: integer("pay_now_paise").notNull(),
+  codBalancePaise: integer("cod_balance_paise").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  consumedAt: timestamp("consumed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  index("checkout_quotes_customer_idx").on(t.customerId, t.createdAt),
+  check("checkout_quotes_amounts", sql`${t.payNowPaise} + ${t.codBalancePaise} = ${t.totalPaise} AND ${t.payNowPaise} > 0`),
+]);

@@ -23,6 +23,15 @@ const Env = z.object({
   EMAIL_FROM: z.string().default("Kleawip <no-reply@kleawip.com>"),
   // Development only: where codes are written when no provider is configured.
   OTP_OUTBOX_FILE: z.string().default(".data/otp-outbox.log"),
+  // Shiprocket (ADR 0002 R2). Without credentials, development uses a mock courier; production has none.
+  SHIPROCKET_EMAIL: z.string().optional(),
+  SHIPROCKET_PASSWORD: z.string().optional(),
+  PICKUP_PINCODE: z.string().regex(/^[1-9]\d{5}$/).default("400001"),
+  // Commerce rules (TBC defaults; see src/checkout/settings.ts and ADR 0002).
+  SELLER_STATE_CODE: z.string().regex(/^[A-Z]{2}$/).default("MH"),
+  SHIPPING_FLAT_PAISE: z.coerce.number().int().min(0).default(0),
+  SHIPPING_FREE_ABOVE_PAISE: z.coerce.number().int().min(0).optional(),
+  MAX_COD_BALANCE_PAISE: z.coerce.number().int().min(0).default(5_000_000),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 

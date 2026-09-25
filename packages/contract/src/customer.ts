@@ -124,3 +124,60 @@ export const WishlistPut = z.object({ sku: z.string().nullable().default(null) }
 export const WishlistMerge = z.object({
   items: z.array(z.object({ productSlug: z.string(), sku: z.string().nullable().default(null) })).max(100),
 });
+
+// ---- Delivery check and checkout quote ----
+
+export const ServiceabilityQuery = z.object({ pincode: z.string().regex(/^[1-9]\d{5}$/, "Enter a 6-digit pincode.") });
+
+export const Serviceability = z.object({
+  pincode: z.string(),
+  // "unavailable" = the courier check itself couldn't run (show a neutral message, not "not deliverable").
+  status: z.enum(["serviceable", "not_serviceable", "unavailable"]),
+  partialCodAvailable: z.boolean(),
+  estimatedDeliveryDays: z.object({ min: z.number().int(), max: z.number().int() }).nullable(),
+});
+
+export const CheckoutQuoteRequest = z.object({
+  addressId: z.uuid(),
+  paymentMethod: z.enum(["prepaid", "partial_cod"]),
+});
+
+const QuoteMoney = z.object({ amount: z.number().int(), currency: z.literal("INR") });
+
+export const CheckoutQuote = z.object({
+  quoteId: z.string(),
+  expiresAt: z.string(),
+  lines: z.array(z.object({
+    sku: z.string(),
+    productTitle: z.string(),
+    optionsLabel: z.string(),
+    quantity: z.number().int(),
+    unitPrice: QuoteMoney,
+    lineTotal: QuoteMoney,
+    gstRatePercent: z.number(),
+  })),
+  merchandiseTotal: QuoteMoney, // GST-inclusive
+  shipping: QuoteMoney,
+  total: QuoteMoney,
+  gst: z.object({
+    intraState: z.boolean(),
+    taxable: QuoteMoney,
+    cgst: QuoteMoney,
+    sgst: QuoteMoney,
+    igst: QuoteMoney,
+  }),
+  payment: z.object({
+    method: z.enum(["prepaid", "partial_cod"]),
+    payNow: QuoteMoney, // charged online via Razorpay
+    codBalance: QuoteMoney, // collected in cash on delivery (0 for prepaid)
+    depositPercent: z.number().nullable(),
+  }),
+  delivery: z.object({
+    pincode: z.string(),
+    estimatedDeliveryDays: z.object({ min: z.number().int(), max: z.number().int() }).nullable(),
+  }),
+  // Cart lines left out of this quote and why (e.g. out of stock), so the UI can explain.
+  excluded: z.array(z.object({ sku: z.string(), reason: z.string() })),
+  warnings: z.array(z.object({ sku: z.string(), code: z.string(), message: z.string() })),
+});
+export type CheckoutQuote = z.infer<typeof CheckoutQuote>;
