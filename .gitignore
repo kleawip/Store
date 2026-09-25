@@ -15,3 +15,5 @@ tmp/
 graphify-out/cache/
 # per-agent mailbox read state
 docs/coordination/messages/.read-*.json
+# database backups (may contain customer data)
+backups/

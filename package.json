@@ -15,7 +15,9 @@
     "db:migrate": "npm run db:migrate -w @kleawip/commerce-api",
     "db:seed:demo": "npm run db:seed:demo -w @kleawip/commerce-api",
     "admin:dev": "npm run dev -w @kleawip/admin",
-    "admin:typecheck": "npm run typecheck -w @kleawip/admin"
+    "admin:typecheck": "npm run typecheck -w @kleawip/admin",
+    "db:backup": "scripts/db/backup.sh",
+    "db:rehearse-restore": "scripts/db/rehearse-restore.sh"
   },
   "engines": {
     "node": ">=22"

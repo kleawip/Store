@@ -1,0 +1,76 @@
+# Runs every check both builders run locally (docs/coordination/HANDOFF_LOG.md "Checks each side runs").
+# Inactive until the project is pushed to the client's GitHub repository.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (API + contract + admin)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: kleawip
+          POSTGRES_PASSWORD: kleawip-ci-only
+          POSTGRES_DB: kleawip_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U kleawip" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://kleawip:kleawip-ci-only@localhost:5432/kleawip_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run api:typecheck
+      - run: npm run api:test
+      - run: npm run admin:typecheck
+      - run: npm run build -w @kleawip/admin
+
+  storefront:
+    name: Storefront
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/storefront
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/storefront/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  audit:
+    name: Dependency audit (production deps)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm audit --omit=dev --audit-level=high
+        working-directory: apps/storefront
