@@ -9,11 +9,11 @@ import { createDatabase, type Database } from "../src/db/client";
 import { staffUsers } from "../src/db/schema";
 import { LocalDiskStorage } from "../src/media/storage";
 
-export async function createTestApp() {
+export async function createTestApp({ rateLimits = false } = {}) {
   const { db, close } = createDatabase(process.env.TEST_DATABASE_URL!);
   const mediaDir = mkdtempSync(join(tmpdir(), "kleawip-test-media-"));
   const storage = new LocalDiskStorage(mediaDir, "http://127.0.0.1:4000/media");
-  const app = await buildApp({ db, storage, storefrontOrigins: ["http://localhost:3000"], cookieSecure: false });
+  const app = await buildApp({ db, storage, storefrontOrigins: ["http://localhost:3000"], cookieSecure: false, rateLimits });
   return {
     app,
     db,

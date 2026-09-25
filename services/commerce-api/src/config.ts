@@ -10,6 +10,8 @@ const Env = z.object({
   // Local development media store (served by the API under /media). Production uses a cloud store (Phase 0 decision).
   MEDIA_DIR: z.string().default(".data/media"),
   MEDIA_PUBLIC_BASE_URL: z.string().url().default("http://127.0.0.1:4000/media"),
+  // Number of proxy hops to trust for the client IP (Railway sets 1). 0 = trust none.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 

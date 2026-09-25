@@ -44,7 +44,7 @@ export const adminAccountRoutes = (db: Database): FastifyPluginAsync => async (a
   });
 
   // Public: completing an invite or reset with the one-time link. The token itself is the credential.
-  app.post("/setup", async (request, reply) => {
+  app.post("/setup", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } }, async (request, reply) => {
     const { token, password } = StaffSetupRequest.parse(request.body);
     await completeSetup(db, token, password);
     return reply.status(204).send();

@@ -1,6 +1,9 @@
 import cookie from "@fastify/cookie";
 import multipart from "@fastify/multipart";
 import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
+import rateLimit from "@fastify/rate-limit";
+import { sql } from "drizzle-orm";
 import Fastify from "fastify";
 import { randomUUID } from "node:crypto";
 import type { Database } from "./db/client";
@@ -22,14 +25,22 @@ export type AppOptions = {
   storefrontOrigins: string[];
   /** Mark the admin session cookie Secure (HTTPS only). True everywhere except local HTTP development and tests. */
   cookieSecure?: boolean;
+  /** Per-IP request limits. Tests turn this off except where they test it. */
+  rateLimits?: boolean;
+  /** Number of proxy hops in front of the API (e.g. 1 on Railway) whose X-Forwarded-For is trusted for client IPs. */
+  trustedProxyHops?: number;
   logger?: boolean;
 };
 
-export async function buildApp({ db, storage, storefrontOrigins, cookieSecure = true, logger = false }: AppOptions) {
+export async function buildApp({ db, storage, storefrontOrigins, cookieSecure = true, rateLimits = true, trustedProxyHops = 0, logger = false }: AppOptions) {
   const app = Fastify({
-    logger,
     genReqId: () => `req_${randomUUID()}`,
     requestIdHeader: false,
+    // Trust exactly N hops so clients can't spoof their IP (which rate limits depend on) with X-Forwarded-For.
+    trustProxy: trustedProxyHops > 0 ? (_address: string, hop: number) => hop < trustedProxyHops : false,
+    bodyLimit: 1024 * 1024, // JSON bodies; uploads have their own multipart limits
+    // Never log credentials or session material.
+    logger: logger ? { redact: ["req.headers.cookie", "req.headers.authorization", 'req.headers["x-csrf-token"]', 'res.headers["set-cookie"]'] } : false,
   });
 
   app.setErrorHandler(errorHandler);
@@ -38,11 +49,29 @@ export async function buildApp({ db, storage, storefrontOrigins, cookieSecure = 
     reply.header("x-request-id", request.id);
   });
 
+  // JSON API only: no HTML is served, so a strict CSP and no-sniff are safe defaults.
+  await app.register(helmet, {
+    contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // storefront pages load /media images
+  });
   await app.register(cors, { origin: storefrontOrigins, credentials: true });
+  if (rateLimits) {
+    // A generous global ceiling per IP; sign-in and setup get strict limits on their routes.
+    await app.register(rateLimit, { global: true, max: 600, timeWindow: "1 minute" });
+  }
   await app.register(cookie);
   await app.register(multipart, { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } });
 
-  app.get("/health", async () => ({ status: "ok" }));
+  // Liveness: the process is up. Readiness: it can reach the database (used by Railway health checks).
+  app.get("/health", { config: { rateLimit: false } }, async () => ({ status: "ok" }));
+  app.get("/ready", { config: { rateLimit: false } }, async (_request, reply) => {
+    try {
+      await db.execute(sql`select 1`);
+      return { status: "ready" };
+    } catch {
+      return reply.status(503).send({ status: "unavailable" });
+    }
+  });
   await app.register(storeCatalogueRoutes(db), { prefix: "/v1/store" });
   await app.register(adminAuthRoutes(db, { cookieSecure }), { prefix: "/v1/admin/auth" });
   await app.register(adminCatalogueRoutes(db), { prefix: "/v1/admin" });

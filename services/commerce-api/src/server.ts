@@ -14,6 +14,7 @@ const app = await buildApp({
   storage,
   storefrontOrigins: config.STOREFRONT_ORIGIN.split(",").map((origin) => origin.trim()),
   cookieSecure: config.COOKIE_SECURE,
+  trustedProxyHops: config.TRUST_PROXY,
   logger: true,
 });
 

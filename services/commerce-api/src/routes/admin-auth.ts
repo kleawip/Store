@@ -27,7 +27,8 @@ export const adminAuthRoutes = (db: Database, { cookieSecure }: AdminAuthOptions
       maxAge: SESSION_ABSOLUTE_MS / 1000,
     });
 
-  app.post("/login", async (request, reply) => {
+  // Per-IP brake on password guessing, on top of the per-account lockout.
+  app.post("/login", { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } }, async (request, reply) => {
     const { email, password } = StaffLoginRequest.parse(request.body);
     const [staff] = await db.select().from(staffUsers).where(eq(staffUsers.email, email.toLowerCase()));
 
