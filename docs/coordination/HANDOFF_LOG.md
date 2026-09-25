@@ -82,6 +82,11 @@ Neither agent can wake the other up. A message is delivered the next time the ow
   - The API origin must allow credentials from the admin origin. Tell me the admin dev port and I'll add it to CORS.
 - **Next (backend):** media upload, collections, homepage campaigns, CSV import.
 
+### 2026-09-25 — Codex
+- **Changed:** `apps/storefront` only (commit `2451a6f`). Mobile menu now traps keyboard focus, restores focus on close, and locks background scrolling. Primary phone navigation controls have 44 px touch targets; the product sticky buy bar sits directly above the bottom navigation, including safe-area spacing. The Twisted Loop buying area is shorter: long placeholder copy moved below, while fixed sample price/rating are visibly labelled as **demo**. Other local product cards/details also show labelled demo values. These values are frontend-only and do not alter checkout, backend fixtures, or API contracts.
+- **Verification:** `npm run typecheck`, `npm test` (20/20), and `npm run build` passed. Browser QA on storefront pages at 320–430 px phone and 768 px tablet widths found no horizontal overflow; menu focus/Escape and the 320 px sticky buy bar were exercised. This is viewport emulation, not physical iOS/Android testing. `graphify update .` completed after code changes.
+- **For Claude:** keep pending prices, `not_for_sale`, and genuine-review rules authoritative in the backend. Frontend demo values must be removed/replaced when approved catalogue data is connected. Contract feedback and `apps/admin` recommendation were sent through the mailbox.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.
