@@ -139,6 +139,8 @@ html[data-theme=dark] .button-primary,html[data-theme=dark] .quick-add,html[data
 .card-image-dots button::before{content:"";width:6px;height:6px;border:0;border-radius:50%;background:#b7c0c5;box-shadow:0 1px 2px rgba(0,0,0,.24);transition:background .18s,transform .18s}
 .card-image-dots button:hover::before{transform:scale(1.16);background:#edf4f8}
 .card-image-dots button.selected::before{background:#5fa9cc;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.product-card-demo-rating{display:inline-flex;align-items:center;gap:4px;margin:-6px 0 10px;color:var(--muted);font-size:11px;font-weight:650}
+.product-card-demo-rating svg{color:#ad6900}
 @media(max-width:760px){
   .card-image-arrow{width:27px;height:27px}
   .card-image-arrow svg{width:16px;height:16px}
@@ -169,7 +171,11 @@ html[data-theme=dark] .button-primary,html[data-theme=dark] .quick-add,html[data
 .pdp-short-description{font-size:14px;line-height:1.6;color:var(--muted);margin-bottom:12px}
 .pdp-review-link{display:inline-flex;align-items:center;gap:9px;font-size:12px;font-weight:700;color:var(--blue)}
 .pdp-review-link span{color:var(--muted);font-weight:500}
-.pdp-refresh-price{margin:22px 0 0;padding:19px 0}
+.pdp-demo-rating{display:flex;align-items:center;gap:7px;margin:4px 0 0;font-size:12px;line-height:1.35}
+.pdp-demo-rating strong{font-size:12px}
+.pdp-demo-rating>span:last-child{color:var(--muted)}
+.pdp-demo-stars{display:inline-flex;gap:1px;color:#ad6900}
+.pdp-refresh-price{margin:13px 0 0;padding:13px 0}
 .pdp-refresh-price strong{font-size:22px;line-height:1.2}
 .pdp-block-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .pdp-block-heading h2{font-size:17px;line-height:1.3;letter-spacing:-.03em;margin:0}
@@ -267,4 +273,13 @@ html[data-theme=dark] .button-primary,html[data-theme=dark] .quick-add,html[data
   .pdp-sticky-cart{border:1px solid var(--blue);background:var(--blue);color:#fff}
   .pdp-sticky-now{border:1px solid var(--text);background:var(--text);color:var(--surface)}
   html[data-theme=dark] .pdp-sticky-buy button{color:#07111d}
+}
+
+/* Keep primary mobile controls comfortable to tap without enlarging their icons. */
+@media(max-width:760px){
+  .header-main>.icon-button,.header-actions .icon-button{width:44px;height:44px}
+  .mobile-bottom-nav a,.mobile-bottom-nav button{min-height:44px;justify-content:center}
+  .mobile-bottom-nav{padding-bottom:max(7px,env(safe-area-inset-bottom))}
+  body{padding-bottom:calc(52px + max(7px,env(safe-area-inset-bottom)))}
+  .pdp-sticky-buy{bottom:calc(52px + max(7px,env(safe-area-inset-bottom)))}
 }

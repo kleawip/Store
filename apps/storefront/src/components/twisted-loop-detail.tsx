@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUpRight, Check, ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingBag, Volume2, VolumeX, X, ZoomIn } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingBag, Star, Volume2, VolumeX, X, ZoomIn } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/data/products";
 import { products } from "@/data/products";
+import { formatDemoPrice, getDemoMerchandising } from "@/data/demo-merchandising";
 import { galleryWindow } from "@/lib/gallery-window";
 import { useStore } from "./store-provider";
 import { ProductCard } from "./product-card";
@@ -33,6 +34,7 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
   const router = useRouter();
   const { addToBag, wishlist, toggleWishlist, soundEnabled, toggleCartSound } = useStore();
   const saved = wishlist.includes(product.id);
+  const demo = getDemoMerchandising(product.id);
   const related = products.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 3);
 
   useEffect(() => {
@@ -82,18 +84,17 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
       <section className="pdp-info pdp-refresh-info" aria-label="Product information">
         <span className="section-overline">KLEAWIP / AUTOMOTIVE CARE</span>
         <h1>{product.title}</h1>
-        <div className="pdp-fact-row"><span className="pdp-fact">1200 GSM</span><span className="pdp-fact">Automotive Care</span></div>
-        <p className="pdp-short-description">A Kleawip microfiber drying towel for automotive care. More product details will be added after catalogue approval.</p>
-        <a className="pdp-review-link" href="#customer-reviews">Customer reviews <span>Not published yet</span></a>
+        <div className="pdp-fact-row"><span className="pdp-fact">1200 GSM</span></div>
+        {demo && <div className="pdp-demo-rating" aria-label={`Demo rating ${demo.rating} out of 5. Not a customer review.`}><span className="pdp-demo-stars" aria-hidden="true">{Array.from({ length: 5 }, (_, index) => <Star key={index} size={14} fill="currentColor"/>)}</span><strong>{demo.rating}/5</strong><span>Demo rating</span></div>}
 
-        <div className="pdp-price pdp-refresh-price"><strong>Price to be confirmed</strong><span>Final price, tax and pack savings require Kleawip approval.</span></div>
+        <div className="pdp-price pdp-refresh-price"><strong>{demo ? formatDemoPrice(demo.price) : "Price to be confirmed"}</strong><span>{demo ? "Demo price for layout only · Final price pending approval" : "Final price, tax and pack savings require Kleawip approval."}</span></div>
 
         <div className="pdp-option-block" aria-label="Product options">
           <div className="pdp-block-heading"><h2>Choose your options</h2><span>Sample options for review</span></div>
           <fieldset className="pdp-choice-group"><legend>Pack <span>{pack}</span></legend><div className="pdp-choice-list">{previewPacks.map((value) => <button type="button" key={value} className={pack === value ? "selected" : ""} aria-pressed={pack === value} onClick={() => setPack(value)}>{value}</button>)}</div></fieldset>
           <fieldset className="pdp-choice-group"><legend>Size <span>{size}</span></legend><div className="pdp-choice-list">{previewSizes.map((value) => <button type="button" key={value} className={size === value ? "selected" : ""} aria-pressed={size === value} onClick={() => setSize(value)}>{value}</button>)}</div></fieldset>
           <fieldset className="pdp-choice-group"><legend>Colour <span>{colour}</span></legend><div className="pdp-choice-list pdp-colour-list">{previewColours.map((value) => <button type="button" key={value.name} className={colour === value.name ? "selected" : ""} aria-pressed={colour === value.name} onClick={() => setColour(value.name)}><i style={{ backgroundColor: value.swatch }} aria-hidden="true"/>{value.name}</button>)}</div></fieldset>
-          <p className="pdp-option-note">These are dummy choices for design review, not confirmed Kleawip variants. They do not change the photo, price or preview bag. Approved combinations will need individual SKUs, prices, stock and images.</p>
+          <p className="pdp-option-note">Sample choices only. They do not change the demo price or bag; final SKUs and stock are pending.</p>
         </div>
 
         <div className="pdp-buy-controls" ref={actionRef}><div className="pdp-quantity-row"><span id="pdp-quantity-label">Quantity</span><div className="pdp-quantity-control" aria-labelledby="pdp-quantity-label"><button type="button" aria-label="Decrease quantity" disabled={quantity === 1} onClick={() => setQuantity((value) => value - 1)}><Minus size={17}/></button><output aria-live="polite">{quantity}</output><button type="button" aria-label="Increase quantity" disabled={quantity === 99} onClick={() => setQuantity((value) => value + 1)}><Plus size={17}/></button></div></div><button type="button" className={`pdp-cart-cta${added ? " is-added" : ""}`} onClick={add}>{added ? <><Check size={19}/> Added to cart</> : <>Add to cart <ShoppingBag size={20}/></>}</button></div>
@@ -106,7 +107,7 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
     </div>
 
     <div className="pdp-below-grid">
-      <section className="pdp-deep-content" aria-label="More product details"><div className="pdp-block-heading"><h2>Details that matter</h2></div><div className="pdp-spec-table"><div><span>Product</span><strong>{product.title}</strong></div><div><span>Category</span><strong>Automotive Care</strong></div><div><span>GSM</span><strong>1200 GSM</strong></div><div><span>Dimensions, colour and pack</span><strong>Awaiting approved catalogue</strong></div></div><div className="pdp-accordion"><details><summary>Product details</summary><p>Additional material and performance details are awaiting Kleawip approval.</p></details><details><summary>Washing & care</summary><p>Care instructions will be displayed once approved by Kleawip.</p></details><details><summary>Delivery & returns</summary><p>Delivery terms and return policy will be displayed after the client approves them and shipping is connected.</p></details></div></section>
+      <section className="pdp-deep-content" aria-label="More product details"><div className="pdp-block-heading"><h2>Details that matter</h2></div><div className="pdp-spec-table"><div><span>Product</span><strong>{product.title}</strong></div><div><span>Category</span><strong>Automotive Care</strong></div><div><span>GSM</span><strong>1200 GSM</strong></div><div><span>Dimensions, colour and pack</span><strong>Awaiting approved catalogue</strong></div></div><div className="pdp-accordion"><details><summary>Product details</summary><p>{product.detail}. Additional material and performance details are awaiting Kleawip approval.</p></details><details><summary>Washing & care</summary><p>Care instructions will be displayed once approved by Kleawip.</p></details><details><summary>Delivery & returns</summary><p>Delivery terms and return policy will be displayed after the client approves them and shipping is connected.</p></details></div></section>
       <aside className="pdp-help-card"><span className="section-overline">BUYING FOR A TEAM?</span><h2>Need towels in volume?</h2><p>Tell Kleawip which products and quantities you need.</p><Link className="inline-link" href="/bulk">Start a bulk enquiry <ArrowUpRight size={17}/></Link></aside>
     </div>
 

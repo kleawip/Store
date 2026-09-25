@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Heart, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, Plus, Star } from "lucide-react";
 import { useState } from "react";
 import type { Product } from "@/data/products";
+import { formatDemoPrice, getDemoMerchandising } from "@/data/demo-merchandising";
 import { galleryWindow } from "@/lib/gallery-window";
 import { useStore } from "./store-provider";
 
@@ -12,6 +13,7 @@ export function ProductCard({ product }: { product: Product }) {
   const [imageIndex, setImageIndex] = useState(0);
   const { addToBag, toggleWishlist, wishlist } = useStore();
   const saved = wishlist.includes(product.id);
+  const demo = getDemoMerchandising(product.id);
 
   return <article className="product-card">
     <div className="product-card-image">
@@ -23,6 +25,6 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="card-image-dots" role="group" aria-label={`Images of ${product.title}, image ${imageIndex + 1} of ${product.images.length}`}>{galleryWindow(product.images.length, imageIndex).map((index) => <button key={index} type="button" aria-label={`Show image ${index + 1} of ${product.title}`} aria-pressed={index === imageIndex} className={index === imageIndex ? "selected" : ""} onClick={() => setImageIndex(index)}/>)}</div>
       </>}
     </div>
-    <div className="product-card-body"><span className="eyebrow">{product.spec}</span><Link className="product-title" href={`/product/${product.id}`}>{product.title}</Link><p>{product.detail}</p><div className="product-card-bottom"><span>Price to be confirmed</span><button className="quick-add" aria-label={`Add ${product.title} to preview bag`} onClick={() => addToBag(product.id)}><Plus size={19}/></button></div></div>
+    <div className="product-card-body"><span className="eyebrow">{product.spec}</span><Link className="product-title" href={`/product/${product.id}`}>{product.title}</Link><p>{product.detail}</p>{demo && <span className="product-card-demo-rating" aria-label={`Demo rating ${demo.rating} out of 5, not a customer review`}><Star size={12} fill="currentColor" aria-hidden="true"/>{demo.rating}/5 · Demo</span>}<div className="product-card-bottom"><span>{demo ? `Demo ${formatDemoPrice(demo.price)}` : "Price to be confirmed"}</span><button className="quick-add" aria-label={`Add ${product.title} to preview bag`} onClick={() => addToBag(product.id)}><Plus size={19}/></button></div></div>
   </article>;
 }
