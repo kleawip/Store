@@ -571,3 +571,12 @@ export const productVideos = pgTable("product_videos", {
   index("product_videos_product_idx").on(t.productId, t.position),
   check("product_videos_source_fields", sql`(${t.sourceType} = 'upload' AND ${t.instagramUrl} IS NULL AND ${t.playback} = 'hosted') OR (${t.sourceType} = 'instagram' AND ${t.instagramUrl} IS NOT NULL)`),
 ]);
+
+// ---- Site settings the owner controls from the admin (small key → JSON values, audited) ----
+
+export const siteSettings = pgTable("site_settings", {
+  key: text("key").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedByStaffId: uuid("updated_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

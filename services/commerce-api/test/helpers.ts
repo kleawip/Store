@@ -41,7 +41,7 @@ let cachedHash: Promise<string> | undefined;
  * (product images, collections), so call this BEFORE seeding the demo catalogue.
  */
 export async function resetStaffAndAudit(db: Database) {
-  await db.execute(sql`TRUNCATE staff_sessions, staff_users, audit_events, media_assets RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE staff_sessions, staff_users, audit_events, media_assets, site_settings RESTART IDENTITY CASCADE`);
 }
 
 export async function createStaff(db: Database, role: StaffRole, email = `${role}@kleawip.test`) {

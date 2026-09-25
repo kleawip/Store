@@ -515,7 +515,7 @@ These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput
 
 | Endpoint | Permission / notes |
 | --- | --- |
-| `POST /v1/admin/media/videos` (multipart `file`) | `media.write`. MP4 (H.264) or WebM, checked by bytes, ≤ 100 MB; QuickTime `.mov` is rejected (`quicktime`). → 201 `VideoAsset`, or 200 for an identical file. |
+| `POST /v1/admin/media/videos` (multipart `file`) | `media.write`. ≤ 100 MB. **Codecs are read from the file's own track headers:** MP4 must be H.264 (`avc1`/`avc3`) video with AAC audio or no audio; WebM must be VP8/VP9/AV1 with Opus/Vorbis. Error codes: `quicktime`, `hevc` (iPhone H.265: export as H.264), `unsupported_codec`, `unreadable_video`, `unsupported_type`. → 201 `VideoAsset`, or 200 for an identical file. |
 | `GET /v1/admin/media/videos` · `DELETE /v1/admin/media/videos/{id}` | Delete → 422 `in_use` while a product uses the video. |
 | `GET` / `POST /v1/admin/products/{id}/videos` | `catalogue.write`. Body: `{ sourceType: "upload"\|"instagram", playback: "hosted"\|"embed", videoAssetId?, posterAssetId?, instagramUrl?, caption, rightsConfirmed? }` → `AdminProductVideo` with `publishChecklist[]`. At most 10 videos per product. |
 | `PATCH` / `DELETE /v1/admin/products/{id}/videos/{videoId}` · `PUT …/videos/order { videoIds }` | Changing `instagramUrl` clears the rights confirmation. A published video that stops meeting the rules goes back to draft. |
@@ -528,6 +528,7 @@ These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput
 **Publish checklist:**
 - a caption of at least 3 characters;
 - `hosted` playback: the video file and a poster from the media library;
+- `embed` playback: **blocked (`embed_verified`) until the Owner sets `instagramEmbedsVerified: true`** via `PATCH /v1/admin/settings` (owner only; `GET` for any staff), after checking embeds play on the production domain. Hosted playback is the default.
 - `instagram` source: rights confirmed.
 
 **Storefront:** `GET /v1/store/products/{slug}` now includes `videos[]`, published and complete only, in order: `{ id, caption, source, instagramUrl, playback: { kind: "hosted", url, mimeType, poster } | { kind: "instagram_embed", permalink, poster | null } }`. Hosted files are served with HTTP Range support (`Accept-Ranges: bytes`, 206 responses).
@@ -580,6 +581,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 26 Sep 2026 (Codex video QA): video codec validation (H.264/AAC, VP8/9/AV1 + Opus/Vorbis; HEVC refused); Instagram embeds gated behind the owner setting `instagramEmbedsVerified` (`/v1/admin/settings`).
 - 26 Sep 2026: admin orders list/detail (`orders.read`), dashboard order counts. Milestone 2 backend complete.
 - 26 Sep 2026: product videos (upload or Instagram, rights confirmation, Range-served files, `ProductDetail.videos`) (§5.3).
 - 26 Sep 2026: orders + Razorpay (idempotent placement, stock reservation, signature-verified confirmation, webhooks, expiry, late/duplicate payment handling). Error code `PAYMENT_UNAVAILABLE` added.

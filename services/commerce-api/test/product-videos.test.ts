@@ -28,13 +28,31 @@ beforeEach(async () => {
 
 const problem = (res: { json: () => unknown }) => Problem.parse(res.json());
 
-/** A minimal but correctly-headed MP4 (ftyp box + filler) — enough for byte sniffing and serving. */
-function fakeMp4(size = 4096) {
+/** Builds an ISO-BMFF box: [size][type][payload]. */
+function box(type: string, ...parts: Buffer[]) {
+  const payload = Buffer.concat(parts);
+  const header = Buffer.alloc(8);
+  header.writeUInt32BE(8 + payload.length, 0);
+  header.write(type, 4, "latin1");
+  return Buffer.concat([header, payload]);
+}
+
+/** A track whose sample description names `codec` (e.g. avc1, mp4a, hvc1). */
+function track(codec: string) {
+  const entry = Buffer.alloc(16);
+  entry.writeUInt32BE(16, 0);
+  entry.write(codec, 4, "latin1");
+  const stsd = box("stsd", Buffer.from([0, 0, 0, 0, 0, 0, 0, 1]), entry);
+  return box("trak", box("mdia", box("minf", box("stbl", stsd))));
+}
+
+/** A small but structurally real MP4: ftyp + moov with the given tracks + filler "mdat". */
+function fakeMp4(size = 4096, codecs: string[] = ["avc1", "mp4a"]) {
   seed++;
-  const buffer = Buffer.alloc(size, seed % 255);
-  buffer.writeUInt32BE(24, 0);
-  buffer.write("ftypisom", 4, "latin1");
-  return buffer;
+  const ftyp = box("ftyp", Buffer.from("isom"), Buffer.alloc(4), Buffer.from("isomavc1"));
+  const moov = box("moov", ...codecs.map(track));
+  const fill = Math.max(8, size - ftyp.length - moov.length - 8);
+  return Buffer.concat([ftyp, moov, box("mdat", Buffer.alloc(fill, seed % 255))]);
 }
 
 async function uploadVideo(buffer: Buffer, filename = "reel.mp4") {
@@ -63,10 +81,15 @@ const detail = async () => ProductDetail.parse((await ctx.app.inject({ method: "
 describe("video file checks", () => {
   it("recognises MP4 and WebM by their bytes and rejects everything else with a clear reason", () => {
     expect(sniffVideo(fakeMp4())).toEqual({ mimeType: "video/mp4", ext: "mp4" });
-    const webm = Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3]), Buffer.from("....B\x82\x84webm"), Buffer.alloc(100)]);
-    expect(sniffVideo(webm)).toEqual({ mimeType: "video/webm", ext: "webm" });
+    expect(sniffVideo(fakeMp4(4096, ["avc1"]))).toEqual({ mimeType: "video/mp4", ext: "mp4" }); // no audio is fine
+    expect(() => sniffVideo(fakeMp4(4096, ["hvc1", "mp4a"]))).toThrow(/HEVC/);
+    expect(() => sniffVideo(fakeMp4(4096, ["mp4v"]))).toThrow(/Unsupported video codec/);
+    expect(() => sniffVideo(fakeMp4(4096, []))).toThrow(/couldn't read/);
+    const webm = (codecs: string) => Buffer.concat([Buffer.from([0x1a, 0x45, 0xdf, 0xa3]), Buffer.from(`....B\x82\x84webm....${codecs}`), Buffer.alloc(100)]);
+    expect(sniffVideo(webm("V_VP9 A_OPUS"))).toEqual({ mimeType: "video/webm", ext: "webm" });
+    expect(() => sniffVideo(webm("V_VP9 A_AAC"))).toThrow(/Unsupported WebM/);
     const mov = fakeMp4();
-    mov.write("qt  ", 8, "latin1");
+    mov.write("qt  ", 8, "latin1"); // major brand follows the 8-byte box header
     expect(() => sniffVideo(mov)).toThrow(/QuickTime/);
     expect(() => sniffVideo(Buffer.from("not a video at all"))).toThrow(/MP4/);
     expect(() => sniffVideo(Buffer.alloc(0))).toThrow(/empty/);
@@ -133,6 +156,7 @@ describe("uploaded product video", () => {
     const mov = fakeMp4();
     mov.write("qt  ", 8, "latin1");
     expect(problem(await uploadVideo(mov, "clip.mov")).errors![0]!.code).toBe("quicktime");
+    expect(problem(await uploadVideo(fakeMp4(4096, ["hvc1"]), "iphone.mp4")).errors![0]!.code).toBe("hevc");
     expect(problem(await uploadVideo(Buffer.from("hello"), "fake.mp4")).errors![0]!.code).toBe("unsupported_type");
   });
 });
@@ -146,7 +170,9 @@ describe("Instagram product video", () => {
       sourceType: "instagram", playback: "embed", instagramUrl: "https://www.instagram.com/reel/DY96no4NaFh/?igsh=x", caption: "1200 GSM Twisted Loop in action",
     })).json());
     expect(created.instagramUrl).toBe("https://www.instagram.com/reel/DY96no4NaFh/");
-    expect(created.publishChecklist.filter((c) => !c.ok).map((c) => c.code)).toEqual(["rights_confirmed"]);
+    expect(created.publishChecklist.filter((c) => !c.ok).map((c) => c.code)).toEqual(["embed_verified", "rights_confirmed"]);
+    // The owner confirms embeds play on the production domain.
+    expect((await owner.request("PATCH", "/v1/admin/settings", { instagramEmbedsVerified: true })).json()).toEqual({ instagramEmbedsVerified: true });
 
     const confirmed = AdminProductVideo.parse((await owner.request("PATCH", `/v1/admin/products/${productId}/videos/${created.id}`, { rightsConfirmed: true })).json());
     expect(confirmed.rightsConfirmed).toMatchObject({ byName: "Test owner" });
@@ -154,7 +180,20 @@ describe("Instagram product video", () => {
     expect((await detail()).videos).toEqual([expect.objectContaining({ source: "instagram", playback: { kind: "instagram_embed", permalink: "https://www.instagram.com/reel/DY96no4NaFh/", poster: null } })]);
   });
 
+  it("keeps embeds unpublishable until the owner verifies them on the live domain", async () => {
+    const created = AdminProductVideo.parse((await owner.request("POST", `/v1/admin/products/${productId}/videos`, {
+      sourceType: "instagram", playback: "embed", instagramUrl: "https://www.instagram.com/reel/DY96no4NaFh/", caption: "Reel", rightsConfirmed: true,
+    })).json());
+    const blocked = await owner.request("POST", `/v1/admin/products/${productId}/videos/${created.id}/publish`);
+    expect(problem(blocked).errors!.map((e) => e.code)).toEqual(["embed_verified"]);
+    expect((await detail()).videos).toEqual([]);
+    await createStaff(ctx.db, "catalogue_manager");
+    const manager = await signIn(ctx.app, "catalogue_manager@kleawip.test");
+    expect((await manager.request("PATCH", "/v1/admin/settings", { instagramEmbedsVerified: true })).statusCode).toBe(403);
+  });
+
   it("changing the linked post clears the rights confirmation and takes a published video down", async () => {
+    await owner.request("PATCH", "/v1/admin/settings", { instagramEmbedsVerified: true });
     const created = AdminProductVideo.parse((await owner.request("POST", `/v1/admin/products/${productId}/videos`, {
       sourceType: "instagram", playback: "embed", instagramUrl: "https://www.instagram.com/reel/DY96no4NaFh/", caption: "Reel", rightsConfirmed: true,
     })).json());

@@ -7,6 +7,7 @@ import { mediaAssets, products, productVideos, staffUsers, videoAssets } from ".
 import { ApiError, notFound } from "../errors";
 import type { MediaStorage } from "./storage";
 import { parseInstagramUrl, sha256Of, sniffVideo, videoKey } from "./video";
+import { getSettings } from "../settings/service";
 
 export const MAX_VIDEOS_PER_PRODUCT = 10;
 const isUuid = (id: string) => /^[0-9a-f-]{36}$/i.test(id);
@@ -70,9 +71,12 @@ export async function deleteVideoAsset(db: Database, storage: MediaStorage, id: 
 
 type VideoRow = typeof productVideos.$inferSelect;
 
-function checklist(row: VideoRow, hasVideo: boolean, hasPoster: boolean) {
+function checklist(row: VideoRow, hasVideo: boolean, hasPoster: boolean, embedsVerified: boolean) {
   const needsFile = row.playback === "hosted";
   return [
+    ...(row.playback === "embed"
+      ? [{ code: "embed_verified", ok: embedsVerified, message: "Instagram embeds aren't verified on the live site yet. Use hosted playback (upload the clip + poster), or ask the Owner to enable embeds once they play on the production domain." }]
+      : []),
     { code: "caption", ok: row.caption.trim().length >= 3, message: "Add a caption that describes the video (it's also read by screen readers)." },
     ...(needsFile
       ? [
@@ -90,10 +94,11 @@ async function views(db: Database, rows: VideoRow[]): Promise<AdminProductVideo[
   const videoIds = rows.map((r) => r.videoAssetId).filter((id): id is string => !!id);
   const posterIds = rows.map((r) => r.posterAssetId).filter((id): id is string => !!id);
   const staffIds = rows.map((r) => r.rightsConfirmedByStaffId).filter((id): id is string => !!id);
-  const [videos, posters, staff] = await Promise.all([
+  const [videos, posters, staff, settings] = await Promise.all([
     videoIds.length ? db.select().from(videoAssets).where(inArray(videoAssets.id, videoIds)) : Promise.resolve([]),
     posterIds.length ? db.select().from(mediaAssets).where(inArray(mediaAssets.id, posterIds)) : Promise.resolve([]),
     staffIds.length ? db.select({ id: staffUsers.id, name: staffUsers.name }).from(staffUsers).where(inArray(staffUsers.id, staffIds)) : Promise.resolve([]),
+    getSettings(db),
   ]);
   return rows.map((row) => {
     const video = videos.find((v) => v.id === row.videoAssetId);
@@ -109,7 +114,7 @@ async function views(db: Database, rows: VideoRow[]): Promise<AdminProductVideo[
       rightsConfirmed: row.rightsConfirmedAt ? { at: row.rightsConfirmedAt.toISOString(), byName: staff.find((s) => s.id === row.rightsConfirmedByStaffId)?.name ?? null } : null,
       status: row.status,
       position: row.position,
-      publishChecklist: checklist(row, !!video, !!poster),
+      publishChecklist: checklist(row, !!video, !!poster, settings.instagramEmbedsVerified),
     };
   });
 }
