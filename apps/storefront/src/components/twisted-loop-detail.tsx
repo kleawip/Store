@@ -11,6 +11,8 @@ import { formatDemoPrice, getDemoMerchandising } from "@/data/demo-merchandising
 import { galleryWindow } from "@/lib/gallery-window";
 import { useStore } from "./store-provider";
 import { ProductCard } from "./product-card";
+import { InstagramFeature } from "./instagram-feature";
+import { kleawipInstagram } from "@/data/social-content";
 
 // Illustrative UI values only. Replace with approved SKU data before checkout goes live.
 const previewPacks = ["Pack of 1", "Pack of 2", "Pack of 4"];
@@ -111,6 +113,7 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
       <aside className="pdp-help-card"><span className="section-overline">BUYING FOR A TEAM?</span><h2>Need towels in volume?</h2><p>Tell Kleawip which products and quantities you need.</p><Link className="inline-link" href="/bulk">Start a bulk enquiry <ArrowUpRight size={17}/></Link></aside>
     </div>
 
+    {product.id === kleawipInstagram.productId && <InstagramFeature previewImage={product.images[0]}/>}
     <section id="customer-reviews" className="pdp-reviews"><div className="pdp-block-heading"><h2>Customer reviews</h2><span>Preview state</span></div><p>No reviews are published in this preview. Genuine product reviews can appear here after launch and moderation is configured.</p></section>
     <section className="pdp-related"><div className="section-heading"><div><span className="section-overline">EXPLORE MORE</span><h2>You may also like</h2></div><Link className="inline-link" href="/shop/automotive">View Automotive Care <ArrowUpRight size={17}/></Link></div><div className="product-grid">{related.map((item) => <ProductCard product={item} key={item.id}/>)}</div></section>
 

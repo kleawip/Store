@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { use, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Breadcrumbs } from "@/components/shell";
+import { ProductVideos } from "@/components/product-videos";
 import { useSession } from "@/components/session";
 import { api, ApiProblem, istTime, rupees, type FieldError } from "@/lib/api";
 
@@ -214,7 +215,7 @@ export default function ProductEditorPage({ params }: { params: Promise<{ id: st
       )}
 
       {tab === "variants" && <VariantsTab product={product} canWrite={canWrite} onChange={(result, text) => run(async () => result, text)} run={run} />}
-      {tab === "media" && <MediaTab product={product} canWrite={canWrite && can("media.write")} run={run} />}
+      {tab === "media" && <MediaTab product={product} canWrite={canWrite && can("media.write")} canPublish={can("catalogue.publish")} run={run} />}
       {TABS.find((item) => item.id === tab && "later" in item) && (
         <div className="card empty-card">
           <Layers size={22} aria-hidden />
@@ -565,7 +566,7 @@ function AddVariant({ product, run }: { product: AdminProduct; run: (action: () 
 
 // ---- Media tab ----
 
-function MediaTab({ product, canWrite, run }: { product: AdminProduct; canWrite: boolean; run: (action: () => Promise<AdminProduct | void>, success: string) => Promise<void> }) {
+function MediaTab({ product, canWrite, canPublish, run }: { product: AdminProduct; canWrite: boolean; canPublish: boolean; run: (action: () => Promise<AdminProduct | void>, success: string) => Promise<void> }) {
   const fileInput = useRef<HTMLInputElement>(null);
   const [alts, setAlts] = useState<Record<string, string>>({});
 
@@ -589,6 +590,7 @@ function MediaTab({ product, canWrite, run }: { product: AdminProduct; canWrite:
   };
 
   return (
+    <>
     <section className="card">
       <header className="card-head">
         <h2><ImagePlus size={17} aria-hidden /> Media & gallery order</h2>
@@ -636,5 +638,7 @@ function MediaTab({ product, canWrite, run }: { product: AdminProduct; canWrite:
         ))}
       </div>
     </section>
+    <ProductVideos product={product} canWrite={canWrite} canPublish={canPublish}/>
+    </>
   );
 }

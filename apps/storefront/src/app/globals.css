@@ -241,6 +241,24 @@ html[data-theme=dark] .button-primary,html[data-theme=dark] .quick-add,html[data
 .pdp-help-card{align-self:start;background:var(--pale);padding:25px;border-radius:12px}
 .pdp-help-card h2{font-size:23px;margin:10px 0}
 .pdp-help-card p{font-size:12px;color:var(--muted);margin-bottom:20px}
+.pdp-instagram{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,300px);align-items:center;gap:clamp(24px,5vw,70px);margin-top:70px;padding:clamp(22px,4vw,48px);border:1px solid var(--border);border-radius:15px;background:var(--pale)}
+.pdp-instagram-copy h2{font-size:clamp(25px,3vw,38px);margin:11px 0 15px}
+.pdp-instagram-copy p{max-width:430px;color:var(--muted);font-size:14px;line-height:1.6}
+.pdp-instagram-copy .pdp-instagram-disclaimer{font-size:11px;margin:14px 0 21px}
+.pdp-instagram-media{width:100%;max-width:300px;justify-self:end}
+.pdp-instagram-player{position:relative;width:100%;aspect-ratio:9/16;overflow:hidden;border-radius:11px;background:#172b3b;color:#fff}
+.pdp-instagram-player video{display:block;width:100%;height:100%;object-fit:cover}
+.pdp-instagram-controls{position:absolute;inset:auto 0 0;display:flex;align-items:center;gap:8px;min-height:52px;padding:8px;background:linear-gradient(transparent,rgba(2,11,20,.88));color:#fff}
+.pdp-instagram-controls button{flex:0 0 34px;display:grid;place-items:center;width:34px;height:36px;border:0;background:transparent;color:inherit;cursor:pointer}
+.pdp-instagram-controls input{flex:1;min-width:0;accent-color:#fff;cursor:pointer}
+.pdp-instagram-controls span{white-space:nowrap;font-size:10px;font-variant-numeric:tabular-nums}
+.pdp-instagram-fallback{position:relative;display:flex;flex-direction:column;justify-content:end;gap:8px;width:100%;height:100%;padding:20px;isolation:isolate}
+.pdp-instagram-fallback img{z-index:-1;object-fit:cover;filter:brightness(.35)}
+.pdp-instagram-fallback p{margin:0;font-size:14px;font-weight:700}
+.pdp-instagram-fallback a{display:inline-flex;align-items:center;gap:5px;color:#fff;font-size:12px}
+.pdp-instagram-footer{display:flex;align-items:center;gap:7px;margin-top:10px;color:var(--muted);font-size:11px}
+.pdp-instagram-footer a{color:var(--blue);font-weight:700}
+.pdp-instagram-footer>a:last-child{display:inline-flex;align-items:center;gap:3px;margin-left:auto}
 .pdp-reviews{margin-top:67px;padding:25px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
 .pdp-reviews p{font-size:13px;color:var(--muted);margin:13px 0 0}
 .pdp-related{margin-top:74px}
@@ -263,6 +281,8 @@ html[data-theme=dark] .button-primary,html[data-theme=dark] .quick-add,html[data
   .pdp-option-row span{max-width:70%}
   .pdp-below-grid{margin-top:53px}
   .pdp-help-card{margin-top:25px}
+  .pdp-instagram{grid-template-columns:1fr;gap:20px;margin-top:52px;padding:20px}
+  .pdp-instagram-media{justify-self:center}
   .pdp-reviews{margin-top:48px;padding:20px}
   .pdp-deep-content>.pdp-block-heading h2,.pdp-reviews .pdp-block-heading h2{font-size:23px}
   .pdp-related{margin-top:58px}
