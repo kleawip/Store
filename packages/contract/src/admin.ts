@@ -417,3 +417,38 @@ export const RibbonMessage = z.object({
 export type RibbonMessage = z.infer<typeof RibbonMessage>;
 
 export const CampaignOrder = z.object({ ids: z.array(z.uuid()).min(1).max(100) });
+
+// ---- Catalogue CSV import ----
+
+export const IMPORT_COLUMNS = [
+  "product_slug", "product_title", "category", "detail", "spec", "summary",
+  "option1_name", "option1_value", "option2_name", "option2_value", "option3_name", "option3_value",
+  "sku", "price_inr", "mrp_inr", "gst_percent", "hsn", "pack_quantity", "stock_source", "opening_stock",
+  "max_order_quantity", "weight_grams",
+] as const;
+
+export const ImportIssue = z.object({
+  row: z.number().int().nullable(), // spreadsheet row number (header = 1); null for file-level issues
+  column: z.string().nullable(),
+  code: z.string(),
+  message: z.string(),
+});
+
+export const ImportReport = z.object({
+  importId: z.string().nullable(), // null when the file could not be read at all
+  filename: z.string(),
+  status: z.enum(["validated", "committed", "failed"]),
+  rowCount: z.number().int(),
+  summary: z.object({
+    productsCreated: z.number().int(),
+    productsUpdated: z.number().int(),
+    variantsCreated: z.number().int(),
+    variantsUpdated: z.number().int(),
+  }),
+  errors: z.array(ImportIssue),
+  warnings: z.array(ImportIssue),
+  canCommit: z.boolean(),
+  createdAt: z.string(),
+  committedAt: z.string().nullable(),
+});
+export type ImportReport = z.infer<typeof ImportReport>;

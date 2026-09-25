@@ -301,3 +301,19 @@ export const ribbonMessages = pgTable("ribbon_messages", {
   isDemo: boolean("is_demo").notNull().default(false),
   ...timestamps,
 }, (t) => [check("ribbon_messages_schedule_order", sql`${t.endsAt} IS NULL OR ${t.startsAt} IS NULL OR ${t.endsAt} > ${t.startsAt}`)]);
+
+// ---- Catalogue CSV imports (ADMIN_SCREENS_BRIEF §5): validate first, apply on confirm ----
+
+export const importStatus = pgEnum("import_status", ["validated", "committed", "failed"]);
+
+export const catalogueImports = pgTable("catalogue_imports", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  filename: text("filename").notNull(),
+  // The uploaded CSV is kept so the commit re-validates exactly what staff reviewed.
+  csv: text("csv").notNull(),
+  status: importStatus("status").notNull(),
+  report: jsonb("report").notNull(),
+  createdByStaffId: uuid("created_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  committedAt: timestamp("committed_at", { withTimezone: true }),
+});

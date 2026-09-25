@@ -36,6 +36,13 @@
       "when": 1790331488907,
       "tag": "0004_homepage_campaigns",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790333017658,
+      "tag": "0005_catalogue_imports",
+      "breakpoints": true
     }
   ]
 }

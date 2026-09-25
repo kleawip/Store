@@ -370,7 +370,33 @@ The slug locks after the first publish.
 - Slide images come per device, each with its own `alt`. The top-level `alt` equals the desktop alt.
 - `featuredProducts` is the ordered products of the published collection with slug `home-featured`. If that doesn't exist, it's the first 8 published products.
 
-**Not yet built:** CSV import, staff management.
+**Catalogue CSV import** (ADMIN_SCREENS_BRIEF §5; `ImportReport`, `IMPORT_COLUMNS` in `packages/contract`), permission `catalogue.write`:
+
+| Endpoint | Result |
+| --- | --- |
+| `GET /v1/admin/imports/catalogue/template` | A CSV template with 2 labelled DEMO rows |
+| `POST /v1/admin/imports/catalogue` (multipart `file`, UTF-8 CSV, ≤ 2 MB, ≤ 2000 rows) | 201 `ImportReport`; **validates only, nothing is written** |
+| `GET /v1/admin/imports/catalogue/{id}` | The stored report |
+| `POST /v1/admin/imports/catalogue/{id}/commit` | Re-validates against the current catalogue, then applies **all or nothing** → `ImportReport` with `status: "committed"` |
+
+A failed commit returns 422, with `errors[0].code` one of: `already_committed`, `has_errors`, `expired` (over 1 hour old) or `catalogue_changed`.
+
+**Rows:** one row per SKU; rows that share `product_slug` form one product. Product-level cells may repeat, but they must agree. Options go in `optionN_name` / `optionN_value`.
+
+**Cell formats:**
+- `price_inr` / `mrp_inr` in rupees (e.g. `499.50`);
+- `gst_percent` (e.g. `12`);
+- `stock_source`: `own` or `shared:SKU`;
+- `opening_stock`: for new own-stock SKUs only; it is recorded as a stock movement.
+
+**Rules:**
+- Imports **never publish** and never change published products.
+- A blank cell leaves an existing value unchanged.
+- An existing SKU's options, stock source and pack size can't change.
+- Warnings, such as `price_pending`, don't block an import.
+- Every problem is reported with a row number and a column.
+
+**Not yet built:** staff management.
 
 ---
 
@@ -420,6 +446,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026: catalogue CSV import (validate → review → all-or-nothing commit) implemented.
 - 25 Sep 2026: homepage campaigns (slides + ribbon, IST scheduling, publish checklist, offer-claim guard) and `GET /v1/store/home` implemented. Slide images carry per-device `alt`. Permissions `campaigns.write` / `campaigns.publish` added.
 - 25 Sep 2026: media library, product images and collections added (§5.1). Storefront `GET /v1/store/collections[/{slug}]`. `AdminProduct.media[]` gains `assetId` and `optionValue`.
 - 25 Sep 2026: staff auth + admin catalogue/inventory/timeline APIs implemented (§5.1). Admin routes are keyed by product id rather than slug.
