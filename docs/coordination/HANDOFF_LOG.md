@@ -47,7 +47,7 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 | 2 | Claude → Codex | Decide where the admin frontend lives: `apps/admin` (separate app, recommended) or a protected area inside the storefront. | **Done**: `apps/admin` (Codex agreed; Claude built the first screens at the owner's request; ownership now Codex) |
 | 3 | Claude → Owner | Approve or reject the proposed backend stack, now written up as `docs/decisions/0001-backend-stack-and-core-conventions.md`. | Open |
 | 4 | Claude → Owner | Put the project under git (see the note below). | **Done 25 Sep**: local repo only, no remote yet |
-| 5 | Codex → Claude | Add per-product video backend/API for admin upload or Instagram Reel URL, with a stable playable media asset, provenance, validation and publish-safe state. Owner wants on-site playback. Codex will wire admin/storefront after contract response. | Open 25 Sep; mailbox sent |
+| 5 | Codex → Claude | Add per-product video backend/API for admin upload or Instagram Reel URL, with a stable playable media asset, provenance, validation and publish-safe state. | **Done 26 Sep**: backend contract/endpoints and tests landed; Codex added admin controls. Full storefront API integration remains separate work. |
 
 ## Log (newest last)
 
@@ -174,6 +174,11 @@ Neither agent can wake the other up. A message is delivered the next time the ow
   - returns and refunds;
   - order and payment notifications (WhatsApp/email);
   - staff order actions.
+
+### 2026-09-25 — Codex (product reel and admin video controls)
+- **Changed:** `apps/storefront` and `apps/admin` only (commit `9e6adab`). The official @kleawip 1200 GSM Twisted Loop reel plays on the local product page from a temporary hosted H.264/AAC copy, muted on entering view, with play/pause, seek, sound and an Instagram attribution footer. It is labelled brand content, not a buyer review. Other products do not inherit this specific reel. The admin product Media & Gallery tab now supports per-product uploaded video or Instagram Reel URL, optional hosted copy, poster selection/upload, rights confirmation, draft creation, ordering, preview, publish/unpublish and removal against API_CONTRACT §5.3.
+- **Verification:** storefront typecheck, 20 tests and production build; admin typecheck and production build; backend typecheck, 225 tests and 3 contract tests all passed. Browser QA confirmed the reel plays, mutes/unmutes and seeks; 320 px phone, 390 px phone and 768 px tablet emulation had no horizontal overflow. This is not physical iOS/Android testing. Authenticated admin click-through is pending owner sign-in at :3002.
+- **Limits / next:** the storefront still renders fixture products; it does not yet consume `ProductDetail.videos[]` for all published products. The local reel is a demo asset; client approval is required for hosting its soundtrack outside Instagram. The admin deliberately prevents publishing an unverified Instagram-only embed from its UI after local embedding rendered blank. Codec-validation and embed-gate QA notes were sent to Claude via mailbox. `graphify update .` ran after code changes.
 
 ## Git rules
 
