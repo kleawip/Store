@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -19,12 +20,21 @@ const DemoCatalogue = z.object({
   })),
 });
 
+/** Databases the demo seed may wipe: names ending in _dev or _test (e.g. kleawip_dev, kleawip_test). */
+export const DEMO_SEEDABLE_DATABASE = /_(dev|test)$/;
+
 /**
- * Replaces all catalogue rows with the demo fixture. Every row is marked isDemo.
- * Refuses to run against production.
+ * DESTRUCTIVE: replaces all catalogue rows with the demo fixture. Every row is marked isDemo.
+ * Refuses to run in production or against any database whose real name (asked from Postgres,
+ * not from configuration) does not end in _dev or _test.
  */
 export async function seedDemoCatalogue(db: Database) {
   if (process.env.NODE_ENV === "production") throw new Error("Refusing to seed demo data in production.");
+  const result = await db.execute<{ name: string }>(sql`SELECT current_database() AS name`);
+  const name = result.rows[0]?.name ?? "";
+  if (!DEMO_SEEDABLE_DATABASE.test(name)) {
+    throw new Error(`Refusing to seed demo data into database "${name}": only *_dev or *_test databases may be wiped.`);
+  }
   const catalogue = DemoCatalogue.parse(JSON.parse(await readFile(demoCataloguePath, "utf8")));
 
   await db.transaction(async (tx) => {

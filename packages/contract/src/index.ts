@@ -74,15 +74,32 @@ export const ProductListItem = z.object({
   priceFrom: Money.nullable(),
   priceStatus: PriceStatus,
   availability: Availability,
+  // Only ever set from an admin-approved badge; null until then (API_CONTRACT §11).
+  badge: z.object({ code: z.string(), label: z.string() }).nullable(),
   isDemo: z.boolean(),
 });
 export type ProductListItem = z.infer<typeof ProductListItem>;
-export const ProductListResponse = z.object({ data: z.array(ProductListItem), page: Page });
+
+export const Facet = z.object({
+  code: z.string(),
+  values: z.array(z.object({ value: z.string(), label: z.string(), count: z.number().int().nonnegative() })),
+});
+export type Facet = z.infer<typeof Facet>;
+
+export const ProductListResponse = z.object({
+  data: z.array(ProductListItem),
+  // Matches for the current filters across all pages.
+  totalCount: z.number().int().nonnegative(),
+  // Facet counts ignore that facet's own filter, so every option stays selectable (OR within a facet).
+  facets: z.array(Facet),
+  page: Page,
+});
 
 export const ProductListQuery = z.object({
   category: z.string().optional(),
   q: z.string().trim().min(1).max(100).optional(),
-  sort: z.enum(["featured", "newest", "price_asc", "price_desc"]).default("featured"),
+  // Only "featured" is implemented. "newest", "price_asc" and "price_desc" are reserved for later and rejected with 422.
+  sort: z.enum(["featured"]).default("featured"),
   limit: z.coerce.number().int().min(1).max(100).default(24),
   cursor: z.string().optional(),
 });
@@ -143,3 +160,23 @@ export const ProductDetail = z.object({
   isDemo: z.boolean(),
 });
 export type ProductDetail = z.infer<typeof ProductDetail>;
+
+// §11 GET /v1/store/search/suggest
+export const SearchSuggestQuery = z.object({
+  q: z.string().trim().max(100).default(""),
+  limit: z.coerce.number().int().min(1).max(10).default(6),
+});
+
+export const SearchSuggestion = z.object({
+  kind: z.enum(["category", "product"]),
+  label: z.string(),
+  // Server-resolved storefront path; the UI never builds destinations itself.
+  href: z.string(),
+  thumbnail: Image.pick({ url: true, alt: true }).nullable(),
+});
+export type SearchSuggestion = z.infer<typeof SearchSuggestion>;
+
+export const SearchSuggestResponse = z.object({
+  query: z.string(),
+  suggestions: z.array(SearchSuggestion),
+});

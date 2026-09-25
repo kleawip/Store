@@ -152,7 +152,7 @@ export const inventoryMovements = pgTable("inventory_movements", {
   committedDelta: integer("committed_delta").notNull().default(0),
   unavailableDelta: integer("unavailable_delta").notNull().default(0),
   note: text("note"),
-  actorStaffId: uuid("actor_staff_id"),
+  actorStaffId: uuid("actor_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
   sourceRef: text("source_ref"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("inventory_movements_item_idx").on(t.inventoryItemId, t.createdAt)]);
@@ -180,9 +180,47 @@ export const auditEvents = pgTable("audit_events", {
   entityType: text("entity_type").notNull(),
   entityId: uuid("entity_id").notNull(),
   action: text("action").notNull(),
-  actorStaffId: uuid("actor_staff_id"),
+  actorStaffId: uuid("actor_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
   before: jsonb("before"),
   after: jsonb("after"),
   comment: text("comment"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("audit_events_entity_idx").on(t.entityType, t.entityId, t.createdAt)]);
+
+// ---- Staff (Kleawip employees only; no public sign-up) ----
+
+export const staffRole = pgEnum("staff_role", ["owner", "catalogue_manager", "marketing_editor", "operations", "support", "viewer"]);
+export const staffStatus = pgEnum("staff_status", ["active", "disabled"]);
+
+export const staffUsers = pgTable("staff_users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").notNull(),
+  name: text("name").notNull(),
+  role: staffRole("role").notNull(),
+  status: staffStatus("status").notNull().default("active"),
+  passwordHash: text("password_hash").notNull(),
+  failedLoginAttempts: integer("failed_login_attempts").notNull().default(0),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex("staff_users_email_key").on(t.email),
+  check("staff_users_email_lowercase", sql`${t.email} = lower(${t.email})`),
+]);
+
+// Only a SHA-256 of the session token is stored, so a database leak does not expose live sessions.
+export const staffSessions = pgTable("staff_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  staffId: uuid("staff_id").notNull().references(() => staffUsers.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull(),
+  csrfToken: text("csrf_token").notNull(),
+  userAgent: text("user_agent"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  revokedAt: timestamp("revoked_at", { withTimezone: true }),
+}, (t) => [
+  uniqueIndex("staff_sessions_token_hash_key").on(t.tokenHash),
+  index("staff_sessions_staff_idx").on(t.staffId),
+]);
