@@ -80,3 +80,21 @@ export async function uploadImage(app: App, session: Awaited<ReturnType<typeof s
     payload: Buffer.concat(parts),
   });
 }
+
+type TestContext = Awaited<ReturnType<typeof createTestApp>>;
+export const STORE_CLIENT = { "x-kleawip-client": "storefront" };
+
+/** Signs a customer in through the real OTP flow (the in-memory sender captures the code). */
+export async function customerSignIn(ctx: TestContext, phone = "9876543210", extraCookies: Record<string, string> = {}) {
+  await ctx.db.execute(sql`UPDATE otp_challenges SET created_at = created_at - interval '1 hour'`);
+  const request = await ctx.app.inject({ method: "POST", url: "/v1/store/auth/otp/request", headers: STORE_CLIENT, payload: { phone } });
+  if (request.statusCode !== 201) throw new Error(`otp request failed: ${request.body}`);
+  const { challengeId } = request.json() as { challengeId: string };
+  const code = ctx.otp.lastCodeFor(`+91${phone.replace(/\D/g, "").slice(-10)}`)!;
+  const verify = await ctx.app.inject({ method: "POST", url: "/v1/store/auth/otp/verify", headers: STORE_CLIENT, payload: { challengeId, code }, cookies: extraCookies });
+  if (verify.statusCode !== 200) throw new Error(`otp verify failed: ${verify.body}`);
+  const cookie = verify.cookies.find((c) => c.name === "klw_session")!.value;
+  const call = (method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE", url: string, payload?: object) =>
+    ctx.app.inject({ method, url, headers: STORE_CLIENT, cookies: { klw_session: cookie }, ...(payload ? { payload } : {}) });
+  return { cookie, call, verify, customerId: (verify.json() as { customer: { id: string } }).customer.id };
+}

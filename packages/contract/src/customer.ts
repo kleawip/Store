@@ -76,3 +76,51 @@ export type AddressInput = z.infer<typeof AddressInput>;
 
 export const Address = AddressInput.extend({ id: z.string(), phone: z.string(), stateName: z.string() });
 export type Address = z.infer<typeof Address>;
+
+// ---- Cart (server-priced; the browser only ever sends SKU + quantity) ----
+
+const Money = z.object({ amount: z.number().int(), currency: z.literal("INR") });
+
+export const CartLineWarning = z.enum(["PRICE_CHANGED", "QUANTITY_REDUCED", "SKU_UNAVAILABLE"]);
+
+export const CartLine = z.object({
+  sku: z.string(),
+  productSlug: z.string(),
+  productTitle: z.string(),
+  // e.g. "Size: 40 × 60 cm · Pack: Pack of 2"
+  optionsLabel: z.string(),
+  image: z.object({ url: z.string(), alt: z.string() }).nullable(),
+  packQuantity: z.number().int(),
+  // What the customer asked for, and what can actually be ordered now.
+  quantity: z.number().int(),
+  orderableQuantity: z.number().int(),
+  unitPrice: Money.nullable(),
+  mrp: Money.nullable(),
+  lineTotal: Money, // unitPrice × orderableQuantity (0 when unavailable)
+  gstRatePercent: z.number().nullable(),
+  warnings: z.array(z.object({ code: CartLineWarning, message: z.string(), previousUnitPrice: Money.optional() })),
+});
+export type CartLine = z.infer<typeof CartLine>;
+
+export const Cart = z.object({
+  lines: z.array(CartLine),
+  itemCount: z.number().int(),
+  // GST-inclusive merchandise total; shipping and payment split are worked out at checkout.
+  subtotal: Money,
+  gstIncluded: Money,
+  hasWarnings: z.boolean(),
+  signedIn: z.boolean(),
+});
+export type Cart = z.infer<typeof Cart>;
+
+export const CartLineUpdate = z.object({ quantity: z.number().int().min(0).max(999) });
+
+export const WishlistItem = z.object({
+  productSlug: z.string(),
+  sku: z.string().nullable(),
+  addedAt: z.string(),
+});
+export const WishlistPut = z.object({ sku: z.string().nullable().default(null) });
+export const WishlistMerge = z.object({
+  items: z.array(z.object({ productSlug: z.string(), sku: z.string().nullable().default(null) })).max(100),
+});

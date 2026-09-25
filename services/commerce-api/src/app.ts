@@ -19,6 +19,7 @@ import { adminAccountRoutes, adminStaffRoutes } from "./routes/admin-staff";
 import { adminMediaCollectionRoutes } from "./routes/admin-media-collections";
 import { mediaFileRoutes } from "./routes/media-files";
 import { storeAccountRoutes } from "./routes/store-account";
+import { mergeGuestCartOnSignIn, storeCartRoutes } from "./routes/store-cart";
 import { storeCatalogueRoutes } from "./routes/store-catalogue";
 
 export type AppOptions = {
@@ -76,7 +77,8 @@ export async function buildApp({ db, storage, otpSender, storefrontOrigins, cook
     }
   });
   await app.register(storeCatalogueRoutes(db), { prefix: "/v1/store" });
-  await app.register(storeAccountRoutes(db, { otpSender, cookieSecure }), { prefix: "/v1/store" });
+  await app.register(storeAccountRoutes(db, { otpSender, cookieSecure, onSignIn: mergeGuestCartOnSignIn(db) }), { prefix: "/v1/store" });
+  await app.register(storeCartRoutes(db, { cookieSecure }), { prefix: "/v1/store" });
   await app.register(adminAuthRoutes(db, { cookieSecure }), { prefix: "/v1/admin/auth" });
   await app.register(adminCatalogueRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminMediaCollectionRoutes(db, storage), { prefix: "/v1/admin" });

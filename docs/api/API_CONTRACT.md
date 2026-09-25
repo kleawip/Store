@@ -437,6 +437,28 @@ Zod: `packages/contract/src/customer.ts`.
 
 Development: with no WhatsApp or Resend keys set, codes are written to `services/commerce-api/.data/otp-outbox.log` (git-ignored). Production refuses to start without WhatsApp configured.
 
+**Cart** (guests allowed; checkout needs sign-in). Zod: `Cart`, `CartLine`, `CartLineUpdate`.
+
+| Endpoint | Notes |
+| --- | --- |
+| `GET /v1/store/cart` | → `Cart { lines[], itemCount, subtotal, gstIncluded, hasWarnings, signedIn }`. Re-priced from the catalogue on every read. |
+| `PUT /v1/store/cart/lines/{sku} { quantity }` | Sets an **absolute** quantity (safe to retry); 0 removes. The first add by a guest sets the `klw_cart` cookie. Errors: `PRICE_PENDING`, `SKU_UNAVAILABLE`, `QUANTITY_EXCEEDS_STOCK` / `QUANTITY_EXCEEDS_MAX` ("You can order up to N"). At most 50 different items. → `Cart`. |
+| `DELETE /v1/store/cart/lines/{sku}` | → `Cart` |
+
+- Each line reports `quantity` (what was asked for) and `orderableQuantity` (what can be ordered now).
+- `warnings[]` is one or more of: `PRICE_CHANGED` (with `previousUnitPrice`), `QUANTITY_REDUCED`, `SKU_UNAVAILABLE`.
+- Totals count only orderable quantities.
+- Prices include GST; `gstIncluded` is the GST inside `subtotal`.
+- At sign-in, the guest cart merges into the account: quantities add up, capped at stock.
+
+**Wishlist** (signed-in):
+- `GET /v1/store/me/wishlist`
+- `PUT /v1/store/me/wishlist/{productSlug} { sku? }` → 204
+- `DELETE /v1/store/me/wishlist/{productSlug}`
+- `POST /v1/store/me/wishlist/merge { items[] }` imports the browser's guest list after sign-in.
+
+Unpublished products are hidden.
+
 ---
 
 ## 6. Later milestones (outline only; blocked on Phase 0)
@@ -485,6 +507,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 26 Sep 2026: server cart (guest + merge on sign-in, honest warnings, GST-inclusive totals) and wishlist.
 - 26 Sep 2026: Milestone 2 customer accounts: WhatsApp OTP sign-in, sessions, profile, addresses (§5.2). Error code `DELIVERY_FAILED` added.
 - 25 Sep 2026: staff management (invite links, roles, disable, self password change, activity log) implemented.
 - 25 Sep 2026: catalogue CSV import (validate → review → all-or-nothing commit) implemented.

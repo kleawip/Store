@@ -397,3 +397,34 @@ export const addresses = pgTable("addresses", {
   check("addresses_pincode_format", sql`${t.pincode} ~ '^[1-9][0-9]{5}$'`),
   check("addresses_phone_format", sql`${t.phone} ~ '^\\+91[6-9][0-9]{9}$'`),
 ]);
+
+// ---- Cart and wishlist (Milestone 2) ----
+
+// A cart belongs to a customer, or to an anonymous browser (hashed token in the klw_cart cookie) until sign-in merges it.
+export const carts = pgTable("carts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  customerId: uuid("customer_id").references(() => customers.id, { onDelete: "cascade" }),
+  guestTokenHash: text("guest_token_hash"),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex("carts_customer_key").on(t.customerId),
+  uniqueIndex("carts_guest_token_key").on(t.guestTokenHash),
+  check("carts_owner", sql`(${t.customerId} IS NULL) <> (${t.guestTokenHash} IS NULL)`),
+]);
+
+export const cartLines = pgTable("cart_lines", {
+  cartId: uuid("cart_id").notNull().references(() => carts.id, { onDelete: "cascade" }),
+  variantId: uuid("variant_id").notNull().references(() => variants.id, { onDelete: "cascade" }),
+  quantity: integer("quantity").notNull(),
+  // Price the customer saw when adding; a later difference is reported as PRICE_CHANGED.
+  pricePaiseWhenAdded: integer("price_paise_when_added").notNull(),
+  ...timestamps,
+}, (t) => [primaryKey({ columns: [t.cartId, t.variantId] }), check("cart_lines_quantity_positive", sql`${t.quantity} > 0`)]);
+
+export const wishlistItems = pgTable("wishlist_items", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  customerId: uuid("customer_id").notNull().references(() => customers.id, { onDelete: "cascade" }),
+  productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  variantId: uuid("variant_id").references(() => variants.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("wishlist_items_customer_product_key").on(t.customerId, t.productId)]);
