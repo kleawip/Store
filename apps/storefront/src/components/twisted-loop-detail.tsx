@@ -5,14 +5,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowUpRight, Check, ChevronLeft, ChevronRight, Heart, Minus, Plus, ShoppingBag, Star, Volume2, VolumeX, X, ZoomIn } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import type { ProductDetail as CatalogueProductDetail } from "@kleawip/contract";
 import type { Product } from "@/data/products";
 import { products } from "@/data/products";
 import { formatDemoPrice, getDemoMerchandising } from "@/data/demo-merchandising";
 import { galleryWindow } from "@/lib/gallery-window";
+import { formatRupees } from "@/lib/money";
 import { useStore } from "./store-provider";
 import { ProductCard } from "./product-card";
-import { InstagramFeature } from "./instagram-feature";
-import { kleawipInstagram } from "@/data/social-content";
+import { ProductVideos } from "./product-video-feature";
 
 // Illustrative UI values only. Replace with approved SKU data before checkout goes live.
 const previewPacks = ["Pack of 1", "Pack of 2", "Pack of 4"];
@@ -23,7 +24,7 @@ const previewColours = [
   { name: "Green", swatch: "#54786b" },
 ];
 
-export function TwistedLoopDetail({ product }: { product: Product }) {
+export function TwistedLoopDetail({ product, catalogue }: { product: Product; catalogue: CatalogueProductDetail | null }) {
   const [imageIndex, setImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [pack, setPack] = useState(previewPacks[0]);
@@ -36,7 +37,9 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
   const router = useRouter();
   const { addToBag, wishlist, toggleWishlist, soundEnabled, toggleCartSound } = useStore();
   const saved = wishlist.includes(product.id);
-  const demo = getDemoMerchandising(product.id);
+  const demo = catalogue?.priceStatus === "approved" || catalogue?.isDemo === false ? null : getDemoMerchandising(product.id);
+  const price = catalogue?.priceStatus === "approved" && catalogue.priceFrom ? formatRupees(catalogue.priceFrom.amount) : demo ? formatDemoPrice(demo.price) : "Price to be confirmed";
+  const priceNote = catalogue?.priceStatus === "approved" ? "Catalogue price · Checkout integration is still being tested" : demo ? "Demo price for layout only · Final price pending approval" : "Final price, tax and pack savings require Kleawip approval.";
   const related = products.filter((item) => item.category === product.category && item.id !== product.id).slice(0, 3);
 
   useEffect(() => {
@@ -72,7 +75,7 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
     <div className="product-layout pdp-refresh-layout">
       <section className="pdp-gallery" aria-label="Product photos">
         <div className="pdp-main-image pdp-refresh-image">
-          <Image src={product.images[imageIndex]} alt={`${product.title}, photo ${imageIndex + 1} of ${product.images.length}`} fill priority sizes="(max-width: 800px) 100vw, 55vw"/>
+          {product.images.length ? <Image src={product.images[imageIndex]} alt={`${product.title}, photo ${imageIndex + 1} of ${product.images.length}`} fill priority unoptimized sizes="(max-width: 800px) 100vw, 55vw"/> : <span className="pdp-image-pending">Product image coming soon</span>}
           {product.images.length > 1 && <>
             <button type="button" className="gallery-arrow previous" aria-label="Previous product image" disabled={imageIndex === 0} onClick={() => setImageIndex((index) => index - 1)}><ChevronLeft size={21}/></button>
             <button type="button" className="gallery-arrow next" aria-label="Next product image" disabled={imageIndex === product.images.length - 1} onClick={() => setImageIndex((index) => index + 1)}><ChevronRight size={21}/></button>
@@ -80,7 +83,7 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
           </>}
           <button type="button" className="pdp-zoom-button" aria-label="Enlarge product image" onClick={() => setZoomOpen(true)}><ZoomIn size={18}/></button>
         </div>
-        <div className="pdp-thumbnails" role="group" aria-label="Product image thumbnails">{product.images.map((image, index) => <button type="button" className={index === imageIndex ? "selected" : ""} aria-label={`Show product photo ${index + 1}`} aria-pressed={index === imageIndex} key={image} onClick={() => setImageIndex(index)}><Image src={image} alt="" fill sizes="90px"/></button>)}</div>
+        <div className="pdp-thumbnails" role="group" aria-label="Product image thumbnails">{product.images.map((image, index) => <button type="button" className={index === imageIndex ? "selected" : ""} aria-label={`Show product photo ${index + 1}`} aria-pressed={index === imageIndex} key={image} onClick={() => setImageIndex(index)}><Image src={image} alt="" fill unoptimized sizes="90px"/></button>)}</div>
       </section>
 
       <section className="pdp-info pdp-refresh-info" aria-label="Product information">
@@ -89,7 +92,7 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
         <div className="pdp-fact-row"><span className="pdp-fact">1200 GSM</span></div>
         {demo && <div className="pdp-demo-rating" aria-label={`Demo rating ${demo.rating} out of 5. Not a customer review.`}><span className="pdp-demo-stars" aria-hidden="true">{Array.from({ length: 5 }, (_, index) => <Star key={index} size={14} fill="currentColor"/>)}</span><strong>{demo.rating}/5</strong><span>Demo rating</span></div>}
 
-        <div className="pdp-price pdp-refresh-price"><strong>{demo ? formatDemoPrice(demo.price) : "Price to be confirmed"}</strong><span>{demo ? "Demo price for layout only · Final price pending approval" : "Final price, tax and pack savings require Kleawip approval."}</span></div>
+        <div className="pdp-price pdp-refresh-price"><strong>{price}</strong><span>{priceNote}</span></div>
 
         <div className="pdp-option-block" aria-label="Product options">
           <div className="pdp-block-heading"><h2>Choose your options</h2><span>Sample options for review</span></div>
@@ -113,11 +116,11 @@ export function TwistedLoopDetail({ product }: { product: Product }) {
       <aside className="pdp-help-card"><span className="section-overline">BUYING FOR A TEAM?</span><h2>Need towels in volume?</h2><p>Tell Kleawip which products and quantities you need.</p><Link className="inline-link" href="/bulk">Start a bulk enquiry <ArrowUpRight size={17}/></Link></aside>
     </div>
 
-    {product.id === kleawipInstagram.productId && <InstagramFeature previewImage={product.images[0]}/>}
+    <ProductVideos catalogue={catalogue} productId={product.id} previewImage={product.images[0] ?? ""}/>
     <section id="customer-reviews" className="pdp-reviews"><div className="pdp-block-heading"><h2>Customer reviews</h2><span>Preview state</span></div><p>No reviews are published in this preview. Genuine product reviews can appear here after launch and moderation is configured.</p></section>
     <section className="pdp-related"><div className="section-heading"><div><span className="section-overline">EXPLORE MORE</span><h2>You may also like</h2></div><Link className="inline-link" href="/shop/automotive">View Automotive Care <ArrowUpRight size={17}/></Link></div><div className="product-grid">{related.map((item) => <ProductCard product={item} key={item.id}/>)}</div></section>
 
     {showSticky && <div className="pdp-sticky-buy" aria-label="Quick purchase actions"><button type="button" className="pdp-sticky-cart" onClick={add}><ShoppingBag size={17}/> Add to cart</button><button type="button" className="pdp-sticky-now" onClick={buyNow}>Buy now <ArrowUpRight size={16}/></button></div>}
-    {zoomOpen && <div className="pdp-zoom-overlay" role="dialog" aria-modal="true" aria-label="Enlarged product photo" onClick={() => setZoomOpen(false)}><button type="button" className="pdp-zoom-close" aria-label="Close enlarged photo" onClick={() => setZoomOpen(false)}><X size={23}/></button><div className="pdp-zoom-image" onClick={(event) => event.stopPropagation()}><Image src={product.images[imageIndex]} alt={`${product.title}, enlarged photo ${imageIndex + 1}`} fill sizes="90vw"/></div></div>}
+    {zoomOpen && product.images.length > 0 && <div className="pdp-zoom-overlay" role="dialog" aria-modal="true" aria-label="Enlarged product photo" onClick={() => setZoomOpen(false)}><button type="button" className="pdp-zoom-close" aria-label="Close enlarged photo" onClick={() => setZoomOpen(false)}><X size={23}/></button><div className="pdp-zoom-image" onClick={(event) => event.stopPropagation()}><Image src={product.images[imageIndex]} alt={`${product.title}, enlarged photo ${imageIndex + 1}`} fill unoptimized sizes="90vw"/></div></div>}
   </div>;
 }
