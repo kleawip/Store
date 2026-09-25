@@ -62,6 +62,7 @@ export const productMedia = pgTable("product_media", {
 ]);
 
 export const variantStatus = pgEnum("variant_status", ["active", "archived"]);
+export const stockMode = pgEnum("stock_mode", ["own", "shared"]);
 
 // Option groups (e.g. Size, Colour, Pack) and their values, per product.
 export const productOptions = pgTable("product_options", {
@@ -118,6 +119,8 @@ export const variants = pgTable("variants", {
   inventoryItemId: uuid("inventory_item_id").notNull().references(() => inventoryItems.id, { onDelete: "restrict" }),
   // Inventory units consumed per unit sold: packQuantity when drawing on shared single-unit stock, 1 for own pre-packed stock.
   inventoryUnitsPerSale: integer("inventory_units_per_sale").notNull().default(1),
+  // own: this SKU's own inventory item; shared: draws on a single-unit SKU's item (ADMIN_SCREENS_BRIEF §4).
+  stockMode: stockMode("stock_mode").notNull().default("own"),
   maxOrderQuantity: integer("max_order_quantity").notNull().default(10),
   weightGrams: integer("weight_grams"),
   isDemo: boolean("is_demo").notNull().default(false),

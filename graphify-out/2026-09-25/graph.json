@@ -577,6 +577,18 @@
       "source_location": "L14"
     },
     {
+      "id": "apps_storefront_src_components_site_header_siteheader_closemenu",
+      "label": "closeMenu()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "store-provider.tsx",
+      "file_type": "code",
+      "norm_label": "closemenu()",
+      "source_file": "apps/storefront/src/components/site-header.tsx",
+      "source_location": "L54"
+    },
+    {
       "id": "apps_storefront_src_components_site_header_siteheader_closesearch",
       "label": "closeSearch()",
       "_callable": true,
@@ -586,7 +598,19 @@
       "file_type": "code",
       "norm_label": "closesearch()",
       "source_file": "apps/storefront/src/components/site-header.tsx",
-      "source_location": "L25"
+      "source_location": "L63"
+    },
+    {
+      "id": "apps_storefront_src_components_site_header_siteheader_handlemenukeydown",
+      "label": "handleMenuKeyDown()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 13,
+      "community_name": "store-provider.tsx",
+      "file_type": "code",
+      "norm_label": "handlemenukeydown()",
+      "source_file": "apps/storefront/src/components/site-header.tsx",
+      "source_location": "L29"
     },
     {
       "id": "apps_storefront_src_components_site_header_siteheader_opensearch",
@@ -598,7 +622,7 @@
       "file_type": "code",
       "norm_label": "opensearch()",
       "source_file": "apps/storefront/src/components/site-header.tsx",
-      "source_location": "L21"
+      "source_location": "L58"
     },
     {
       "id": "apps_storefront_src_components_store_provider_storeprovider",
@@ -683,54 +707,6 @@
       "norm_label": "searchpage()",
       "source_file": "apps/storefront/src/app/search/page.tsx",
       "source_location": "L8"
-    },
-    {
-      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete",
-      "label": "SearchAutocomplete()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "search.ts",
-      "file_type": "code",
-      "norm_label": "searchautocomplete()",
-      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
-      "source_location": "L10"
-    },
-    {
-      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete_closeoutside",
-      "label": "closeOutside()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "search.ts",
-      "file_type": "code",
-      "norm_label": "closeoutside()",
-      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
-      "source_location": "L25"
-    },
-    {
-      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete_keydown",
-      "label": "keyDown()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "search.ts",
-      "file_type": "code",
-      "norm_label": "keydown()",
-      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
-      "source_location": "L49"
-    },
-    {
-      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete_submit",
-      "label": "submit()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "search.ts",
-      "file_type": "code",
-      "norm_label": "submit()",
-      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
-      "source_location": "L39"
     },
     {
       "id": "apps_storefront_src_lib_search_matches",
@@ -983,6 +959,138 @@
       "norm_label": "createtestapp()",
       "source_file": "services/commerce-api/test/helpers.ts",
       "source_location": "L4"
+    },
+    {
+      "id": "tools_agent_mail_mail_slug",
+      "label": "slug()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 23,
+      "community_name": "Kleawip commerce API contract \u2014 v1 proposal",
+      "file_type": "code",
+      "norm_label": "slug()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L88"
+    },
+    {
+      "id": "tools_agent_mail_mail_agentflag",
+      "label": "agentFlag()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "agentflag()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L34"
+    },
+    {
+      "id": "tools_agent_mail_mail_fail",
+      "label": "fail()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "fail()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L19"
+    },
+    {
+      "id": "tools_agent_mail_mail_format",
+      "label": "format()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "format()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L85"
+    },
+    {
+      "id": "tools_agent_mail_mail_loadmessages",
+      "label": "loadMessages()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "loadmessages()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L49"
+    },
+    {
+      "id": "tools_agent_mail_mail_markread",
+      "label": "markRead()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "markread()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L74"
+    },
+    {
+      "id": "tools_agent_mail_mail_parseargs",
+      "label": "parseArgs()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "parseargs()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L24"
+    },
+    {
+      "id": "tools_agent_mail_mail_readset",
+      "label": "readSet()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "readset()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L66"
+    },
+    {
+      "id": "tools_agent_mail_mail_readstdin",
+      "label": "readStdin()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "readstdin()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L40"
+    },
+    {
+      "id": "tools_agent_mail_mail_statefile",
+      "label": "stateFile()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "statefile()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L17"
+    },
+    {
+      "id": "tools_agent_mail_mail_unreadfor",
+      "label": "unreadFor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "unreadfor()",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L80"
     },
     {
       "id": "apps_storefront_src_app_account_orders_page_orderspage",
@@ -1247,6 +1355,54 @@
       "norm_label": "productdetail()",
       "source_file": "apps/storefront/src/components/product-detail.tsx",
       "source_location": "L12"
+    },
+    {
+      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete",
+      "label": "SearchAutocomplete()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "products.ts",
+      "file_type": "code",
+      "norm_label": "searchautocomplete()",
+      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
+      "source_location": "L10"
+    },
+    {
+      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete_closeoutside",
+      "label": "closeOutside()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "products.ts",
+      "file_type": "code",
+      "norm_label": "closeoutside()",
+      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
+      "source_location": "L25"
+    },
+    {
+      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete_keydown",
+      "label": "keyDown()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "products.ts",
+      "file_type": "code",
+      "norm_label": "keydown()",
+      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
+      "source_location": "L49"
+    },
+    {
+      "id": "apps_storefront_src_components_search_autocomplete_searchautocomplete_submit",
+      "label": "submit()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "products.ts",
+      "file_type": "code",
+      "norm_label": "submit()",
+      "source_file": "apps/storefront/src/components/search-autocomplete.tsx",
+      "source_location": "L39"
     },
     {
       "id": "apps_storefront_src_components_search_overlay_searchoverlay",
@@ -3073,17 +3229,6 @@
       "norm_label": "shipping and fulfilment",
       "source_file": "IMPLEMENTATION_PLAN.md",
       "source_location": "L86"
-    },
-    {
-      "id": "apps_storefront_src_app_search_page",
-      "label": "search/page.tsx",
-      "_origin": "ast",
-      "community": 20,
-      "community_name": "search.ts",
-      "file_type": "code",
-      "norm_label": "search/page.tsx",
-      "source_file": "apps/storefront/src/app/search/page.tsx",
-      "source_location": "L1"
     },
     {
       "id": "apps_storefront_src_lib_search",
@@ -5492,7 +5637,7 @@
       "node_kind": "heading",
       "norm_label": "2026-09-25 \u2014 claude code",
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L44"
+      "source_location": "L53"
     },
     {
       "id": "docs_coordination_handoff_log_checks_each_side_runs_before_handing_off",
@@ -5504,7 +5649,7 @@
       "node_kind": "heading",
       "norm_label": "checks each side runs before handing off",
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L27"
+      "source_location": "L36"
     },
     {
       "id": "docs_coordination_handoff_log_codex_claude_code_handoff_log",
@@ -5519,6 +5664,18 @@
       "source_location": "L1"
     },
     {
+      "id": "docs_coordination_handoff_log_git_rules",
+      "label": "Git rules",
+      "_origin": "ast",
+      "community": 31,
+      "community_name": "Codex \u2194 Claude Code handoff log",
+      "file_type": "document",
+      "node_kind": "heading",
+      "norm_label": "git rules",
+      "source_file": "docs/coordination/HANDOFF_LOG.md",
+      "source_location": "L65"
+    },
+    {
       "id": "docs_coordination_handoff_log_log_newest_last",
       "label": "Log (newest last)",
       "_origin": "ast",
@@ -5528,19 +5685,7 @@
       "node_kind": "heading",
       "norm_label": "log (newest last)",
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L42"
-    },
-    {
-      "id": "docs_coordination_handoff_log_note_on_git",
-      "label": "Note on git",
-      "_origin": "ast",
-      "community": 31,
-      "community_name": "Codex \u2194 Claude Code handoff log",
-      "file_type": "document",
-      "node_kind": "heading",
-      "norm_label": "note on git",
-      "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L56"
+      "source_location": "L51"
     },
     {
       "id": "docs_coordination_handoff_log_open_requests",
@@ -5552,7 +5697,7 @@
       "node_kind": "heading",
       "norm_label": "open requests",
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L33"
+      "source_location": "L42"
     },
     {
       "id": "docs_coordination_handoff_log_path_ownership",
@@ -5564,7 +5709,7 @@
       "node_kind": "heading",
       "norm_label": "path ownership",
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L14"
+      "source_location": "L22"
     },
     {
       "id": "docs_coordination_handoff_log_protocol_both_agents_follow_this_every_session",
@@ -5576,7 +5721,7 @@
       "node_kind": "heading",
       "norm_label": "protocol \u2014 both agents follow this every session",
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L5"
+      "source_location": "L13"
     },
     {
       "id": "services_commerce_api_readme",
@@ -5649,6 +5794,182 @@
       "norm_label": "requirements",
       "source_file": "services/commerce-api/README.md",
       "source_location": "L7"
+    },
+    {
+      "id": "apps_storefront_src_data_products_test",
+      "label": "products.test.ts",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "products.test.ts",
+      "source_file": "apps/storefront/src/data/products.test.ts",
+      "source_location": "L1"
+    },
+    {
+      "id": "apps_storefront_tools_import_reference_images",
+      "label": "import-reference-images.mjs",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "import-reference-images.mjs",
+      "source_file": "apps/storefront/tools/import-reference-images.mjs",
+      "source_location": "L1"
+    },
+    {
+      "id": "apps_storefront_tools_import_reference_images_destination",
+      "label": "destination",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "destination",
+      "source_file": "apps/storefront/tools/import-reference-images.mjs",
+      "source_location": "L7"
+    },
+    {
+      "id": "apps_storefront_tools_import_reference_images_products",
+      "label": "products",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "products",
+      "source_file": "apps/storefront/tools/import-reference-images.mjs",
+      "source_location": "L6"
+    },
+    {
+      "id": "apps_storefront_tools_import_reference_images_root",
+      "label": "root",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "root",
+      "source_file": "apps/storefront/tools/import-reference-images.mjs",
+      "source_location": "L5"
+    },
+    {
+      "id": "tools_agent_mail_mail",
+      "label": "mail.mjs",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "mail.mjs",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L1"
+    },
+    {
+      "id": "tools_agent_mail_mail_agents",
+      "label": "AGENTS",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "agents",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L14"
+    },
+    {
+      "id": "tools_agent_mail_mail_box",
+      "label": "box",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "box",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L16"
+    },
+    {
+      "id": "tools_agent_mail_mail_flags_rest",
+      "label": "{ flags, rest }",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "{ flags, rest }",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L90"
+    },
+    {
+      "id": "tools_agent_mail_mail_root",
+      "label": "root",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "code",
+      "norm_label": "root",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L15"
+    },
+    {
+      "id": "ref_sharp",
+      "label": "sharp",
+      "_origin": "ast",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "file_type": "concept",
+      "norm_label": "sharp",
+      "source_file": "apps/storefront/package.json",
+      "source_location": "L23"
+    },
+    {
+      "id": "docs_coordination_messages_2026_09_25t09_29_50_295z_claude_to_codex_hello_from_claude_code_contract_ready_fo",
+      "label": "2026-09-25T09-29-50-295Z_claude-to-codex_hello-from-claude-code-contract-ready-fo.md",
+      "_origin": "ast",
+      "community": 34,
+      "community_name": "2026-09-25T09-29-50-295Z_claude-to-codex_hello-from-claude-code-contract-ready-fo.md",
+      "file_type": "document",
+      "frontmatter": {
+        "from": "claude",
+        "to": "codex",
+        "subject": "Hello from Claude Code: contract ready for your review",
+        "sent": "2026-09-25T09:29:50Z"
+      },
+      "node_kind": "page",
+      "norm_label": "2026-09-25t09-29-50-295z_claude-to-codex_hello-from-claude-code-contract-ready-fo.md",
+      "source_file": "docs/coordination/messages/2026-09-25T09-29-50-295Z_claude-to-codex_hello-from-claude-code-contract-ready-fo.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_coordination_messages_2026_09_25t09_31_25_479z_claude_to_codex_project_is_now_a_local_git_repo",
+      "label": "2026-09-25T09-31-25-479Z_claude-to-codex_project-is-now-a-local-git-repo.md",
+      "_origin": "ast",
+      "community": 35,
+      "community_name": "2026-09-25T09-31-25-479Z_claude-to-codex_project-is-now-a-local-git-repo.md",
+      "file_type": "document",
+      "frontmatter": {
+        "from": "claude",
+        "to": "codex",
+        "subject": "Project is now a local git repo",
+        "sent": "2026-09-25T09:31:25Z"
+      },
+      "node_kind": "page",
+      "norm_label": "2026-09-25t09-31-25-479z_claude-to-codex_project-is-now-a-local-git-repo.md",
+      "source_file": "docs/coordination/messages/2026-09-25T09-31-25-479Z_claude-to-codex_project-is-now-a-local-git-repo.md",
+      "source_location": "L1"
+    },
+    {
+      "id": "docs_coordination_messages_2026_09_25t09_34_40_844z_codex_to_claude_frontend_contract_review_and_admin_locat",
+      "label": "2026-09-25T09-34-40-844Z_codex-to-claude_frontend-contract-review-and-admin-locat.md",
+      "_origin": "ast",
+      "community": 36,
+      "community_name": "2026-09-25T09-34-40-844Z_codex-to-claude_frontend-contract-review-and-admin-locat.md",
+      "file_type": "document",
+      "frontmatter": {
+        "from": "codex",
+        "to": "claude",
+        "subject": "Frontend contract review and admin location",
+        "sent": "2026-09-25T09:34:40Z",
+        "replyTo": "2026-09-25T09-29-50-295Z_claude-to-codex_hello-from-claude-code-contract-ready-fo"
+      },
+      "node_kind": "page",
+      "norm_label": "2026-09-25t09-34-40-844z_codex-to-claude_frontend-contract-review-and-admin-locat.md",
+      "source_file": "docs/coordination/messages/2026-09-25T09-34-40-844Z_codex-to-claude_frontend-contract-review-and-admin-locat.md",
+      "source_location": "L1"
     },
     {
       "id": "docs_design_product_page_admin_mapping_spec",
@@ -5853,6 +6174,17 @@
       "file_type": "code",
       "norm_label": "[id]/page.tsx",
       "source_file": "apps/storefront/src/app/product/[id]/page.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "apps_storefront_src_app_search_page",
+      "label": "search/page.tsx",
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "products.ts",
+      "file_type": "code",
+      "norm_label": "search/page.tsx",
+      "source_file": "apps/storefront/src/app/search/page.tsx",
       "source_location": "L1"
     },
     {
@@ -6129,17 +6461,6 @@
       "norm_label": "products",
       "source_file": "apps/storefront/src/data/products.ts",
       "source_location": "L21"
-    },
-    {
-      "id": "apps_storefront_src_data_products_test",
-      "label": "products.test.ts",
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "products.ts",
-      "file_type": "code",
-      "norm_label": "products.test.ts",
-      "source_file": "apps/storefront/src/data/products.test.ts",
-      "source_location": "L1"
     },
     {
       "id": "apps_storefront_src_lib_gallery_window",
@@ -6534,50 +6855,6 @@
       "source_location": "L3"
     },
     {
-      "id": "apps_storefront_tools_import_reference_images",
-      "label": "import-reference-images.mjs",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "storefront/package.json",
-      "file_type": "code",
-      "norm_label": "import-reference-images.mjs",
-      "source_file": "apps/storefront/tools/import-reference-images.mjs",
-      "source_location": "L1"
-    },
-    {
-      "id": "apps_storefront_tools_import_reference_images_destination",
-      "label": "destination",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "storefront/package.json",
-      "file_type": "code",
-      "norm_label": "destination",
-      "source_file": "apps/storefront/tools/import-reference-images.mjs",
-      "source_location": "L7"
-    },
-    {
-      "id": "apps_storefront_tools_import_reference_images_products",
-      "label": "products",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "storefront/package.json",
-      "file_type": "code",
-      "norm_label": "products",
-      "source_file": "apps/storefront/tools/import-reference-images.mjs",
-      "source_location": "L6"
-    },
-    {
-      "id": "apps_storefront_tools_import_reference_images_root",
-      "label": "root",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "storefront/package.json",
-      "file_type": "code",
-      "norm_label": "root",
-      "source_file": "apps/storefront/tools/import-reference-images.mjs",
-      "source_location": "L5"
-    },
-    {
       "id": "apps_storefront_package_json_ref_types_node",
       "label": "@types/node",
       "_origin": "ast",
@@ -6620,17 +6897,6 @@
       "norm_label": "react-dom",
       "source_file": "apps/storefront/package.json",
       "source_location": "L17"
-    },
-    {
-      "id": "ref_sharp",
-      "label": "sharp",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "storefront/package.json",
-      "file_type": "concept",
-      "norm_label": "sharp",
-      "source_file": "apps/storefront/package.json",
-      "source_location": "L23"
     },
     {
       "id": "ref_types_react",
@@ -6885,6 +7151,18 @@
       "type": "external"
     },
     {
+      "id": "ref_vitest",
+      "label": "ref_vitest",
+      "_origin": "semantic",
+      "community": 13,
+      "community_name": "store-provider.tsx",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "ref_vitest",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "apps_storefront_next_types_root_params_d",
       "label": "apps_storefront_next_types_root_params_d",
       "_origin": "semantic",
@@ -6909,55 +7187,9 @@
       "type": "external"
     },
     {
-      "id": "apps_storefront_src_data_catalogue",
-      "label": "apps_storefront_src_data_catalogue",
-      "_origin": "semantic",
-      "community": 5,
-      "community_name": "products.ts",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "apps_storefront_src_data_catalogue",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "ref_node_fs",
-      "label": "ref_node_fs",
-      "_origin": "semantic",
-      "community": 7,
-      "community_name": "storefront/package.json",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "ref_node_fs",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "ref_node_path",
-      "label": "ref_node_path",
-      "_origin": "semantic",
-      "community": 7,
-      "community_name": "storefront/package.json",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "ref_node_path",
-      "source_file": "",
-      "type": "external"
-    },
-    {
-      "id": "ref_vitest",
-      "label": "ref_vitest",
-      "community": 13,
-      "community_name": "store-provider.tsx",
-      "external": true,
-      "file_type": "concept",
-      "norm_label": "ref_vitest",
-      "source_file": "",
-      "type": "external"
-    },
-    {
       "id": "ref_node_crypto",
       "label": "ref_node_crypto",
+      "_origin": "semantic",
       "community": 21,
       "community_name": "store-catalogue.ts",
       "external": true,
@@ -6969,6 +7201,7 @@
     {
       "id": "ref_node_url",
       "label": "ref_node_url",
+      "_origin": "semantic",
       "community": 21,
       "community_name": "store-catalogue.ts",
       "external": true,
@@ -6980,11 +7213,48 @@
     {
       "id": "ref_zod",
       "label": "ref_zod",
+      "_origin": "semantic",
       "community": 21,
       "community_name": "store-catalogue.ts",
       "external": true,
       "file_type": "concept",
       "norm_label": "ref_zod",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "ref_node_fs",
+      "label": "ref_node_fs",
+      "_origin": "semantic",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "ref_node_fs",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "ref_node_path",
+      "label": "ref_node_path",
+      "_origin": "semantic",
+      "community": 33,
+      "community_name": "mail.mjs",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "ref_node_path",
+      "source_file": "",
+      "type": "external"
+    },
+    {
+      "id": "apps_storefront_src_data_catalogue",
+      "label": "apps_storefront_src_data_catalogue",
+      "_origin": "semantic",
+      "community": 5,
+      "community_name": "products.ts",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "apps_storefront_src_data_catalogue",
       "source_file": "",
       "type": "external"
     }
@@ -7143,7 +7413,19 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "apps/storefront/src/components/site-header.tsx",
-      "source_location": "L19",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_storefront_src_components_site_header_siteheader_opensearch",
+      "target": "apps_storefront_src_components_site_header_siteheader_closemenu",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "apps/storefront/src/components/site-header.tsx",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -7492,6 +7774,78 @@
       "context": "call",
       "source_file": "services/commerce-api/test/helpers.ts",
       "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail_agentflag",
+      "target": "tools_agent_mail_mail_fail",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail_markread",
+      "target": "tools_agent_mail_mail_readset",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L75",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail_markread",
+      "target": "tools_agent_mail_mail_statefile",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail_readset",
+      "target": "tools_agent_mail_mail_statefile",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L68",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail_unreadfor",
+      "target": "tools_agent_mail_mail_readset",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L81",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail_unreadfor",
+      "target": "tools_agent_mail_mail_loadmessages",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -8092,6 +8446,18 @@
       "context": "call",
       "source_file": "apps/storefront/src/components/home-hero-carousel.tsx",
       "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "apps_storefront_src_components_site_header_siteheader",
+      "target": "apps_storefront_src_components_site_header_siteheader_closemenu",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "apps/storefront/src/components/site-header.tsx",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -11827,6 +12193,42 @@
       "weight": 1.0
     },
     {
+      "source": "tools_agent_mail_mail",
+      "target": "ref_node_fs",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "ref_node_path",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "ref_node_url",
+      "relation": "imports_from",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "import",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
       "source": "tools_build_feature_expansion_addendum",
       "target": "pathlib",
       "relation": "imports_from",
@@ -12660,7 +13062,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/storefront/src/components/site-header.tsx",
-      "source_location": "L21",
+      "source_location": "L58",
       "weight": 1.0
     },
     {
@@ -12671,7 +13073,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "apps/storefront/src/components/site-header.tsx",
-      "source_location": "L25",
+      "source_location": "L63",
       "weight": 1.0
     },
     {
@@ -13534,18 +13936,18 @@
     },
     {
       "source": "docs_coordination_handoff_log_codex_claude_code_handoff_log",
-      "target": "docs_coordination_handoff_log_open_requests",
+      "target": "docs_coordination_handoff_log_protocol_both_agents_follow_this_every_session",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L33",
+      "source_location": "L13",
       "weight": 1.0
     },
     {
       "source": "docs_coordination_handoff_log_codex_claude_code_handoff_log",
-      "target": "docs_coordination_handoff_log_log_newest_last",
+      "target": "docs_coordination_handoff_log_open_requests",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -13556,24 +13958,24 @@
     },
     {
       "source": "docs_coordination_handoff_log_codex_claude_code_handoff_log",
-      "target": "docs_coordination_handoff_log_protocol_both_agents_follow_this_every_session",
+      "target": "docs_coordination_handoff_log_log_newest_last",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L5",
+      "source_location": "L51",
       "weight": 1.0
     },
     {
       "source": "docs_coordination_handoff_log_codex_claude_code_handoff_log",
-      "target": "docs_coordination_handoff_log_note_on_git",
+      "target": "docs_coordination_handoff_log_git_rules",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L56",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
@@ -13584,7 +13986,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L44",
+      "source_location": "L53",
       "weight": 1.0
     },
     {
@@ -13595,7 +13997,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L14",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -13606,7 +14008,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/coordination/HANDOFF_LOG.md",
-      "source_location": "L27",
+      "source_location": "L36",
       "weight": 1.0
     },
     {
@@ -16833,6 +17235,160 @@
       "weight": 1.0
     },
     {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_agents",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_root",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L15",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_box",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_statefile",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_fail",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_parseargs",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_agentflag",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_readstdin",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_loadmessages",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_readset",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L66",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_markread",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_unreadfor",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_slug",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L88",
+      "weight": 1.0
+    },
+    {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_flags_rest",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
       "source": "tools_build_feature_expansion_addendum",
       "target": "tools_build_feature_expansion_addendum_add_header_footer",
       "relation": "contains",
@@ -17121,6 +17677,18 @@
       "weight": 1.0
     },
     {
+      "source": "apps_storefront_src_components_site_header_siteheader",
+      "target": "apps_storefront_src_components_site_header_siteheader_handlemenukeydown",
+      "relation": "indirect_call",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "context": "argument",
+      "source_file": "apps/storefront/src/components/site-header.tsx",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
       "source": "services_commerce_api_src_app_buildapp",
       "target": "services_commerce_api_src_errors_errorhandler",
       "relation": "indirect_call",
@@ -17145,6 +17713,18 @@
       "weight": 1.0
     },
     {
+      "source": "tools_agent_mail_mail",
+      "target": "tools_agent_mail_mail_format",
+      "relation": "indirect_call",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "context": "argument",
+      "source_file": "tools/agent-mail/mail.mjs",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
       "source": "docs_api_api_contract_7_mapping_from_the_current_storefront_fixtures",
       "target": "apps_storefront_src_data_products_product",
       "relation": "references",
@@ -17155,7 +17735,20 @@
       "source_file": "docs/api/API_CONTRACT.md",
       "source_location": "L272",
       "weight": 1.0
+    },
+    {
+      "source": "docs_api_api_contract_3_catalogue_data_model_and_stable_ids",
+      "target": "tools_agent_mail_mail_slug",
+      "relation": "references",
+      "_origin": "ast",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "context": "slug",
+      "source_file": "docs/api/API_CONTRACT.md",
+      "source_location": "L87",
+      "weight": 1.0
     }
   ],
-  "hyperedges": []
+  "hyperedges": [],
+  "built_at_commit": "4f6c66f458230575a401fa3402a1c4f7a6d9c070"
 }

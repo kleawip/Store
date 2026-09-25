@@ -65,364 +65,10 @@
     "ast_hash": "7dde50d73a1d4f3f01e481c618dab2ab",
     "semantic_hash": ""
   },
-  "tmp/feature-expansion/rendered-v1/Kleawip_Feature_Expansion_Addendum.pdf": {
-    "mtime": 1789407163.8059814,
-    "seen": 1790243839.7899451,
-    "ast_hash": "1f349332bc095c63f67688ef4f1e0d04",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/Kleawip_Feature_Expansion_Addendum.pdf": {
-    "mtime": 1789407341.3305438,
-    "seen": 1790243839.789946,
-    "ast_hash": "e64b27e8f9fb5cfa1418a4330773cf0e",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/Kleawip_Feature_Expansion_Addendum.pdf": {
-    "mtime": 1790229275.04516,
-    "seen": 1790243839.789946,
-    "ast_hash": "facce955fd8151e4998e9edd412fc747",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/Kleawip_Feature_Expansion_Addendum.pdf": {
-    "mtime": 1790229365.3471923,
-    "seen": 1790243839.7899468,
-    "ast_hash": "7dde50d73a1d4f3f01e481c618dab2ab",
-    "semantic_hash": ""
-  },
   "assets/brand/Kleawip-logo.webp": {
     "mtime": 1789406901.9907603,
     "seen": 1790243839.789948,
     "ast_hash": "bb44a8583de7038f20fcad4e036d8f6e",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/Kleawip-logo.png": {
-    "mtime": 1790229364.3274434,
-    "seen": 1790243839.789948,
-    "ast_hash": "bf3b184a40e2ed88432f762776dbe8f8",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-1.png": {
-    "mtime": 1789407164.562636,
-    "seen": 1790243839.789949,
-    "ast_hash": "78b8df7c1f807e38602d836470945da3",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-10.png": {
-    "mtime": 1789407164.7905478,
-    "seen": 1790243839.78995,
-    "ast_hash": "20db2568c1891055088752a075afdd01",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-11.png": {
-    "mtime": 1789407164.5899434,
-    "seen": 1790243839.78995,
-    "ast_hash": "6ebe20db9b9d0e0fa59fc47683a6294b",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-12.png": {
-    "mtime": 1789407164.813121,
-    "seen": 1790243839.789951,
-    "ast_hash": "f81ef4f43ce01c588ea950453a428c91",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-13.png": {
-    "mtime": 1789407164.5938268,
-    "seen": 1790243839.789952,
-    "ast_hash": "6dbbed1fd134f4dc5834017052dcc345",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-14.png": {
-    "mtime": 1789407164.8188818,
-    "seen": 1790243839.789953,
-    "ast_hash": "c078547228e9c0114bec7fe85fe0b3fd",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-15.png": {
-    "mtime": 1789407164.6011534,
-    "seen": 1790243839.789953,
-    "ast_hash": "58ec9934a2737bbf08999ba7f6808508",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-16.png": {
-    "mtime": 1789407164.8396416,
-    "seen": 1790243839.789954,
-    "ast_hash": "86e34c25cef3d1bff2cc2c2faeffc35f",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-17.png": {
-    "mtime": 1789407164.6198478,
-    "seen": 1790243839.789954,
-    "ast_hash": "37253315e2db3028c3d7a8799d9b986f",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-18.png": {
-    "mtime": 1789407164.847847,
-    "seen": 1790243839.7899551,
-    "ast_hash": "befbf36488e39b50ef29ad451138980d",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-2.png": {
-    "mtime": 1789407164.8238153,
-    "seen": 1790243839.789956,
-    "ast_hash": "dcc2b7d9718ba8bf8f4f83bf6401a31f",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-3.png": {
-    "mtime": 1789407165.0487444,
-    "seen": 1790243839.789956,
-    "ast_hash": "9e932c4eed4991823cdd101b76431593",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-4.png": {
-    "mtime": 1789407164.597977,
-    "seen": 1790243839.789957,
-    "ast_hash": "59c9cfde5bfd0d3dcfd80ac9316294dd",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-5.png": {
-    "mtime": 1789407164.8054528,
-    "seen": 1790243839.789958,
-    "ast_hash": "7de698bc5d434542e6fa082cb1fb678f",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-6.png": {
-    "mtime": 1789407165.0442998,
-    "seen": 1790243839.789958,
-    "ast_hash": "5233ec333627c9240e4c5299bc92315a",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-7.png": {
-    "mtime": 1789407164.5931928,
-    "seen": 1790243839.789959,
-    "ast_hash": "19fb14ca821e8ae8d08f1503fec957f2",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-8.png": {
-    "mtime": 1789407164.8082905,
-    "seen": 1790243839.789959,
-    "ast_hash": "21893230bcd1000ad3f1f63e04f5eceb",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v1/page-9.png": {
-    "mtime": 1789407164.5887265,
-    "seen": 1790243839.78996,
-    "ast_hash": "3a1129585ba49357b102ba6fa988aa76",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-1.png": {
-    "mtime": 1789407342.0828564,
-    "seen": 1790243839.7899609,
-    "ast_hash": "37a7408c5d0aa7468c984a4d885614ee",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-10.png": {
-    "mtime": 1789407342.0712287,
-    "seen": 1790243839.7899609,
-    "ast_hash": "3e3f18a44e5e2e26bea39b339b7263df",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-11.png": {
-    "mtime": 1789407342.1122417,
-    "seen": 1790243839.789962,
-    "ast_hash": "96d5533ec37011ef765d6d1c1f7e6bc9",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-12.png": {
-    "mtime": 1789407342.110199,
-    "seen": 1790243839.789962,
-    "ast_hash": "1175a57c10c9bd80df19f9f4ec027149",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-2.png": {
-    "mtime": 1789407342.3210778,
-    "seen": 1790243839.789963,
-    "ast_hash": "704bfe2df0b972063e90f57cae1afbbb",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-3.png": {
-    "mtime": 1789407342.1246285,
-    "seen": 1790243839.789964,
-    "ast_hash": "72191586025f04d6391289e80c07ab88",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-4.png": {
-    "mtime": 1789407342.3611856,
-    "seen": 1790243839.789964,
-    "ast_hash": "eecb497c930281ee7d5bf6ed1e6d1c47",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-5.png": {
-    "mtime": 1789407342.0883784,
-    "seen": 1790243839.7899652,
-    "ast_hash": "f4907191fbc6a8567c3848c439035aec",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-6.png": {
-    "mtime": 1789407342.307615,
-    "seen": 1790243839.789966,
-    "ast_hash": "29e9c9dbe1ce42a0eaa77f5953bc887a",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-7.png": {
-    "mtime": 1789407342.1201968,
-    "seen": 1790243839.789967,
-    "ast_hash": "6bac97f8d38eb64b36a636ff70f719b3",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-8.png": {
-    "mtime": 1789407342.3347733,
-    "seen": 1790243839.789967,
-    "ast_hash": "be13d6569475bfec8b873df8d54a3d78",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v2/page-9.png": {
-    "mtime": 1789407342.0731802,
-    "seen": 1790243839.7899678,
-    "ast_hash": "30e18d243fc0fc8234aa25e39e9e8f85",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-1.png": {
-    "mtime": 1790229277.2862654,
-    "seen": 1790243839.789969,
-    "ast_hash": "788d5c8e9c10e14dd1e969a1037e80a2",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-10.png": {
-    "mtime": 1790229277.2771976,
-    "seen": 1790243839.789969,
-    "ast_hash": "61f76520ecc321cbcb6d4f328024e2cb",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-11.png": {
-    "mtime": 1790229277.276405,
-    "seen": 1790243839.78997,
-    "ast_hash": "96d5533ec37011ef765d6d1c1f7e6bc9",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-12.png": {
-    "mtime": 1790229277.2935078,
-    "seen": 1790243839.7899709,
-    "ast_hash": "46865782c17578084c06923084202ed1",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-2.png": {
-    "mtime": 1790229277.430012,
-    "seen": 1790243839.7899709,
-    "ast_hash": "27616fe6e495501a3fd4a6a70cb51c8c",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-3.png": {
-    "mtime": 1790229277.299694,
-    "seen": 1790243839.789972,
-    "ast_hash": "72191586025f04d6391289e80c07ab88",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-4.png": {
-    "mtime": 1790229277.425595,
-    "seen": 1790243839.789973,
-    "ast_hash": "eecb497c930281ee7d5bf6ed1e6d1c47",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-5.png": {
-    "mtime": 1790229277.3037033,
-    "seen": 1790243839.789973,
-    "ast_hash": "e9f880c15f3af23193c11010e7161295",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-6.png": {
-    "mtime": 1790229277.4204917,
-    "seen": 1790243839.789974,
-    "ast_hash": "29e9c9dbe1ce42a0eaa77f5953bc887a",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-7.png": {
-    "mtime": 1790229277.2942224,
-    "seen": 1790243839.789974,
-    "ast_hash": "81000e2cb4d1994829f0e815ee7a54b6",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-8.png": {
-    "mtime": 1790229277.41385,
-    "seen": 1790243839.789975,
-    "ast_hash": "fecd18dc17ac73985df655867517fda8",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v3/page-9.png": {
-    "mtime": 1790229277.2758355,
-    "seen": 1790243839.7899761,
-    "ast_hash": "30e18d243fc0fc8234aa25e39e9e8f85",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-1.png": {
-    "mtime": 1790229365.8432195,
-    "seen": 1790243839.7899761,
-    "ast_hash": "788d5c8e9c10e14dd1e969a1037e80a2",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-10.png": {
-    "mtime": 1790229365.8666155,
-    "seen": 1790243839.789977,
-    "ast_hash": "61f76520ecc321cbcb6d4f328024e2cb",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-11.png": {
-    "mtime": 1790229365.8743083,
-    "seen": 1790243839.789978,
-    "ast_hash": "96d5533ec37011ef765d6d1c1f7e6bc9",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-12.png": {
-    "mtime": 1790229365.8781736,
-    "seen": 1790243839.789978,
-    "ast_hash": "46865782c17578084c06923084202ed1",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-2.png": {
-    "mtime": 1790229365.994716,
-    "seen": 1790243839.789979,
-    "ast_hash": "27616fe6e495501a3fd4a6a70cb51c8c",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-3.png": {
-    "mtime": 1790229365.8851452,
-    "seen": 1790243839.789981,
-    "ast_hash": "72191586025f04d6391289e80c07ab88",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-4.png": {
-    "mtime": 1790229366.0143535,
-    "seen": 1790243839.789984,
-    "ast_hash": "eecb497c930281ee7d5bf6ed1e6d1c47",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-5.png": {
-    "mtime": 1790229365.8895304,
-    "seen": 1790243839.789985,
-    "ast_hash": "e9f880c15f3af23193c11010e7161295",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-6.png": {
-    "mtime": 1790229366.008149,
-    "seen": 1790243839.789985,
-    "ast_hash": "29e9c9dbe1ce42a0eaa77f5953bc887a",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-7.png": {
-    "mtime": 1790229365.9053307,
-    "seen": 1790243839.7899861,
-    "ast_hash": "81000e2cb4d1994829f0e815ee7a54b6",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-8.png": {
-    "mtime": 1790229366.0249708,
-    "seen": 1790243839.7899861,
-    "ast_hash": "1eab7a1956b4cb07adb87aa10e2a7c3e",
-    "semantic_hash": ""
-  },
-  "tmp/feature-expansion/rendered-v4/page-9.png": {
-    "mtime": 1790229365.844466,
-    "seen": 1790243839.789987,
-    "ast_hash": "30e18d243fc0fc8234aa25e39e9e8f85",
     "semantic_hash": ""
   },
   "graphify-out/memory/decision_20260924_shipping_print_labels.md": {
@@ -552,9 +198,9 @@
     "semantic_hash": ""
   },
   "apps/storefront/src/components/site-header.tsx": {
-    "mtime": 1790315672.6950243,
-    "seen": 1790316197.808326,
-    "ast_hash": "c6669503a0824b5421e9b24a610710bc",
+    "mtime": 1790328976.6642745,
+    "seen": 1790329170.210602,
+    "ast_hash": "1f8d1b95804d0843c8da1a7eb5a52e6c",
     "semantic_hash": ""
   },
   "apps/storefront/src/components/store-provider.tsx": {
@@ -1146,9 +792,9 @@
     "semantic_hash": ""
   },
   "docs/coordination/HANDOFF_LOG.md": {
-    "mtime": 1790328440.5255878,
-    "seen": 1790328449.839561,
-    "ast_hash": "a5d054fa733f697b9934c8bd097022ae",
+    "mtime": 1790328685.3489053,
+    "seen": 1790329170.213264,
+    "ast_hash": "15c23a5805772696ced56aac8168754e",
     "semantic_hash": ""
   },
   "docs/phase-0/FRONTEND_DATA_HANDOFF.md": {
@@ -1161,6 +807,30 @@
     "mtime": 1790328418.0261242,
     "seen": 1790328449.840084,
     "ast_hash": "f6c2c93016b478363281ea28f348e403",
+    "semantic_hash": ""
+  },
+  "tools/agent-mail/mail.mjs": {
+    "mtime": 1790328555.8407423,
+    "seen": 1790329170.2128901,
+    "ast_hash": "296e823fa3d9e56072508c7185a18d21",
+    "semantic_hash": ""
+  },
+  "docs/coordination/messages/2026-09-25T09-29-50-295Z_claude-to-codex_hello-from-claude-code-contract-ready-fo.md": {
+    "mtime": 1790328590.2974052,
+    "seen": 1790329170.213265,
+    "ast_hash": "7dafc01a447ebe2c6a0207c92f2a1750",
+    "semantic_hash": ""
+  },
+  "docs/coordination/messages/2026-09-25T09-31-25-479Z_claude-to-codex_project-is-now-a-local-git-repo.md": {
+    "mtime": 1790328685.4806633,
+    "seen": 1790329170.2132668,
+    "ast_hash": "e6968666031b71a0fb29dec783e7319e",
+    "semantic_hash": ""
+  },
+  "docs/coordination/messages/2026-09-25T09-34-40-844Z_codex-to-claude_frontend-contract-review-and-admin-locat.md": {
+    "mtime": 1790328880.8454068,
+    "seen": 1790329170.213268,
+    "ast_hash": "5132cabf76b199df34e632e4a99bf851",
     "semantic_hash": ""
   }
 }

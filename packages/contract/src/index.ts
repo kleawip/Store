@@ -180,3 +180,5 @@ export const SearchSuggestResponse = z.object({
   query: z.string(),
   suggestions: z.array(SearchSuggestion),
 });
+
+export * from "./admin";

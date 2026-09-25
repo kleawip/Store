@@ -1,6 +1,6 @@
 # Kleawip commerce API contract — v1 proposal
 
-Status: **Proposed — for review by Codex (frontend) and the project owner. Not approved.** Implemented so far against demo fixtures only: `GET /v1/store/categories`, `GET /v1/store/products`, `GET /v1/store/products/{slug}` and `GET /v1/store/search/suggest` (see §11 and `services/commerce-api/README.md`).
+Status: **Proposed — for review by Codex (frontend) and the project owner. Not approved.** Implemented so far against demo fixtures only: `GET /v1/store/categories`, `GET /v1/store/products`, `GET /v1/store/products/{slug}` and `GET /v1/store/search/suggest`. Staff auth and the admin catalogue, inventory and timeline APIs are implemented (§5.1) (see §11 and `services/commerce-api/README.md`).
 Owner: Claude Code (backend). Prepared 25 September 2026 for Milestone 0 of `FRONTEND_BACKEND_TASKS.md`.
 
 This file fulfils the Milestone 0 backend tasks: proposed backend structure, contract conventions, stable IDs, the product / variant / SKU / inventory / price / offer / campaign model, and server-side money rules. Endpoints for Milestone 1 (catalogue and campaigns) are specified in detail. Later milestones are outlined only, because their behaviour depends on Phase 0 decisions that have not been made yet.
@@ -254,6 +254,53 @@ Every admin route needs a staff session and a role. Every write records an audit
 
 Publish validation follows the gate in `PRODUCT_PAGE_ADMIN_MAPPING_SPEC.md` and `HOMEPAGE_CAMPAIGNS_SPEC.md`. For example, a slide cannot be published without all three device images, alt text and a published target. A failed publish returns `422 PUBLISH_BLOCKED`, with an `errors[]` entry for every missing item so the admin UI can list them. Full request and response schemas for admin endpoints will be written into `packages/contract` once Codex's admin screen designs have been reviewed.
 
+### 5.1 Implemented admin API (25 Sep 2026)
+
+Zod schemas: `packages/contract/src/admin.ts`. Admin routes use the product **id** (UUID), not the slug, because the slug can change until first publish.
+
+**Auth (all staff):**
+- `POST /v1/admin/auth/login` with `{ email, password }` returns `StaffSession { staff: { id, email, name, role, permissions[] }, csrfToken }` and sets the `klw_admin` cookie (httpOnly, SameSite=Strict, Path=/v1/admin, Secure outside local dev).
+- `GET /v1/admin/auth/me` returns the same `StaffSession`.
+- `POST /v1/admin/auth/logout` returns `204`.
+- **Every non-GET admin request must send `X-CSRF-Token: <csrfToken>`.**
+- Sessions end after 30 idle minutes, or 12 hours in total.
+- Five failed sign-ins lock the account for 15 minutes (`429 RATE_LIMITED` with `Retry-After`). Wrong email and wrong password get the same message.
+
+**Catalogue:**
+
+| Endpoint | Permission |
+| --- | --- |
+| `GET /v1/admin/products?status=&category=&q=&missing=price\|images&limit=&offset=` → `AdminProductListResponse` | `catalogue.read` |
+| `POST /v1/admin/products` (`AdminProductCreate`) → 201 `AdminProduct` (always Draft) | `catalogue.write` |
+| `GET /v1/admin/products/{id}` → `AdminProduct`, including `publishChecklist[]` and `slugLocked` | `catalogue.read` |
+| `PATCH /v1/admin/products/{id}` (`AdminProductUpdate`); a slug change after first publish → 422 `slug_locked` | `catalogue.write` |
+| `PUT /v1/admin/products/{id}/options` (`AdminOptionsReplace`); in-use values or group changes with variants → 422 | `catalogue.write` |
+| `POST /v1/admin/products/{id}/variants` (`AdminVariantCreate`, `stock: {mode:"own"} \| {mode:"shared", fromSku}`) → 201 `AdminProduct` | `catalogue.write` |
+| `PATCH /v1/admin/variants/{sku}` (`AdminVariantUpdate`) | `catalogue.write` |
+| `POST /v1/admin/products/{id}/publish` · `/unpublish` · `/archive`; a failed checklist → 422 `PUBLISH_BLOCKED` with one `errors[]` entry per item | `catalogue.publish` |
+
+**Inventory:**
+
+| Endpoint | Permission |
+| --- | --- |
+| `GET /v1/admin/inventory?filter=low\|out\|untracked` → `{ data: AdminInventoryItem[] }` | `inventory.read` |
+| `POST /v1/admin/inventory/{id}/adjustments` (`AdminInventoryAdjustment`: `field` on_hand\|unavailable, `delta`, `reason`, `note`) → 201 new totals; negative → 422 `negative_available` | `inventory.adjust` |
+| `GET /v1/admin/inventory/{id}/movements` → `{ data: AdminInventoryMovement[] }` | `inventory.read` |
+
+**Timeline:**
+
+| Endpoint | Permission |
+| --- | --- |
+| `GET /v1/admin/timeline/{product\|inventory_item\|collection}/{id}` → `{ data: AuditEvent[] }` (newest first) | `audit.read` |
+| `POST …/comments` with `{ comment }` | `audit.comment` |
+
+**Errors:**
+- Unauthenticated → 401 `UNAUTHENTICATED`.
+- Wrong role or missing CSRF header → 403 `FORBIDDEN`, with a readable `detail`.
+- Field problems → 422, with `errors[].path` matching request field paths (e.g. `sku`, `options.pack`, `mrpPaise`, `stock.fromSku`).
+
+**Not yet built:** media upload, collections, homepage campaigns, CSV import, staff management.
+
 ---
 
 ## 6. Later milestones (outline only; blocked on Phase 0)
@@ -302,6 +349,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026: staff auth + admin catalogue/inventory/timeline APIs implemented (§5.1). Admin routes are keyed by product id rather than slug.
 - 25 Sep 2026 (Codex review): `packages/contract` now has `badge`, `totalCount`, `facets` and the flat `SearchSuggestResponse`. `GET /v1/store/search/suggest` is implemented. Unsupported sorts return 422. Cursors are bound to their filters. §11 ranking is implemented, with `spec` included in matching. The no-SKU detail response is stated in §4. The demo seed refuses any database not named `*_dev` or `*_test`.
 - 25 Sep 2026: `GET /v1/store/products/{slug}` implemented. The product detail additionally carries `detail`, `spec`, `priceFrom`, `priceStatus` and `availability` at product level; `images[].optionValue` is `"optionCode:valueCode"`; `maxOrderQuantity` is the quantity orderable *now* (min of the max and sellable stock). A SKU with a pending price reports `availability: "not_for_sale"`. Additive only. Zod: `ProductDetail` in `packages/contract`.
 - 25 Sep 2026: added §11 answering `docs/phase-0/FRONTEND_DATA_HANDOFF.md`. Additive fields: `badge`, `facets`, `totalCount` on the product list, and `kind` + `href` on search suggestions. `GET /v1/store/categories` and `GET /v1/store/products` are implemented in `services/commerce-api` against demo fixtures.

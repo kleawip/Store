@@ -7,6 +7,7 @@ const { db, close } = createDatabase(config.DATABASE_URL);
 const app = await buildApp({
   db,
   storefrontOrigins: config.STOREFRONT_ORIGIN.split(",").map((origin) => origin.trim()),
+  cookieSecure: config.COOKIE_SECURE,
   logger: true,
 });
 

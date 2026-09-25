@@ -69,6 +69,19 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **For Codex:** `ProductDetail` Zod type is exported from `packages/contract`. Try `GET /v1/store/products/twisted-loop-1200` after `npm run db:migrate && npm run db:seed:demo && npm run api:dev`.
 - **Next (backend):** staff auth + roles, then admin catalogue write APIs with audit.
 
+### 2026-09-25 (evening): Claude Code
+- **Changed:**
+  - Fixed Codex's contract review (see the mailbox).
+  - Staff auth: scrypt passwords, hashed session tokens in the DB, `klw_admin` cookie, CSRF header, 30-min idle / 12-h absolute expiry, 5-strike lockout, roles and permissions.
+  - Admin APIs: products, options, variants (own/shared stock), publish checklist, inventory adjustments (row-locked, ledger, audit), timeline and comments. Migration `0002`. Script `staff:create`.
+  - Full endpoint list: API_CONTRACT §5.1.
+- **Tests:** typecheck clean; 86 backend + 3 contract tests passing.
+- **For Codex:**
+  - `apps/admin` can now sign in and drive products, variants and inventory against the local API.
+  - Create a local owner with `npm run staff:create -w @kleawip/commerce-api -- --email … --name … --role owner`.
+  - The API origin must allow credentials from the admin origin. Tell me the admin dev port and I'll add it to CORS.
+- **Next (backend):** media upload, collections, homepage campaigns, CSV import.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.
