@@ -608,6 +608,8 @@ export const refunds = pgTable("refunds", {
   providerRefundId: text("provider_refund_id"),
   failureReason: text("failure_reason"),
   createdByStaffId: uuid("created_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  // Set when the refund settles a return (Milestone 3 step 3).
+  returnId: uuid("return_id").references(() => returns.id, { onDelete: "restrict" }),
   processedAt: timestamp("processed_at", { withTimezone: true }),
   ...timestamps,
 }, (t) => [
@@ -684,3 +686,49 @@ export const invoices = pgTable("invoices", {
   issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
   cancelledAt: timestamp("cancelled_at", { withTimezone: true }),
 }, (t) => [uniqueIndex("invoices_number_key").on(t.number), uniqueIndex("invoices_order_key").on(t.orderId)]);
+
+// ---- Returns (Milestone 3 step 3): request → approve/reject → receive & inspect (restock) → refund (+ GST credit note) ----
+
+export const returnNumberSeq = pgSequence("return_number_seq", { startWith: 100001 });
+export const returnStatus = pgEnum("return_status", ["requested", "approved", "rejected", "received", "refunded", "closed", "cancelled"]);
+export const returnReason = pgEnum("return_reason", ["damaged", "wrong_item", "not_as_described", "quality_issue", "changed_mind", "undelivered", "other"]);
+export const returnSource = pgEnum("return_source", ["customer", "staff", "rto"]);
+
+export const returns = pgTable("returns", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  number: text("number").notNull(), // e.g. RET100001
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),
+  source: returnSource("source").notNull(),
+  status: returnStatus("status").notNull().default("requested"),
+  reason: returnReason("reason").notNull(),
+  customerNote: text("customer_note").notNull().default(""),
+  staffNote: text("staff_note"),
+  rejectionReason: text("rejection_reason"),
+  decidedByStaffId: uuid("decided_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  decidedAt: timestamp("decided_at", { withTimezone: true }),
+  receivedAt: timestamp("received_at", { withTimezone: true }),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [uniqueIndex("returns_number_key").on(t.number), index("returns_order_idx").on(t.orderId), index("returns_status_created_idx").on(t.status, t.createdAt)]);
+
+export const returnLines = pgTable("return_lines", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  returnId: uuid("return_id").notNull().references(() => returns.id, { onDelete: "cascade" }),
+  orderLineId: uuid("order_line_id").notNull().references(() => orderLines.id, { onDelete: "restrict" }),
+  quantity: integer("quantity").notNull(),
+  // Set on inspection: how many go back on the shelf (the rest are written off as damaged).
+  restockedQuantity: integer("restocked_quantity"),
+}, (t) => [
+  uniqueIndex("return_lines_return_line_key").on(t.returnId, t.orderLineId),
+  check("return_lines_quantities", sql`${t.quantity} > 0 AND (${t.restockedQuantity} IS NULL OR (${t.restockedQuantity} >= 0 AND ${t.restockedQuantity} <= ${t.quantity}))`),
+]);
+
+// GST credit notes for returned goods, numbered per financial year like invoices (CN/26-27/00001).
+export const creditNotes = pgTable("credit_notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  returnId: uuid("return_id").notNull().references(() => returns.id, { onDelete: "restrict" }),
+  invoiceId: uuid("invoice_id").notNull().references(() => invoices.id, { onDelete: "restrict" }),
+  number: text("number").notNull(),
+  document: jsonb("document").notNull(),
+  issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("credit_notes_number_key").on(t.number), uniqueIndex("credit_notes_return_key").on(t.returnId)]);

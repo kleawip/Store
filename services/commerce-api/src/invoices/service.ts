@@ -17,6 +17,10 @@ type OrderRow = typeof orders.$inferSelect;
 type Address = { name: string; phone: string; line1: string; line2: string; landmark: string; city: string; stateCode: string; stateName: string; pincode: string };
 
 export type InvoiceDocument = {
+  /** Absent on invoices issued before credit notes existed. */
+  kind?: "invoice" | "credit_note";
+  /** Credit notes: the invoice they adjust. */
+  againstInvoice?: { number: string; issuedAt: string };
   number: string;
   issuedAt: string;
   orderNumber: string;
@@ -44,6 +48,17 @@ export type InvoiceDocument = {
 };
 
 /** Financial year label in India time: 25 Sep 2026 → "26-27"; 10 Mar 2027 → "26-27". */
+/** Next number in a per-financial-year series (row-locked, gapless). `series` separates invoices from credit notes. */
+export async function nextInFinancialYear(tx: Tx, series: string, now: Date) {
+  const fy = financialYear(now);
+  const [counter] = await tx
+    .insert(invoiceSequences)
+    .values({ financialYear: series ? `${series}:${fy}` : fy, lastNumber: 1 })
+    .onConflictDoUpdate({ target: invoiceSequences.financialYear, set: { lastNumber: sql`${invoiceSequences.lastNumber} + 1` } })
+    .returning();
+  return { fy, sequence: counter!.lastNumber };
+}
+
 export function financialYear(date: Date) {
   const ist = new Date(date.getTime() + 330 * 60_000);
   const start = ist.getUTCMonth() >= 3 ? ist.getUTCFullYear() : ist.getUTCFullYear() - 1;
@@ -55,14 +70,9 @@ export async function issueInvoice(tx: Tx, order: OrderRow, seller: SellerDetail
   const [existing] = await tx.select().from(invoices).where(eq(invoices.orderId, order.id));
   if (existing) return existing;
 
-  const fy = financialYear(now);
   // Row-locked counter in the same transaction: gapless and never reused, even under concurrent bookings.
-  const [counter] = await tx
-    .insert(invoiceSequences)
-    .values({ financialYear: fy, lastNumber: 1 })
-    .onConflictDoUpdate({ target: invoiceSequences.financialYear, set: { lastNumber: sql`${invoiceSequences.lastNumber} + 1` } })
-    .returning();
-  const number = `${PREFIX}/${fy}/${String(counter!.lastNumber).padStart(5, "0")}`;
+  const { fy, sequence } = await nextInFinancialYear(tx, "", now);
+  const number = `${PREFIX}/${fy}/${String(sequence).padStart(5, "0")}`;
 
   const lines = await tx.select().from(orderLines).where(eq(orderLines.orderId, order.id)).orderBy(asc(orderLines.sku));
   const paid = await tx.select({ amountPaise: payments.amountPaise }).from(payments).where(sql`${payments.orderId} = ${order.id} AND ${payments.status} = 'captured'`);
@@ -84,6 +94,7 @@ export async function issueInvoice(tx: Tx, order: OrderRow, seller: SellerDetail
   });
   const sum = (key: "taxablePaise" | "cgstPaise" | "sgstPaise" | "igstPaise") => docLines.reduce((total, line) => total + line[key], 0);
   const document: InvoiceDocument = {
+    kind: "invoice",
     number,
     issuedAt: now.toISOString(),
     orderNumber: order.number,

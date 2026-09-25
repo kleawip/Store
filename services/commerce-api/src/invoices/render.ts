@@ -47,12 +47,16 @@ export function renderInvoiceHtml(doc: InvoiceDocument, status: "issued" | "canc
     .join("");
   const span = doc.intraState ? 10 : 9;
   const shippingRow = doc.shippingPaise > 0 ? `<tr><td colspan="${span - 1}">Delivery charges</td><td>${rupees(doc.shippingPaise)}</td></tr>` : "";
-  const payment = doc.payment.method === "partial_cod"
+  const creditNote = doc.kind === "credit_note";
+  const title = creditNote ? "Credit Note" : "Tax Invoice";
+  const payment = creditNote
+    ? `Against tax invoice ${escape(doc.againstInvoice?.number)} dated ${doc.againstInvoice ? istDate(doc.againstInvoice.issuedAt) : ""}. Value of goods returned.`
+    : doc.payment.method === "partial_cod"
     ? `Paid online ${rupees(doc.payment.paidOnlinePaise)} · To pay on delivery ${rupees(doc.payment.codBalancePaise)}`
     : `Paid online ${rupees(doc.payment.paidOnlinePaise)}`;
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tax invoice ${escape(doc.number)}</title>
+<title>${title} ${escape(doc.number)}</title>
 <style>
   body { font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: #111; margin: 24px; }
   h1 { font-size: 20px; margin: 0; } .muted { color: #555; font-size: 11px; }
@@ -63,8 +67,8 @@ export function renderInvoiceHtml(doc: InvoiceDocument, status: "issued" | "canc
   .totals td { font-weight: 600; } .cancelled { color: #b00020; border: 2px solid #b00020; padding: 4px 10px; display: inline-block; font-weight: 700; }
   @media print { body { margin: 0; } .noprint { display: none; } }
 </style></head><body>
-<div class="head"><div><h1>Tax Invoice</h1>${status === "cancelled" ? '<div class="cancelled">CANCELLED</div>' : ""}
-<div>Invoice no. <strong>${escape(doc.number)}</strong> · Date ${istDate(doc.issuedAt)}</div>
+<div class="head"><div><h1>${title}</h1>${status === "cancelled" ? '<div class="cancelled">CANCELLED</div>' : ""}
+<div>${creditNote ? "Credit note" : "Invoice"} no. <strong>${escape(doc.number)}</strong> · Date ${istDate(doc.issuedAt)}</div>
 <div>Order ${escape(doc.orderNumber)} · placed ${istDate(doc.orderDate)}</div></div>
 <div><strong>${escape(seller.tradeName || seller.legalName)}</strong>${seller.tradeName ? `<div>${escape(seller.legalName)}</div>` : ""}
 <div>${escape(seller.line1)}${seller.line2 ? `, ${escape(seller.line2)}` : ""}</div><div>${escape(seller.city)} ${escape(seller.pincode)}</div>
@@ -77,6 +81,6 @@ ${buyer.landmark ? `<div>${escape(buyer.landmark)}</div>` : ""}<div>${escape(buy
 <tr class="totals"><td colspan="5">Total</td><td>${rupees(doc.totals.taxablePaise)}</td><td></td>${taxCells(doc.totals)}<td>${rupees(doc.totals.grandTotalPaise)}</td></tr></tbody></table>
 <p><strong>Amount in words:</strong> ${amountInWords(doc.totals.grandTotalPaise)} only</p>
 <p>${payment}</p>
-<p class="muted">Prices are inclusive of GST. Tax is not payable on reverse charge. This is a computer-generated invoice.</p>
+<p class="muted">Prices are inclusive of GST. Tax is not payable on reverse charge. This is a computer-generated ${creditNote ? "credit note" : "invoice"}.</p>
 </body></html>`;
 }

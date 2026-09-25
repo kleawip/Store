@@ -15,6 +15,8 @@ export type CommerceSettings = {
   defaultWeightGrams: number;
   /** TBC: the standard shipping box, used when staff don't enter dimensions. */
   defaultParcelCm: { length: number; breadth: number; height: number };
+  /** TBC: days after delivery within which customers can ask for a return. */
+  returnWindowDays: number;
   /** How long a checkout quote can be turned into an order. */
   quoteTtlMs: number;
 };
@@ -27,6 +29,7 @@ export const DEFAULT_COMMERCE_SETTINGS: CommerceSettings = {
   shipping: { flatPaise: 0, freeAbovePaise: null },
   defaultWeightGrams: 500,
   defaultParcelCm: { length: 30, breadth: 25, height: 10 },
+  returnWindowDays: 7,
   quoteTtlMs: 15 * 60 * 1000,
 };
 

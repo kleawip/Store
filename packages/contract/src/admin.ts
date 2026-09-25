@@ -1,7 +1,7 @@
 // Admin API schemas (API_CONTRACT §5, ADMIN_SCREENS_BRIEF). Kleawip staff only.
 // SHARED FILE: frontend (Codex) and backend (Claude Code). Change via the contract change process.
 import { z } from "zod";
-import { Order, OrderTracking, ShipmentStatus, StateCodeSchema } from "./customer";
+import { Order, OrderTracking, ReturnReason, ReturnRequest, ReturnStatus, ShipmentStatus, StateCodeSchema } from "./customer";
 
 const Slug = z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "Use lowercase letters, numbers and single hyphens.").max(80);
 const Code = z.string().regex(/^[a-z0-9]+([_-][a-z0-9]+)*$/, "Use lowercase letters, numbers, - or _.").max(40);
@@ -678,6 +678,7 @@ export const AdminOrderDetail = z.object({
   needsAttention: z.string().nullable(),
   shipments: z.array(AdminShipment),
   invoice: AdminInvoiceSummary.nullable(),
+  returns: z.array(z.lazy(() => AdminReturn)),
 });
 
 const Gstin = z.string().trim().toUpperCase().regex(/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/, "Enter a valid 15-character GSTIN.");
@@ -696,3 +697,65 @@ export const SellerDetails = z.object({
   phone: z.string().trim().max(20).nullable().default(null),
 });
 export type SellerDetails = z.infer<typeof SellerDetails>;
+
+// ---- Milestone 3 step 3: returns ----
+
+export const AdminReturn = z.object({
+  id: z.string(),
+  number: z.string(),
+  orderId: z.string(),
+  orderNumber: z.string(),
+  customer: z.object({ id: z.string(), name: z.string(), phone: z.string() }),
+  source: z.enum(["customer", "staff", "rto"]),
+  status: ReturnStatus,
+  reason: ReturnReason,
+  customerNote: z.string(),
+  staffNote: z.string().nullable(),
+  rejectionReason: z.string().nullable(),
+  lines: z.array(z.object({
+    orderLineId: z.string(),
+    sku: z.string(),
+    productTitle: z.string(),
+    optionsLabel: z.string(),
+    quantity: z.number().int(),
+    restockedQuantity: z.number().int().nullable(),
+    // Value of the returned units at the price paid (GST-inclusive).
+    value: AdminMoney,
+  })),
+  // Goods value of the returned units: the default refund. Shipping isn't included.
+  suggestedRefund: AdminMoney,
+  refundedTotal: AdminMoney,
+  creditNote: z.object({ number: z.string(), issuedAt: z.string() }).nullable(),
+  decidedBy: z.string().nullable(),
+  decidedAt: z.string().nullable(),
+  receivedAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+
+export const AdminReturnListQuery = z.object({
+  status: ReturnStatus.optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+/** Staff-recorded return (e.g. a parcel back from RTO, or a return agreed on the phone). Starts approved. */
+export const StaffReturnCreate = z.object({
+  lines: ReturnRequest.shape.lines,
+  reason: ReturnReason,
+  source: z.enum(["staff", "rto"]).default("staff"),
+  note: z.string().trim().max(1000).default(""),
+});
+export const ReturnDecision = z.object({ note: z.string().trim().max(500).nullable().default(null) });
+export const ReturnReject = z.object({ reason: z.string().trim().min(3).max(500) });
+export const ReturnReceive = z.object({
+  // Per SKU: how many returned units go back on the shelf. Omitted SKUs are restocked in full.
+  lines: z.array(z.object({ sku: z.string(), restockQuantity: z.number().int().min(0) })).default([]),
+  note: z.string().trim().max(500).nullable().default(null),
+});
+export const ReturnRefund = z.object({
+  // Defaults to suggestedRefund.
+  amountPaise: z.number().int().positive().optional(),
+  method: z.enum(["gateway", "manual"]),
+  note: z.string().trim().max(300).nullable().default(null),
+});
+export const ReturnClose = z.object({ note: z.string().trim().min(3).max(500) });

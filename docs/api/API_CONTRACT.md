@@ -553,6 +553,33 @@ While a shipment is live, manual fulfilment steps and staff order cancellation r
 
 **Development only** (mock courier + dev payments): `POST /v1/dev/shipments/{awb}/track { status: "PICKED UP"|"OUT FOR DELIVERY"|"DELIVERED"|"UNDELIVERED"|"RTO INITIATED"|"RTO DELIVERED", location? }` simulates a courier update. Mock label URLs (`mock-courier.invalid`) don't open.
 
+### 5.2.3 Milestone 3 step 3: returns and GST credit notes (implemented 25 Sep 2026)
+
+Zod: `ReturnReason`, `ReturnStatus`, `ReturnRequest`, `CustomerReturn`, `ReturnEligibility`, `AdminReturn`, `AdminReturnListQuery`, `StaffReturnCreate`, `ReturnDecision`, `ReturnReject`, `ReturnReceive`, `ReturnRefund`, `ReturnClose`. **Additive:** `AdminOrderDetail.returns[]`. Refunds made for a return carry the reason `Return RET…`.
+
+Flow: `requested` → `approved` | `rejected` → `received` (inspected, restocked) → `refunded` (with credit note) | `closed` (no refund, e.g. replacement). Customers may `cancel` while `requested`. Reasons: `damaged`, `wrong_item`, `not_as_described`, `quality_issue`, `changed_mind`, `other` (+ `undelivered`, staff only). Reverse pickup is arranged by staff outside the system for now.
+
+**Customer** (signed in, own orders only):
+
+| Endpoint | Notes |
+| --- | --- |
+| `GET /v1/store/orders/{id}/returns/eligibility` | `{ eligible, reason, returnBy, lines[{ sku, productTitle, optionsLabel, returnableQuantity }] }`. Open only when delivered, for **7 days** after delivery (TBC). Show `reason` when not eligible. |
+| `POST /v1/store/orders/{id}/returns { lines[{ sku, quantity }], reason, note? }` | → 201 `CustomerReturn`. Errors: `not_returnable`, `exceeds_returnable`, `not_in_order`, `duplicate_sku`. |
+| `GET /v1/store/orders/{id}/returns` | `{ data: CustomerReturn[] }` with status, `rejectionReason` and `refundedTotal`. |
+| `POST /v1/store/returns/{id}/cancel` | While `requested` only (`not_cancellable`). |
+
+**Staff:** `orders.read` to view; `orders.manage` (owner, operations) to record, approve, reject and receive; `orders.refund` (owner) to refund or close.
+
+| Endpoint | Notes |
+| --- | --- |
+| `GET /v1/admin/returns?status=&limit=&offset=` · `GET /v1/admin/returns/{id}` | `AdminReturn` with lines (value at price paid), `suggestedRefund` (goods only, no shipping), `refundedTotal`, `creditNote`. |
+| `POST /v1/admin/orders/{id}/returns { lines, reason, source: "staff"\|"rto", note? }` | → 201, starts `approved`. For orders that have left the warehouse (e.g. an RTO parcel); `not_returnable` otherwise. |
+| `POST /v1/admin/returns/{id}/approve { note? }` · `/reject { reason }` | From `requested` only (`invalid_transition`). |
+| `POST /v1/admin/returns/{id}/receive { lines?[{ sku, restockQuantity }], note? }` | From `approved`. Omitted SKUs restock in full; the rest are written off. `exceeds_returned`, `not_in_return`. |
+| `POST /v1/admin/returns/{id}/refund { amountPaise?, method: "gateway"\|"manual", note? }` | From `received`. Amount defaults to `suggestedRefund`; same caps and errors as §5.2.1 refunds (`exceeds_refundable`; `manual` needs `note`). Issues the GST credit note (`CN/26-27/00001`) against the order's invoice. |
+| `POST /v1/admin/returns/{id}/close { note }` | From `received`, without a refund. |
+| `GET /v1/admin/returns/{id}/credit-note` | Printable HTML credit note. |
+
 ### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
 
 These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
@@ -625,6 +652,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026 (M3 step 3): returns (customer requests within 7 days of delivery, staff approve/reject/receive/refund/close, RTO returns), restocking, GST credit notes; `AdminOrderDetail.returns` (additive) (§5.2.3).
 - 25 Sep 2026 (M3 step 2): shipments (book/retry/pickup/cancel), courier tracking webhook, GST invoices with seller details; `Order.tracking` + `Order.invoice` (additive); error code `COURIER_UNAVAILABLE` (§5.2.2).
 - 25 Sep 2026 (M3 step 1): admin fulfilment steps, staff cancellation with auto-refund, gateway/cash refunds, retry, resolve-attention; `Order.fulfilmentStatus` + `Order.refundedTotal` (additive) (§5.2.1).
 - 26 Sep 2026 (Codex video QA): video codec validation (H.264/AAC, VP8/9/AV1 + Opus/Vorbis; HEVC refused); Instagram embeds gated behind the owner setting `instagramEmbedsVerified` (`/v1/admin/settings`).

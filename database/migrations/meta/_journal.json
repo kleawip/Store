@@ -106,6 +106,13 @@
       "when": 1790351445274,
       "tag": "0014_shipments_invoices",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790352829447,
+      "tag": "0015_returns_credit_notes",
+      "breakpoints": true
     }
   ]
 }

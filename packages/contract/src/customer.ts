@@ -243,3 +243,38 @@ export const Order = z.object({
 export type Order = z.infer<typeof Order>;
 
 export const PlaceOrderResponse = z.object({ order: Order, payment: PaymentSession.nullable() });
+
+// ---- Returns (Milestone 3 step 3) ----
+
+export const ReturnReason = z.enum(["damaged", "wrong_item", "not_as_described", "quality_issue", "changed_mind", "undelivered", "other"]);
+export const ReturnStatus = z.enum(["requested", "approved", "rejected", "received", "refunded", "closed", "cancelled"]);
+
+export const ReturnRequest = z.object({
+  lines: z.array(z.object({ sku: z.string().min(1).max(64), quantity: z.number().int().positive() })).min(1).max(50),
+  // Customers can't choose "undelivered" (that's for courier returns staff record).
+  reason: ReturnReason.exclude(["undelivered"]),
+  note: z.string().trim().max(1000).default(""),
+});
+
+export const CustomerReturn = z.object({
+  id: z.string(),
+  number: z.string(),
+  orderId: z.string(),
+  status: ReturnStatus,
+  reason: ReturnReason,
+  note: z.string(),
+  // Shown to the customer when a request is rejected.
+  rejectionReason: z.string().nullable(),
+  lines: z.array(z.object({ sku: z.string(), productTitle: z.string(), optionsLabel: z.string(), quantity: z.number().int() })),
+  refundedTotal: QuoteMoney,
+  requestedAt: z.string(),
+});
+
+/** What can still be returned on a delivered order, and until when. */
+export const ReturnEligibility = z.object({
+  eligible: z.boolean(),
+  // Why not, in words for the customer (null when eligible).
+  reason: z.string().nullable(),
+  returnBy: z.string().nullable(),
+  lines: z.array(z.object({ sku: z.string(), productTitle: z.string(), optionsLabel: z.string(), returnableQuantity: z.number().int() })),
+});

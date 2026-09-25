@@ -193,6 +193,13 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Open with the client/accountant:** GST on the shipping charge (printed untaxed for now), invoice prefix `KLW`, invoice at booking vs dispatch, and the seller's real GSTIN and address.
 - **Next:** step 3 returns (request, approve, inspect/restock, refund, credit notes), then step 4 notifications.
 
+### 2026-09-25 — Claude Code (Milestone 3 step 3: returns, credit notes; dormant R2 adapter)
+- **Changed:** `services/`, `database/` (migration 0015), `packages/contract` (additive), API_CONTRACT §5.2.3. Customers request returns for delivered orders within 7 days (TBC), capped per line, and can cancel while pending. Staff approve/reject, record RTO or phone-agreed returns, receive and inspect (choose restock quantity; the stock ledger records `returned_restock`), then refund (reusing the refund caps, online or cash) or close without refund. Refunding issues a GST credit note `CN/<FY>/<n>` against the invoice, printable as HTML.
+- **Also:** Cloudflare R2 media adapter committed but **dormant**. It is only used when all `R2_*` env vars are set. The owner paused R2 until it is set up with the client; development keeps local disk.
+- **Verification:** backend typecheck, 260 tests and 3 contract tests passed; dev DB migrated; admin app typechecks.
+- **Open with the client:** return window (7 days), which reasons are allowed, whether shipping is refunded, who pays return shipping, reverse-pickup via Shiprocket (not built), credit note format with the accountant.
+- **Next:** step 4 notifications (order confirmed, shipped, delivered, return/refund updates by WhatsApp/email with an outbox and retries).
+
 ## Git rules
 
 `WEBSITE DATA/project` is a git repository on branch `main`, pushed to **https://github.com/kleawip/Store** (remote `origin`, currently **public** for the demo; make it private before real client data or keys exist). The owner pushes; agents commit locally and `git pull --rebase origin main` only when told the remote moved.

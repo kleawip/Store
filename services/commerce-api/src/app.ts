@@ -29,6 +29,7 @@ import { storeCheckoutRoutes } from "./routes/store-checkout";
 import { devPaymentRoutes, paymentWebhookRoutes, storeOrderRoutes } from "./routes/store-orders";
 import { storeCatalogueRoutes } from "./routes/store-catalogue";
 import { courierWebhookRoutes, devCourierRoutes } from "./routes/courier-webhooks";
+import { adminReturnRoutes, storeReturnRoutes } from "./routes/returns";
 
 export type AppOptions = {
   db: Database;
@@ -95,6 +96,7 @@ export async function buildApp({ db, storage, otpSender, shipping, commerce, pay
   await app.register(storeCartRoutes(db, { cookieSecure }), { prefix: "/v1/store" });
   await app.register(storeCheckoutRoutes(db, { shipping, settings: commerce }), { prefix: "/v1/store" });
   await app.register(storeOrderRoutes(db, payments), { prefix: "/v1/store" });
+  await app.register(storeReturnRoutes(db, commerce), { prefix: "/v1/store" });
   await app.register(paymentWebhookRoutes(db, payments), { prefix: "/v1/webhooks" });
   if (payments instanceof DevGateway) await app.register(devPaymentRoutes(payments), { prefix: "/v1/dev" });
   if (shipping && courierWebhookToken) await app.register(courierWebhookRoutes(db, shipping.name, courierWebhookToken), { prefix: "/v1/webhooks" });
@@ -107,6 +109,7 @@ export async function buildApp({ db, storage, otpSender, shipping, commerce, pay
   await app.register(adminImportRoutes(db), { prefix: "/v1/admin/imports" });
   await app.register(adminStaffRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminOrderRoutes(db, payments, shipping, commerce), { prefix: "/v1/admin" });
+  await app.register(adminReturnRoutes(db, payments), { prefix: "/v1/admin" });
   await app.register(adminSettingsRoutes(db, commerce.sellerStateCode), { prefix: "/v1/admin" });
   await app.register(adminAccountRoutes(db), { prefix: "/v1/admin/auth" });
   if (storage.read) await app.register(mediaFileRoutes(storage), { prefix: "/media" });

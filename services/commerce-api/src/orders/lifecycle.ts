@@ -62,10 +62,10 @@ export async function moneySummary(db: Database | Tx, order: OrderRow) {
 }
 
 /** Records pending refund rows inside the caller's transaction. Gateway refunds are split across captured payments. */
-async function recordRefunds(
+export async function recordRefunds(
   tx: Tx,
   order: OrderRow,
-  input: { amountPaise: number; method: "gateway" | "manual"; reason: string; note: string | null },
+  input: { amountPaise: number; method: "gateway" | "manual"; reason: string; note: string | null; returnId?: string },
   actorStaffId: string,
 ) {
   const money = await moneySummary(tx, order);
@@ -78,7 +78,7 @@ async function recordRefunds(
     for (const payment of money.capturedPayments.filter((p) => p.remaining > 0)) {
       if (left === 0) break;
       const amount = Math.min(left, payment.remaining);
-      const [row] = await tx.insert(refunds).values({ orderId: order.id, paymentId: payment.id, method: "gateway", amountPaise: amount, reason: input.reason, note: input.note, createdByStaffId: actorStaffId }).returning({ id: refunds.id });
+      const [row] = await tx.insert(refunds).values({ orderId: order.id, paymentId: payment.id, method: "gateway", amountPaise: amount, reason: input.reason, note: input.note, returnId: input.returnId ?? null, createdByStaffId: actorStaffId }).returning({ id: refunds.id });
       ids.push(row!.id);
       left -= amount;
     }
@@ -93,7 +93,7 @@ async function recordRefunds(
   // Manual refunds are money already sent by staff: recorded as processed immediately.
   const [row] = await tx
     .insert(refunds)
-    .values({ orderId: order.id, method: "manual", amountPaise: input.amountPaise, reason: input.reason, note: input.note, status: "processed", processedAt: new Date(), createdByStaffId: actorStaffId })
+    .values({ orderId: order.id, method: "manual", amountPaise: input.amountPaise, reason: input.reason, note: input.note, returnId: input.returnId ?? null, status: "processed", processedAt: new Date(), createdByStaffId: actorStaffId })
     .returning({ id: refunds.id });
   return [row!.id];
 }
