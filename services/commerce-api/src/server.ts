@@ -1,7 +1,7 @@
 import { buildApp } from "./app";
 import { loadConfig } from "./config";
 import { createDatabase } from "./db/client";
-import { LocalDiskStorage } from "./media/storage";
+import { storageFromConfig } from "./media/from-config";
 import { DEFAULT_COMMERCE_SETTINGS } from "./checkout/settings";
 import { MockShippingProvider, ShiprocketProvider } from "./shipping/provider";
 import { DevGateway, RazorpayGateway } from "./payments/gateway";
@@ -10,10 +10,7 @@ import { ChannelOtpSender, FileOutboxOtpSender, ResendEmailOtpSender, WhatsAppCl
 
 const config = loadConfig();
 const { db, close } = createDatabase(config.DATABASE_URL);
-if (config.NODE_ENV === "production") {
-  throw new Error("No production media storage is configured yet (Phase 0 decision); refusing to store uploads on local disk.");
-}
-const storage = new LocalDiskStorage(config.MEDIA_DIR, config.MEDIA_PUBLIC_BASE_URL);
+const storage = storageFromConfig(config);
 
 // Real providers when configured; otherwise (development only) codes go to a local, git-ignored file.
 // Never fall back to the file outbox in production, whatever other guards change.

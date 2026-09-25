@@ -10,6 +10,14 @@ const Env = z.object({
   // Local development media store (served by the API under /media). Production uses a cloud store (Phase 0 decision).
   MEDIA_DIR: z.string().default(".data/media"),
   MEDIA_PUBLIC_BASE_URL: z.string().url().default("http://127.0.0.1:4000/media"),
+  // Cloudflare R2 (ADR 0002). All six together, or none (then development stores media on local disk).
+  R2_ACCOUNT_ID: z.string().regex(/^[0-9a-f]{32}$/, "the 32-character Cloudflare account ID").optional(),
+  R2_ACCESS_KEY_ID: z.string().min(16).optional(),
+  R2_SECRET_ACCESS_KEY: z.string().min(32).optional(),
+  R2_PUBLIC_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/).optional(),
+  R2_PRIVATE_BUCKET: z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/).optional(),
+  // The public bucket's address: https://pub-….r2.dev for the demo, a custom domain (https://media.kleawip.com) at launch.
+  R2_PUBLIC_BASE_URL: z.string().url().optional(),
   // Number of proxy hops to trust for the client IP (Railway sets 1). 0 = trust none.
   TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   // WhatsApp Cloud API (customer sign-in codes). Required in production.
@@ -48,6 +56,7 @@ export type Config = z.infer<typeof Env>;
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   const parsed = Env.safeParse(env);
   if (!parsed.success) {
+    // Names only: values may be secrets and must never reach logs.
     const fields = parsed.error.issues.map((issue) => issue.path.join(".")).join(", ");
     throw new Error(`Invalid environment configuration: ${fields}. See services/commerce-api/.env.example.`);
   }
@@ -66,6 +75,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
   if (parsed.data.NODE_ENV === "production" && !(parsed.data.WHATSAPP_PHONE_NUMBER_ID && parsed.data.WHATSAPP_ACCESS_TOKEN)) {
     throw new Error("WhatsApp is not configured: customers could not sign in. Set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN.");
+  }
+  const r2 = [parsed.data.R2_ACCOUNT_ID, parsed.data.R2_ACCESS_KEY_ID, parsed.data.R2_SECRET_ACCESS_KEY, parsed.data.R2_PUBLIC_BUCKET, parsed.data.R2_PRIVATE_BUCKET, parsed.data.R2_PUBLIC_BASE_URL];
+  if (r2.some(Boolean) && !r2.every(Boolean)) {
+    throw new Error("R2 is partly configured: set all of R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_PUBLIC_BUCKET, R2_PRIVATE_BUCKET and R2_PUBLIC_BASE_URL.");
+  }
+  if (parsed.data.R2_PUBLIC_BUCKET && parsed.data.R2_PUBLIC_BUCKET === parsed.data.R2_PRIVATE_BUCKET) {
+    throw new Error("R2_PUBLIC_BUCKET and R2_PRIVATE_BUCKET must be different buckets: originals must never be public.");
+  }
+  if (parsed.data.NODE_ENV === "production" && !parsed.data.R2_ACCOUNT_ID) {
+    throw new Error("R2 is not configured: production never stores uploads on local disk. Set the R2_* variables.");
   }
   if (parsed.data.SHIPROCKET_EMAIL && parsed.data.NODE_ENV === "production" && !parsed.data.COURIER_WEBHOOK_TOKEN) {
     throw new Error("Shiprocket is configured but COURIER_WEBHOOK_TOKEN is missing: tracking updates could not be verified.");
