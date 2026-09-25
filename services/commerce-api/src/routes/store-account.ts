@@ -1,9 +1,9 @@
-import { Address, AddressInput, Customer, CustomerSession, CustomerUpdate, OtpChallenge, OtpRequest, OtpVerify } from "@kleawip/contract";
+import { Address, AddressInput, Customer, CustomerSession, CustomerUpdate, OtpChallenge, OtpRequest, OtpVerify, UnsubscribeRequest } from "@kleawip/contract";
 import type { FastifyPluginAsync, FastifyReply } from "fastify";
 import { z } from "zod";
 import { CUSTOMER_SESSION_ABSOLUTE_MS, requestOtp, revokeCustomerSession, toCustomer, verifyOtp } from "../customers/auth";
 import { CUSTOMER_COOKIE, customerOf, customerSession, requireClientHeader } from "../customers/guard";
-import { addressFor, createAddress, deleteAddress, getCustomer, listAddresses, updateAddress, updateCustomer } from "../customers/profile";
+import { addressFor, createAddress, deleteAddress, getCustomer, listAddresses, unsubscribeByToken, updateAddress, updateCustomer } from "../customers/profile";
 import type { Database } from "../db/client";
 import type { ChannelOtpSender } from "../messaging/otp-senders";
 
@@ -51,6 +51,12 @@ export const storeAccountRoutes = (db: Database, { otpSender, cookieSecure, onSi
   app.patch("/me", signedIn, async (request) =>
     Customer.parse(await updateCustomer(db, customerOf(request).customerId, CustomerUpdate.parse(request.body))),
   );
+
+  // Public: the unsubscribe link in marketing emails opens a storefront page that posts the token here.
+  app.post("/unsubscribe", { preHandler: async (request) => requireClientHeader(request), config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (request) => {
+    await unsubscribeByToken(db, UnsubscribeRequest.parse(request.body).token);
+    return { unsubscribed: true };
+  });
 
   // ---- Addresses ----
 

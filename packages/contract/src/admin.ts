@@ -863,6 +863,16 @@ export const ProductReport = z.object({
   to: z.string(),
   rows: z.array(z.object({ sku: z.string(), productTitle: z.string(), optionsLabel: z.string(), units: z.number().int(), orders: z.number().int(), revenue: AdminMoney, returnedUnits: z.number().int() })),
 });
+export const CartReminderReport = z.object({
+  from: z.string(),
+  to: z.string(),
+  messagesSent: z.number().int(),
+  customersReminded: z.number().int(),
+  // Paid orders placed by reminded customers within 3 days of the reminder.
+  recoveredOrders: z.number().int(),
+  recoveredSales: AdminMoney,
+});
+
 export const GstReport = z.object({
   from: z.string(),
   to: z.string(),

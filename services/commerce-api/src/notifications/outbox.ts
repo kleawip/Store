@@ -6,7 +6,7 @@ import { and, asc, desc, eq, inArray, lte, sql } from "drizzle-orm";
 import type { DbOrTx } from "../audit";
 import type { Database } from "../db/client";
 import { customers, notifications } from "../db/schema";
-import { renderNotification, type NotificationEvent, type NotificationParams } from "./templates";
+import { MARKETING_EVENTS, renderNotification, type NotificationEvent, type NotificationParams } from "./templates";
 
 export type OutgoingMessage = {
   channel: "whatsapp" | "email";
@@ -49,7 +49,9 @@ export async function deliverDueNotifications(db: Database, sender: Notification
     const due = await tx
       .select({ id: notifications.id })
       .from(notifications)
-      .where(and(eq(notifications.status, "pending"), lte(notifications.nextAttemptAt, now)))
+      // 1 s tolerance: Postgres stamps rows in microseconds, JavaScript's clock only has milliseconds, so a row
+      // queued in the same millisecond would otherwise look "not due yet".
+      .where(and(eq(notifications.status, "pending"), lte(notifications.nextAttemptAt, new Date(now.getTime() + 1000))))
       .orderBy(asc(notifications.nextAttemptAt))
       .limit(batch)
       .for("update", { skipLocked: true });
@@ -65,6 +67,13 @@ export async function deliverDueNotifications(db: Database, sender: Notification
     if (!sender.has(row.channel)) {
       await db.update(notifications).set({ status: "skipped", lastError: `No ${row.channel} sender configured` }).where(eq(notifications.id, row.id));
       continue;
+    }
+    if (MARKETING_EVENTS.has(row.event as NotificationEvent)) {
+      const [consent] = await db.select({ optIn: customers.marketingOptIn }).from(customers).where(eq(customers.id, row.customerId));
+      if (!consent?.optIn) {
+        await db.update(notifications).set({ status: "skipped", lastError: "Customer is not opted in to marketing messages" }).where(eq(notifications.id, row.id));
+        continue;
+      }
     }
     const rendered = renderNotification(row.event as NotificationEvent, row.params as NotificationParams);
     try {

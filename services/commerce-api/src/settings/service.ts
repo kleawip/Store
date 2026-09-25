@@ -11,14 +11,16 @@ import { ApiError } from "../errors";
  *  instagramEmbedsVerified: Instagram's official embed renders blank on localhost and can fail on a domain
  *  that isn't set up for it. Embedded videos stay unpublishable until the owner confirms they play on the
  *  production domain.
+ *  cartRemindersEnabled: abandoned-cart reminders (marketing messages, opted-in customers only). Off until the
+ *  client's WhatsApp "marketing" template is approved and they decide to start.
  */
-export const SETTING_DEFAULTS = { instagramEmbedsVerified: false } as const;
+export const SETTING_DEFAULTS = { instagramEmbedsVerified: false, cartRemindersEnabled: false } as const;
 export type SiteSettings = { -readonly [K in keyof typeof SETTING_DEFAULTS]: (typeof SETTING_DEFAULTS)[K] extends boolean ? boolean : never };
 
 export async function getSettings(db: DbOrTx): Promise<SiteSettings> {
   const rows = await db.select().from(siteSettings);
   const stored = Object.fromEntries(rows.map((row) => [row.key, row.value]));
-  return { instagramEmbedsVerified: stored.instagramEmbedsVerified === true };
+  return { instagramEmbedsVerified: stored.instagramEmbedsVerified === true, cartRemindersEnabled: stored.cartRemindersEnabled === true };
 }
 
 export async function updateSettings(db: Database, patch: Partial<SiteSettings>, actorStaffId: string) {

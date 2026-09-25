@@ -172,7 +172,7 @@ describe("Instagram product video", () => {
     expect(created.instagramUrl).toBe("https://www.instagram.com/reel/DY96no4NaFh/");
     expect(created.publishChecklist.filter((c) => !c.ok).map((c) => c.code)).toEqual(["embed_verified", "rights_confirmed"]);
     // The owner confirms embeds play on the production domain.
-    expect((await owner.request("PATCH", "/v1/admin/settings", { instagramEmbedsVerified: true })).json()).toEqual({ instagramEmbedsVerified: true });
+    expect((await owner.request("PATCH", "/v1/admin/settings", { instagramEmbedsVerified: true })).json()).toMatchObject({ instagramEmbedsVerified: true });
 
     const confirmed = AdminProductVideo.parse((await owner.request("PATCH", `/v1/admin/products/${productId}/videos/${created.id}`, { rightsConfirmed: true })).json());
     expect(confirmed.rightsConfirmed).toMatchObject({ byName: "Test owner" });

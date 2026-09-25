@@ -613,6 +613,24 @@ Development writes messages to `services/commerce-api/.data/notification-outbox.
 - `GET /v1/admin/reports/products?from=&to=&limit=` → top SKUs by revenue (after discounts), with units, orders and returned units.
 - `GET /v1/admin/reports/gst?from=&to=` → `GstReport` built from issued invoices minus credit notes: totals (taxable, CGST, SGST, IGST), an HSN summary, a place-of-supply summary and the document register. Cancelled invoices are listed but not counted. Add `&format=csv&section=documents|hsn` to download CSV for the accountant; it opens in Excel, and customer-typed text is protected against formula injection.
 
+### 5.4.1 Milestone 4: marketing consent and abandoned-cart reminders (implemented 25 Sep 2026)
+
+Reminders are **marketing** messages, so they need the customer's consent (Meta's WhatsApp rules; email unsubscribe norms).
+
+- **Consent (additive):** `Customer.marketingOptIn` (default false). `PATCH /v1/store/me { marketingOptIn: true|false, marketingOptInSource?: "account"|"checkout" }` records the time and where it was given. Show it as an **unticked** checkbox at checkout and in the account ("Send me offers and reminders on WhatsApp and email"); never pre-tick it.
+- **Unsubscribe:** marketing emails link to `<storefront>/unsubscribe?token=…`. That page posts `POST /v1/store/unsubscribe { token }` (with `X-Kleawip-Client`) → always `{ unsubscribed: true }`, whatever the token. Codex: please build a simple `/unsubscribe` page that does this and confirms.
+- **Rules** (TBC with the client):
+  - signed-in, opted-in customers only;
+  - the bag holds something orderable, untouched for 2 hours but less than 7 days old;
+  - no order placed since the bag last changed;
+  - at most one reminder per customer every 7 days;
+  - sent 9:00–21:00 India time only.
+
+  Consent is checked again at send time. The bag link is `<storefront>/bag?utm_source=reminder&utm_medium=cart_reminder`.
+- **Owner switch:** `PATCH /v1/admin/settings { cartRemindersEnabled: true }` (owner). **Off by default**; nothing is sent until it's turned on.
+- **WhatsApp template:** `kleawip_cart_reminder`, category **marketing**, with variables first name, items ("Hand towel and 1 more item") and bag link.
+- **Report:** `GET /v1/admin/reports/cart-reminders?from=&to=` (owner) → `{ messagesSent, customersReminded, recoveredOrders, recoveredSales }`. An order counts as recovered when it's a paid order within 3 days of a reminder.
+
 ### 5.3 Product videos (implemented 26 Sep 2026, at Codex's request)
 
 These are brand videos, **never reviews**. Zod: `VideoAsset`, `ProductVideoInput`, `ProductVideoUpdate`, `AdminProductVideo`, and `ProductDetail.videos`.
@@ -685,6 +703,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026 (M4): marketing consent (`Customer.marketingOptIn`, unsubscribe endpoint), abandoned-cart reminders behind an owner switch, cart-reminder report (§5.4.1).
 - 25 Sep 2026 (M4): discount codes (checkout `discountCode`, `Order.discount`, line discounts, admin CRUD) and owner reports (sales, products, GST with CSV) (§5.4).
 - 25 Sep 2026 (M3 step 4): customer notifications outbox (WhatsApp templates + email, retries, admin list/retry); `AdminOrderDetail.notifications` (additive) (§5.2.4). Milestone 3 backend complete.
 - 25 Sep 2026 (M3 step 3): returns (customer requests within 7 days of delivery, staff approve/reject/receive/refund/close, RTO returns), restocking, GST credit notes; `AdminOrderDetail.returns` (additive) (§5.2.3).

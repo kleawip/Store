@@ -216,6 +216,13 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Verification:** backend typecheck, 277 tests and 3 contract tests passed; dev DB migrated; admin app typechecks.
 - **Open with the client:** who may create codes (owner only for now); whether codes should be limited to certain products or collections (not built: whole order only); whether reports are visible to anyone besides the owner; accountant to confirm the GST treatment of discounts and the CSV layout.
 
+### 2026-09-25 — Claude Code (Milestone 4: marketing consent + abandoned-cart reminders)
+- **Changed:** `services/`, `database/` (migration 0018), `packages/contract` (additive), API_CONTRACT §5.4.1. `Customer.marketingOptIn` with a consent record (time and source) and a one-click unsubscribe token/endpoint. Cart reminders go only to opted-in, signed-in customers, behind an owner switch (`cartRemindersEnabled`, **off by default**): bag idle 2 h–7 days, no order since, at most 1 per 7 days, 9:00–21:00 IST, consent re-checked at send. They use the notifications outbox (template `kleawip_cart_reminder`, marketing category). Owner report `/v1/admin/reports/cart-reminders` (orders recovered within 3 days).
+- **Fixed:** the notifications worker could skip a message queued in the same millisecond (Postgres microseconds vs JS milliseconds) until the next tick; it now allows 1 s. This made a test flaky.
+- **Verification:** backend typecheck, 283 tests and 3 contract tests passed; dev DB migrated; admin app typechecks.
+- **Codex:** please add an unticked marketing checkbox (checkout and account) and a `/unsubscribe?token=` page (see §5.4.1). Noted your staging remark: I now stage only my own paths.
+- **Client:** approve the reminder wording, the timing rules, and the WhatsApp marketing template before the owner turns the switch on.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a git repository on branch `main`, pushed to **https://github.com/kleawip/Store** (remote `origin`, currently **public** for the demo; make it private before real client data or keys exist). The owner pushes; agents commit locally and `git pull --rebase origin main` only when told the remote moved.

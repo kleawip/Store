@@ -344,10 +344,17 @@ export const customers = pgTable("customers", {
   emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
   status: customerStatus("status").notNull().default("active"),
   lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+  // Consent to marketing messages (cart reminders, offers), off until the customer turns it on. Order updates don't need it.
+  marketingOptIn: boolean("marketing_opt_in").notNull().default(false),
+  marketingOptInAt: timestamp("marketing_opt_in_at", { withTimezone: true }),
+  marketingOptInSource: text("marketing_opt_in_source"),
+  // Secret for the one-click unsubscribe link in marketing emails.
+  unsubscribeToken: text("unsubscribe_token"),
   ...timestamps,
 }, (t) => [
   uniqueIndex("customers_phone_key").on(t.phone),
   uniqueIndex("customers_email_key").on(t.email),
+  uniqueIndex("customers_unsubscribe_token_key").on(t.unsubscribeToken),
   check("customers_phone_format", sql`${t.phone} ~ '^\\+91[6-9][0-9]{9}$'`),
   check("customers_email_lowercase", sql`${t.email} IS NULL OR ${t.email} = lower(${t.email})`),
 ]);

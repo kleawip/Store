@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, ne } from "drizzle-orm";
 import type { Database } from "../db/client";
 import { addresses, customers } from "../db/schema";
 import { ApiError, notFound } from "../errors";
+import { randomBytes } from "node:crypto";
 import { toCustomer } from "./auth";
 
 export const MAX_ADDRESSES = 20;
@@ -15,7 +16,11 @@ export async function getCustomer(db: Database, customerId: string) {
   return toCustomer(row);
 }
 
-export async function updateCustomer(db: Database, customerId: string, patch: { name?: string; email?: string | null }) {
+export async function updateCustomer(
+  db: Database,
+  customerId: string,
+  patch: { name?: string; email?: string | null; marketingOptIn?: boolean; marketingOptInSource?: "account" | "checkout" },
+) {
   const [current] = await db.select().from(customers).where(eq(customers.id, customerId));
   if (!current) throw notFound("Customer not found.");
   const email = patch.email === undefined ? undefined : patch.email?.toLowerCase() ?? null;
@@ -29,10 +34,23 @@ export async function updateCustomer(db: Database, customerId: string, patch: { 
       ...(patch.name !== undefined ? { name: patch.name } : {}),
       // A changed email is unverified until confirmed (verification email arrives with order emails, Milestone 2b).
       ...(email !== undefined && email !== current.email ? { email, emailVerifiedAt: null } : {}),
+      ...(patch.marketingOptIn !== undefined && patch.marketingOptIn !== current.marketingOptIn
+        ? patch.marketingOptIn
+          ? { marketingOptIn: true, marketingOptInAt: new Date(), marketingOptInSource: patch.marketingOptInSource ?? "account", unsubscribeToken: current.unsubscribeToken ?? randomBytes(24).toString("base64url") }
+          : { marketingOptIn: false, marketingOptInAt: new Date(), marketingOptInSource: patch.marketingOptInSource ?? "account" }
+        : {}),
       updatedAt: new Date(),
     })
     .where(eq(customers.id, customerId));
   return getCustomer(db, customerId);
+}
+
+/** One-click unsubscribe. Unknown tokens get the same answer, so the endpoint reveals nothing. */
+export async function unsubscribeByToken(db: Database, token: string) {
+  await db
+    .update(customers)
+    .set({ marketingOptIn: false, marketingOptInAt: new Date(), marketingOptInSource: "unsubscribe_link", updatedAt: new Date() })
+    .where(and(eq(customers.unsubscribeToken, token), eq(customers.marketingOptIn, true)));
 }
 
 type AddressRow = typeof addresses.$inferSelect;

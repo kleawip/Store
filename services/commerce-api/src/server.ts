@@ -7,6 +7,7 @@ import { MockShippingProvider, ShiprocketProvider } from "./shipping/provider";
 import { DevGateway, RazorpayGateway } from "./payments/gateway";
 import { expireUnpaidOrders } from "./orders/service";
 import { deliverDueNotifications } from "./notifications/outbox";
+import { queueCartReminders } from "./marketing/cart-reminders";
 import { ChannelNotificationSender, fileOutboxChannel, resendEmailChannel, whatsAppCloudChannel } from "./notifications/senders";
 import { ChannelOtpSender, FileOutboxOtpSender, ResendEmailOtpSender, WhatsAppCloudOtpSender, type OtpSender } from "./messaging/otp-senders";
 
@@ -77,6 +78,13 @@ const notificationTimer = setInterval(() => {
 }, 15_000);
 notificationTimer.unref();
 
+// Abandoned-cart reminders: only does anything while the owner's switch is on (Settings), every 10 minutes.
+const reminderTimer = setInterval(() => {
+  queueCartReminders(db, { storefrontUrl: config.STOREFRONT_ORIGIN.split(",")[0]!.trim() })
+    .catch((error) => app.log.error({ err: error }, "cart reminders failed"));
+}, 10 * 60_000);
+reminderTimer.unref();
+
 // Release stock held by unpaid orders once their payment window lapses (every minute).
 const expiryTimer = setInterval(() => {
   expireUnpaidOrders(db).catch((error) => app.log.error({ err: error }, "order expiry failed"));
@@ -86,6 +94,7 @@ expiryTimer.unref();
 app.addHook("onClose", async () => {
   clearInterval(expiryTimer);
   clearInterval(notificationTimer);
+  clearInterval(reminderTimer);
   await close();
 });
 for (const signal of ["SIGINT", "SIGTERM"] as const) {

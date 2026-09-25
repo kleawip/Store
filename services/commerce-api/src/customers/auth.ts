@@ -32,6 +32,7 @@ export const toCustomer = (row: CustomerRow) => ({
   name: row.name,
   email: row.email,
   emailVerified: !!row.emailVerifiedAt,
+  marketingOptIn: row.marketingOptIn,
   createdAt: row.createdAt.toISOString(),
 });
 

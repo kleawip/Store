@@ -48,6 +48,8 @@ export const Customer = z.object({
   name: z.string(),
   email: z.string().nullable(),
   emailVerified: z.boolean(),
+  // Milestone 4 (additive): agreed to marketing messages (e.g. cart reminders) on WhatsApp/email.
+  marketingOptIn: z.boolean(),
   createdAt: z.string(),
 });
 export type Customer = z.infer<typeof Customer>;
@@ -57,7 +59,14 @@ export const CustomerSession = z.object({ customer: Customer, isNewCustomer: z.b
 export const CustomerUpdate = z.object({
   name: z.string().trim().min(1).max(80),
   email: z.email().max(254).nullable(),
+  // Show as an unticked checkbox, e.g. "Send me offers and reminders on WhatsApp and email". Never pre-ticked.
+  marketingOptIn: z.boolean(),
+  // Where the customer ticked it (kept with the consent record).
+  marketingOptInSource: z.enum(["account", "checkout"]),
 }).partial();
+
+/** Public one-click unsubscribe (from the link in a marketing email). Always answers the same way. */
+export const UnsubscribeRequest = z.object({ token: z.string().min(20).max(100) });
 
 // ---- Addresses ----
 

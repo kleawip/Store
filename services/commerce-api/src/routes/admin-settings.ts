@@ -5,7 +5,7 @@ import type { Database } from "../db/client";
 import { getSeller, getSettings, updateSeller, updateSettings } from "../settings/service";
 import { SellerDetails } from "@kleawip/contract";
 
-const SettingsSchema = z.object({ instagramEmbedsVerified: z.boolean() });
+const SettingsSchema = z.object({ instagramEmbedsVerified: z.boolean(), cartRemindersEnabled: z.boolean() });
 
 /** Owner switches (Settings → Content). Everyone signed in can read them; only the owner changes them. */
 export const adminSettingsRoutes = (db: Database, sellerStateCode: string): FastifyPluginAsync => async (app) => {
