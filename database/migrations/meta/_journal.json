@@ -29,6 +29,13 @@
       "when": 1790330977552,
       "tag": "0003_media_collections",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790331488907,
+      "tag": "0004_homepage_campaigns",
+      "breakpoints": true
     }
   ]
 }

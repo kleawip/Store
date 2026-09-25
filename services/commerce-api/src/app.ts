@@ -8,6 +8,7 @@ import { errorHandler, notFoundHandler } from "./errors";
 import { MAX_UPLOAD_BYTES } from "./media/process";
 import type { MediaStorage } from "./media/storage";
 import { adminAuthRoutes } from "./routes/admin-auth";
+import { adminCampaignRoutes } from "./routes/admin-campaigns";
 import { adminCatalogueRoutes } from "./routes/admin-catalogue";
 import { adminMediaCollectionRoutes } from "./routes/admin-media-collections";
 import { mediaFileRoutes } from "./routes/media-files";
@@ -44,6 +45,7 @@ export async function buildApp({ db, storage, storefrontOrigins, cookieSecure = 
   await app.register(adminAuthRoutes(db, { cookieSecure }), { prefix: "/v1/admin/auth" });
   await app.register(adminCatalogueRoutes(db), { prefix: "/v1/admin" });
   await app.register(adminMediaCollectionRoutes(db, storage), { prefix: "/v1/admin" });
+  await app.register(adminCampaignRoutes(db), { prefix: "/v1/admin/campaigns" });
   if (storage.read) await app.register(mediaFileRoutes(storage), { prefix: "/media" });
 
   return app;

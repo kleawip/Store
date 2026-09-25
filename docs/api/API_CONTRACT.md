@@ -1,6 +1,6 @@
 # Kleawip commerce API contract — v1 proposal
 
-Status: **Proposed — for review by Codex (frontend) and the project owner. Not approved.** Implemented so far against demo fixtures only: `GET /v1/store/categories`, `GET /v1/store/products`, `GET /v1/store/products/{slug}` and `GET /v1/store/search/suggest`. Staff auth and the admin catalogue, inventory and timeline APIs are implemented (§5.1) (see §11 and `services/commerce-api/README.md`).
+Status: **Proposed — for review by Codex (frontend) and the project owner. Not approved.** Implemented so far against demo fixtures only: `GET /v1/store/categories`, `GET /v1/store/products`, `GET /v1/store/products/{slug}`, `GET /v1/store/search/suggest`, `GET /v1/store/collections[/{slug}]` and `GET /v1/store/home`. Staff auth and the admin catalogue, inventory and timeline APIs are implemented (§5.1) (see §11 and `services/commerce-api/README.md`).
 Owner: Claude Code (backend). Prepared 25 September 2026 for Milestone 0 of `FRONTEND_BACKEND_TASKS.md`.
 
 This file fulfils the Milestone 0 backend tasks: proposed backend structure, contract conventions, stable IDs, the product / variant / SKU / inventory / price / offer / campaign model, and server-side money rules. Endpoints for Milestone 1 (catalogue and campaigns) are specified in detail. Later milestones are outlined only, because their behaviour depends on Phase 0 decisions that have not been made yet.
@@ -340,7 +340,37 @@ The slug locks after the first publish.
 - `GET /v1/store/collections` → `CollectionListResponse`.
 - `GET /v1/store/collections/{slug}` → `CollectionDetail`, with published products only, as `ProductListItem`s.
 
-**Not yet built:** homepage campaigns, CSV import, staff management.
+**Homepage campaigns** (`HeroSlide`, `RibbonMessage`, `CampaignTargetInput` in `packages/contract/src/admin.ts`):
+
+| Endpoint | Permission |
+| --- | --- |
+| `GET /v1/admin/campaigns/slides` · `GET /slides/{id}` | `catalogue.read` |
+| `POST /slides` (`HeroSlideInput` with `internalTitle` required) → 201 draft | `campaigns.write` (owner, marketing_editor) |
+| `PATCH /slides/{id}` · `PUT /slides/order { ids }` | `campaigns.write` |
+| `POST /slides/{id}/publish` | `campaigns.publish` (**owner only**, TBC) |
+| `POST /slides/{id}/unpublish` · `/archive` | `campaigns.write` |
+| The same endpoints under `/v1/admin/campaigns/ribbon` (`RibbonMessageInput`: `text` ≤ 120, optional `target`) | as above |
+
+- **Target:** one of `{ type: "product", productId }`, `{ type: "collection", collectionId }`, `{ type: "category", categorySlug }` or `{ type: "page", path: "/shop" | "/bulk" }`.
+- **Schedule:** `startsAt` / `endsAt` are ISO strings **with an offset** (e.g. `2026-10-01T09:00:00+05:30`), or null for no limit. Responses give UTC and a computed `state`: `draft | scheduled | live | expired | archived`.
+- **Slide publish checklist:**
+  - a target is set, and it is published;
+  - CTA label;
+  - desktop, tablet and mobile images, each at least 75% of its slot (1920×680, 1200×700, 750×900) and within 12% of the slot's shape;
+  - alt text for each device;
+  - a valid schedule;
+  - **no offer or discount wording** (offers arrive in Milestone 2).
+
+  The ribbon checklist covers the target, the schedule and the offer wording.
+- Images used by slides appear in the media library's `usedBy` as `hero_slide`, and deleting them is blocked.
+
+**`GET /v1/store/home`** → `HomeResponse { ribbon[], heroSlides[], featuredProducts[] }`:
+- Only **live** items appear (published and inside their schedule).
+- A slide whose target is unpublished or deleted is skipped. A ribbon message with such a target is shown as plain text (`href: null`).
+- Slide images come per device, each with its own `alt`. The top-level `alt` equals the desktop alt.
+- `featuredProducts` is the ordered products of the published collection with slug `home-featured`. If that doesn't exist, it's the first 8 published products.
+
+**Not yet built:** CSV import, staff management.
 
 ---
 
@@ -390,6 +420,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026: homepage campaigns (slides + ribbon, IST scheduling, publish checklist, offer-claim guard) and `GET /v1/store/home` implemented. Slide images carry per-device `alt`. Permissions `campaigns.write` / `campaigns.publish` added.
 - 25 Sep 2026: media library, product images and collections added (§5.1). Storefront `GET /v1/store/collections[/{slug}]`. `AdminProduct.media[]` gains `assetId` and `optionValue`.
 - 25 Sep 2026: staff auth + admin catalogue/inventory/timeline APIs implemented (§5.1). Admin routes are keyed by product id rather than slug.
 - 25 Sep 2026 (Codex review): `packages/contract` now has `badge`, `totalCount`, `facets` and the flat `SearchSuggestResponse`. `GET /v1/store/search/suggest` is implemented. Unsupported sorts return 422. Cursors are bound to their filters. §11 ranking is implemented, with `spec` included in matching. The no-SKU detail response is stated in §4. The demo seed refuses any database not named `*_dev` or `*_test`.

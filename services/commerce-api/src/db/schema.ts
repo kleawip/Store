@@ -250,3 +250,54 @@ export const staffSessions = pgTable("staff_sessions", {
   uniqueIndex("staff_sessions_token_hash_key").on(t.tokenHash),
   index("staff_sessions_staff_idx").on(t.staffId),
 ]);
+
+// ---- Homepage campaigns (HOMEPAGE_CAMPAIGNS_SPEC) ----
+
+export const campaignTargetType = pgEnum("campaign_target_type", ["product", "collection", "category", "page"]);
+
+// One destination per slide/message. FKs are SET NULL so a deleted target simply hides the slide (never a 404 link).
+const campaignTarget = {
+  targetType: campaignTargetType("target_type"),
+  targetProductId: uuid("target_product_id").references(() => products.id, { onDelete: "set null" }),
+  targetCollectionId: uuid("target_collection_id").references(() => collections.id, { onDelete: "set null" }),
+  targetCategoryId: uuid("target_category_id").references(() => categories.id, { onDelete: "set null" }),
+  targetPage: text("target_page"),
+};
+
+const schedule = {
+  // Null start = as soon as published; null end = no end. Stored in UTC, entered and shown in IST.
+  startsAt: timestamp("starts_at", { withTimezone: true }),
+  endsAt: timestamp("ends_at", { withTimezone: true }),
+};
+
+export const heroSlides = pgTable("hero_slides", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  internalTitle: text("internal_title").notNull(),
+  eyebrow: text("eyebrow").notNull().default(""),
+  headline: text("headline").notNull().default(""),
+  description: text("description").notNull().default(""),
+  ctaLabel: text("cta_label").notNull().default(""),
+  ...campaignTarget,
+  desktopAssetId: uuid("desktop_asset_id").references(() => mediaAssets.id, { onDelete: "restrict" }),
+  tabletAssetId: uuid("tablet_asset_id").references(() => mediaAssets.id, { onDelete: "restrict" }),
+  mobileAssetId: uuid("mobile_asset_id").references(() => mediaAssets.id, { onDelete: "restrict" }),
+  desktopAlt: text("desktop_alt").notNull().default(""),
+  tabletAlt: text("tablet_alt").notNull().default(""),
+  mobileAlt: text("mobile_alt").notNull().default(""),
+  ...schedule,
+  status: publishStatus("status").notNull().default("draft"),
+  position: integer("position").notNull().default(0),
+  isDemo: boolean("is_demo").notNull().default(false),
+  ...timestamps,
+}, (t) => [check("hero_slides_schedule_order", sql`${t.endsAt} IS NULL OR ${t.startsAt} IS NULL OR ${t.endsAt} > ${t.startsAt}`)]);
+
+export const ribbonMessages = pgTable("ribbon_messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  text: text("text").notNull(),
+  ...campaignTarget,
+  ...schedule,
+  status: publishStatus("status").notNull().default("draft"),
+  position: integer("position").notNull().default(0),
+  isDemo: boolean("is_demo").notNull().default(false),
+  ...timestamps,
+}, (t) => [check("ribbon_messages_schedule_order", sql`${t.endsAt} IS NULL OR ${t.startsAt} IS NULL OR ${t.endsAt} > ${t.startsAt}`)]);

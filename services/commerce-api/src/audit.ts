@@ -6,7 +6,7 @@ import { auditEvents, staffUsers } from "./db/schema";
 export type DbOrTx = Database | Parameters<Parameters<Database["transaction"]>[0]>[0];
 
 export type AuditEntry = {
-  entityType: "product" | "variant" | "inventory_item" | "collection" | "staff";
+  entityType: "product" | "variant" | "inventory_item" | "collection" | "hero_slide" | "ribbon_message" | "staff";
   entityId: string;
   action: string;
   actorStaffId: string | null;

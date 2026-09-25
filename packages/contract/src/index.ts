@@ -194,3 +194,22 @@ export const CollectionSummary = z.object({
 export const CollectionListResponse = z.object({ data: z.array(CollectionSummary) });
 export const CollectionDetail = CollectionSummary.extend({ products: z.array(ProductListItem) });
 export type CollectionDetail = z.infer<typeof CollectionDetail>;
+
+// §4 GET /v1/store/home: live campaigns only (published and inside their IST schedule), targets resolved.
+const HomeImage = Image;
+export const HomeResponse = z.object({
+  ribbon: z.array(z.object({ id: z.string(), text: z.string(), href: z.string().nullable() })),
+  heroSlides: z.array(z.object({
+    id: z.string(),
+    eyebrow: z.string(),
+    headline: z.string(),
+    description: z.string(),
+    cta: z.string(),
+    // Same as images.desktop.alt; kept for the §4 shape.
+    alt: z.string(),
+    href: z.string(),
+    images: z.object({ desktop: HomeImage, tablet: HomeImage, mobile: HomeImage }),
+  })),
+  featuredProducts: z.array(ProductListItem),
+});
+export type HomeResponse = z.infer<typeof HomeResponse>;

@@ -9,6 +9,8 @@ export const PERMISSIONS = [
   "catalogue.write",
   "catalogue.publish",
   "media.write",
+  "campaigns.write",
+  "campaigns.publish",
   "inventory.read",
   "inventory.adjust",
   "audit.read",
@@ -22,7 +24,8 @@ const READ_ALL: Permission[] = ["catalogue.read", "inventory.read", "audit.read"
 const GRANTS: Record<Role, readonly Permission[]> = {
   owner: PERMISSIONS,
   catalogue_manager: [...READ_ALL, "catalogue.write", "catalogue.publish", "media.write", "audit.comment"],
-  marketing_editor: [...READ_ALL, "media.write", "audit.comment"],
+  // Marketing editors draft campaigns; publishing stays with the Owner until the client decides (HOMEPAGE_CAMPAIGNS_SPEC).
+  marketing_editor: [...READ_ALL, "media.write", "campaigns.write", "audit.comment"],
   operations: [...READ_ALL, "inventory.adjust", "audit.comment"],
   support: [...READ_ALL, "audit.comment"],
   viewer: READ_ALL,

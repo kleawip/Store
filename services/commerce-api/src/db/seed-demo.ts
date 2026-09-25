@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import type { Database } from "./client";
-import { categories, collections, inventoryItems, inventoryMovements, productMedia, products } from "./schema";
+import { categories, collections, heroSlides, inventoryItems, inventoryMovements, productMedia, products, ribbonMessages } from "./schema";
 
 const demoCataloguePath = fileURLToPath(new URL("../../../../database/seeds/demo/catalogue.json", import.meta.url));
 
@@ -38,6 +38,8 @@ export async function seedDemoCatalogue(db: Database) {
   const catalogue = DemoCatalogue.parse(JSON.parse(await readFile(demoCataloguePath, "utf8")));
 
   await db.transaction(async (tx) => {
+    await tx.delete(heroSlides);
+    await tx.delete(ribbonMessages);
     await tx.delete(collections);
     await tx.delete(inventoryMovements);
     await tx.delete(productMedia);

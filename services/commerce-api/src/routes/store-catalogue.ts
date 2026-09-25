@@ -2,6 +2,7 @@ import {
   CategoryListResponse,
   CollectionDetail,
   CollectionListResponse,
+  HomeResponse,
   ProductDetail,
   ProductListQuery,
   ProductListResponse,
@@ -14,6 +15,7 @@ import { and, asc, count, eq, ilike, inArray, or, sql, type SQL } from "drizzle-
 import type { FastifyPluginAsync } from "fastify";
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { storeHome } from "../campaigns/service";
 import { storeCollection, storeCollections } from "../catalogue/collections";
 import { productDetail, productSummaries } from "../catalogue/queries";
 import type { Database } from "../db/client";
@@ -226,6 +228,11 @@ export const storeCatalogueRoutes = (db: Database): FastifyPluginAsync => async 
     ].slice(0, limit);
 
     return SearchSuggestResponse.parse({ query: q, suggestions });
+  });
+
+  app.get("/home", async (_request, reply) => {
+    reply.header("cache-control", PUBLIC_CACHE);
+    return HomeResponse.parse(await storeHome(db));
   });
 
   app.get("/collections", async (_request, reply) => {

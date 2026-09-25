@@ -264,7 +264,7 @@ export const MediaAsset = z.object({
   alt: z.string(),
   createdAt: z.string(),
   // Where the file is used; deleting is blocked while this is non-empty.
-  usedBy: z.array(z.object({ type: z.enum(["product", "collection"]), id: z.string(), title: z.string() })),
+  usedBy: z.array(z.object({ type: z.enum(["product", "collection", "hero_slide"]), id: z.string(), title: z.string() })),
 });
 export type MediaAsset = z.infer<typeof MediaAsset>;
 
@@ -325,3 +325,95 @@ export const AdminCollection = z.object({
   updatedAt: z.string(),
 });
 export type AdminCollection = z.infer<typeof AdminCollection>;
+
+// ---- Homepage campaigns (HOMEPAGE_CAMPAIGNS_SPEC, ADMIN_SCREENS_BRIEF §8) ----
+
+// Internal pages a campaign may link to. Extend only with approved, existing storefront routes.
+export const CAMPAIGN_PAGES = ["/shop", "/bulk"] as const;
+
+export const CampaignTargetInput = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("product"), productId: z.uuid() }),
+  z.object({ type: z.literal("collection"), collectionId: z.uuid() }),
+  z.object({ type: z.literal("category"), categorySlug: z.string() }),
+  z.object({ type: z.literal("page"), path: z.enum(CAMPAIGN_PAGES) }),
+]);
+export type CampaignTargetInput = z.infer<typeof CampaignTargetInput>;
+
+// ISO 8601 with an explicit offset, e.g. "2026-10-01T09:00:00+05:30". null = no limit.
+const DateTimeWithOffset = z.iso.datetime({ offset: true });
+
+export const CampaignState = z.enum(["draft", "scheduled", "live", "expired", "archived"]);
+
+export const CampaignTargetView = z.object({
+  type: z.enum(["product", "collection", "category", "page"]),
+  id: z.string().nullable(),
+  label: z.string(),
+  href: z.string(),
+  // False when the target is unpublished or deleted: the slide is hidden from customers until fixed.
+  available: z.boolean(),
+}).nullable();
+
+const DeviceImageView = z.object({ assetId: z.string(), url: z.string(), width: z.number(), height: z.number(), alt: z.string() }).nullable();
+
+export const HeroSlideInput = z.object({
+  internalTitle: z.string().trim().min(1).max(120),
+  eyebrow: z.string().trim().max(40),
+  headline: z.string().trim().max(90),
+  description: z.string().trim().max(200),
+  ctaLabel: z.string().trim().max(40),
+  target: CampaignTargetInput.nullable(),
+  desktopAssetId: z.uuid().nullable(),
+  tabletAssetId: z.uuid().nullable(),
+  mobileAssetId: z.uuid().nullable(),
+  desktopAlt: z.string().trim().max(250),
+  tabletAlt: z.string().trim().max(250),
+  mobileAlt: z.string().trim().max(250),
+  startsAt: DateTimeWithOffset.nullable(),
+  endsAt: DateTimeWithOffset.nullable(),
+}).partial();
+export type HeroSlideInput = z.infer<typeof HeroSlideInput>;
+
+export const HeroSlide = z.object({
+  id: z.string(),
+  internalTitle: z.string(),
+  eyebrow: z.string(),
+  headline: z.string(),
+  description: z.string(),
+  ctaLabel: z.string(),
+  target: CampaignTargetView,
+  images: z.object({ desktop: DeviceImageView, tablet: DeviceImageView, mobile: DeviceImageView }),
+  startsAt: z.string().nullable(),
+  endsAt: z.string().nullable(),
+  status: PublishStatus,
+  state: CampaignState,
+  position: z.number().int(),
+  publishChecklist: z.array(PublishCheck),
+  isDemo: z.boolean(),
+  updatedAt: z.string(),
+});
+export type HeroSlide = z.infer<typeof HeroSlide>;
+
+export const RibbonMessageInput = z.object({
+  text: z.string().trim().min(1).max(120),
+  target: CampaignTargetInput.nullable(),
+  startsAt: DateTimeWithOffset.nullable(),
+  endsAt: DateTimeWithOffset.nullable(),
+}).partial();
+export type RibbonMessageInput = z.infer<typeof RibbonMessageInput>;
+
+export const RibbonMessage = z.object({
+  id: z.string(),
+  text: z.string(),
+  target: CampaignTargetView,
+  startsAt: z.string().nullable(),
+  endsAt: z.string().nullable(),
+  status: PublishStatus,
+  state: CampaignState,
+  position: z.number().int(),
+  publishChecklist: z.array(PublishCheck),
+  isDemo: z.boolean(),
+  updatedAt: z.string(),
+});
+export type RibbonMessage = z.infer<typeof RibbonMessage>;
+
+export const CampaignOrder = z.object({ ids: z.array(z.uuid()).min(1).max(100) });

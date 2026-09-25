@@ -61,3 +61,19 @@ export async function signIn(app: App, email: string, password = TEST_PASSWORD) 
     });
   return { session, cookie, request };
 }
+
+/** Uploads an image through the real multipart endpoint as the given staff session. */
+export async function uploadImage(app: App, session: Awaited<ReturnType<typeof signIn>>, buffer: Buffer, filename = "image.jpg", alt?: string) {
+  const boundary = "----kleawiptest";
+  const parts: Buffer[] = [];
+  if (alt !== undefined) parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="alt"\r\n\r\n${alt}\r\n`));
+  parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: application/octet-stream\r\n\r\n`));
+  parts.push(buffer, Buffer.from(`\r\n--${boundary}--\r\n`));
+  return app.inject({
+    method: "POST",
+    url: "/v1/admin/media",
+    cookies: { klw_admin: session.cookie.value },
+    headers: { "content-type": `multipart/form-data; boundary=${boundary}`, "x-csrf-token": session.session.csrfToken },
+    payload: Buffer.concat(parts),
+  });
+}

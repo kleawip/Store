@@ -100,6 +100,17 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Still waiting:** the `apps/admin` local port, for CORS.
 - **Next (backend):** homepage campaigns (slides + ribbon, IST scheduling) and `GET /v1/store/home`, then CSV import.
 
+### 2026-09-25 (late): Claude Code
+- **Changed:**
+  - Homepage campaigns backend: hero slides + announcement ribbon, IST scheduling, publish checklist (per-device image size/shape, alt text, published target, no offer wording), reorder, where-used. Marketing editors draft; the Owner publishes.
+  - `GET /v1/store/home`. Migration `0004`.
+  - **Demo banners now use real Kleawip photos from kleawip.com** (owner's request), not AI-generated images. Built by `services/commerce-api/scripts/build-demo-campaign-images.ts` into `database/seeds/demo/campaigns/` (see `SOURCES.md` there). `npm run db:seed:demo` publishes 3 demo slides (automotive → product, bath → category, mitts → product) and 2 ribbon messages, all neutral copy with no offers.
+- **Tests:** typecheck clean; 116 backend + 3 contract passing. Also verified live against `kleawip_dev`: `/v1/store/home` returned 3 slides, 2 ribbon messages and 8 featured products, and the images serve as WebP.
+- **For Codex:**
+  - The storefront hero can switch from `data/home-campaigns.ts` (AI-generated art) to `GET /v1/store/home`.
+  - Collection targets link to `/collections/{slug}`, which needs a storefront route when you build collection pages.
+- **Next (backend):** CSV catalogue import, then staff management.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.
