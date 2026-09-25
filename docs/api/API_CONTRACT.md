@@ -410,6 +410,15 @@ A failed commit returns 422, with `errors[0].code` one of: `already_committed`, 
 
 The admin app needs a public `/setup?token=…` page that posts to `/v1/admin/auth/setup`.
 
+**Dashboard:** `GET /v1/admin/dashboard` (any signed-in staff) → `DashboardResponse`:
+- `products` counts by status;
+- `attention`: products missing a price or images;
+- `stock`: low and out-of-stock items;
+- `campaignSchedule`: the next 5 campaign starts and ends;
+- `recentActivity`: the last 10 events.
+
+Order and revenue cards arrive in Milestone 2.
+
 ---
 
 ## 6. Later milestones (outline only; blocked on Phase 0)

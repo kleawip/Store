@@ -505,3 +505,20 @@ export const ActivityEvent = z.object({
   comment: z.string().nullable(),
   createdAt: z.string(),
 });
+
+// ---- Dashboard (Overview, Milestone 1: work queues only; no order or revenue numbers yet) ----
+
+export const DashboardResponse = z.object({
+  products: z.object({ draft: z.number().int(), published: z.number().int(), archived: z.number().int() }),
+  attention: z.object({ productsMissingPrice: z.number().int(), productsMissingImages: z.number().int() }),
+  stock: z.object({ lowStockItems: z.number().int(), outOfStockItems: z.number().int() }),
+  campaignSchedule: z.array(z.object({
+    id: z.string(),
+    kind: z.enum(["hero_slide", "ribbon_message"]),
+    title: z.string(),
+    event: z.enum(["starts", "ends"]),
+    at: z.string(),
+  })),
+  recentActivity: z.array(ActivityEvent),
+});
+export type DashboardResponse = z.infer<typeof DashboardResponse>;

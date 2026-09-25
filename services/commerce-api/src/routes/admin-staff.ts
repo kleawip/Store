@@ -1,7 +1,8 @@
-import { ActivityEvent, ActivityQuery, PasswordChange, StaffInvite, StaffMember, StaffSetupLink, StaffSetupRequest, StaffUpdate } from "@kleawip/contract";
+import { ActivityEvent, ActivityQuery, DashboardResponse, PasswordChange, StaffInvite, StaffMember, StaffSetupLink, StaffSetupRequest, StaffUpdate } from "@kleawip/contract";
 import type { FastifyPluginAsync } from "fastify";
 import { z } from "zod";
 import { authorize, staffOf } from "../auth/guard";
+import { dashboard } from "../dashboard/service";
 import type { Database } from "../db/client";
 import { activityLog, changeOwnPassword, completeSetup, inviteStaff, listStaff, resetStaffPassword, updateStaff } from "../staff/service";
 
@@ -28,6 +29,8 @@ export const adminStaffRoutes = (db: Database): FastifyPluginAsync => async (app
   app.post<IdParams>("/staff/:id/setup-link", manage, async (request) =>
     StaffSetupLink.parse(await resetStaffPassword(db, request.params.id, staffOf(request).staffId)),
   );
+
+  app.get("/dashboard", { preHandler: authorize(db, "catalogue.read") }, async () => DashboardResponse.parse(await dashboard(db)));
 
   app.get("/activity", { preHandler: authorize(db, "audit.read") }, async (request) => ({
     data: z.array(ActivityEvent).parse(await activityLog(db, ActivityQuery.parse(request.query))),
