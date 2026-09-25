@@ -32,6 +32,10 @@ const Env = z.object({
   SHIPPING_FLAT_PAISE: z.coerce.number().int().min(0).default(0),
   SHIPPING_FREE_ABOVE_PAISE: z.coerce.number().int().min(0).optional(),
   MAX_COD_BALANCE_PAISE: z.coerce.number().int().min(0).default(5_000_000),
+  // Razorpay. Without keys, development uses a local DevGateway (no money moves). Production requires keys.
+  RAZORPAY_KEY_ID: z.string().regex(/^rzp_(test|live)_[A-Za-z0-9]+$/).optional(),
+  RAZORPAY_KEY_SECRET: z.string().optional(),
+  RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 
@@ -45,6 +49,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   }
   if (parsed.data.NODE_ENV === "production" && !parsed.data.COOKIE_SECURE) {
     throw new Error("COOKIE_SECURE=false is not allowed in production: admin sessions must only travel over HTTPS.");
+  }
+  const razorpay = parsed.data.RAZORPAY_KEY_ID;
+  if (razorpay && !(parsed.data.RAZORPAY_KEY_SECRET && parsed.data.RAZORPAY_WEBHOOK_SECRET)) {
+    throw new Error("RAZORPAY_KEY_ID is set but RAZORPAY_KEY_SECRET or RAZORPAY_WEBHOOK_SECRET is missing.");
+  }
+  if (parsed.data.NODE_ENV !== "production" && razorpay?.startsWith("rzp_live_")) {
+    throw new Error("Refusing live Razorpay keys outside production. Use rzp_test_ keys for development and staging.");
+  }
+  if (parsed.data.NODE_ENV === "production" && !razorpay) {
+    throw new Error("Razorpay is not configured: customers could not pay. Set RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET.");
   }
   if (parsed.data.NODE_ENV === "production" && !(parsed.data.WHATSAPP_PHONE_NUMBER_ID && parsed.data.WHATSAPP_ACCESS_TOKEN)) {
     throw new Error("WhatsApp is not configured: customers could not sign in. Set WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_ACCESS_TOKEN.");

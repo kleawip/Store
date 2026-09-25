@@ -481,6 +481,26 @@ Rules and defaults:
 - **TBC defaults** (configuration; see `src/checkout/settings.ts`): seller state MH; shipping flat ₹0 unless configured; maximum COD balance ₹50,000; no full COD.
 - Shiprocket is used when credentials are set. Development uses a mock courier: 9xxxxx is not serviceable, and 79xxxx is prepaid-only.
 
+**Orders and payment (Razorpay).** Zod: `PlaceOrderRequest`, `PlaceOrderResponse`, `PaymentSession`, `PaymentVerifyRequest`, `Order`.
+
+| Endpoint | Notes |
+| --- | --- |
+| `POST /v1/store/orders { quoteId }` + header **`Idempotency-Key`** (e.g. a UUID per checkout attempt) | → 201 `{ order, payment }`. The same key again → 200 with the same order. A key reused for a different quote → 409 `IDEMPOTENCY_CONFLICT`. Other errors: `quote_expired`, `quote_used`, `quote_changed` (re-quote), `out_of_stock` (409). Gateway down → 503 `PAYMENT_UNAVAILABLE`. |
+| Open Razorpay Checkout with `payment.keyId`, `payment.providerOrderId`, `payment.amount` and `prefill` | For partial COD, `amount` is only the 30% deposit. |
+| `POST /v1/store/orders/{id}/payments/verify { providerOrderId, providerPaymentId, signature }` | The Razorpay handler's `razorpay_order_id` / `razorpay_payment_id` / `razorpay_signature`. → `Order` with `status: "confirmed"`. A bad signature → 422 `signature_invalid`, and the order stays pending. |
+| `POST /v1/store/orders/{id}/payments` | A new payment attempt (e.g. after a failure or a closed window) while the order is still reserved. |
+| `POST /v1/store/orders/{id}/cancel` | Unpaid orders only; releases the stock. |
+| `GET /v1/store/orders` · `GET /v1/store/orders/{id}` | Your own orders only (others → 404). |
+| `POST /v1/webhooks/razorpay` | Razorpay → API. The signature on the raw body is checked; each `x-razorpay-event-id` is processed once. Handles `payment.captured`, `order.paid` and `payment.failed`. |
+
+Rules:
+- An order holds its stock for **30 minutes**, then expires and releases it (a background job runs every minute).
+- An order is confirmed only on a verified payment: the checkout callback or the webhook, whichever arrives first. Both are idempotent.
+- A late payment re-reserves stock if it can. Otherwise the order is flagged `needsAttention` for a refund.
+- Purchased lines leave the bag on confirmation.
+
+**Development without Razorpay keys:** the dev gateway is used. `POST /v1/dev/payments/{providerOrderId}/succeed` returns the same fields as Razorpay's success handler; post them to `/payments/verify`. This route doesn't exist when real keys are set, and live keys are refused outside production.
+
 ---
 
 ## 6. Later milestones (outline only; blocked on Phase 0)
@@ -529,6 +549,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 26 Sep 2026: orders + Razorpay (idempotent placement, stock reservation, signature-verified confirmation, webhooks, expiry, late/duplicate payment handling). Error code `PAYMENT_UNAVAILABLE` added.
 - 26 Sep 2026: pincode serviceability + checkout quote (GST split, 30/70 partial COD, Shiprocket adapter with mock).
 - 26 Sep 2026: server cart (guest + merge on sign-in, honest warnings, GST-inclusive totals) and wishlist.
 - 26 Sep 2026: Milestone 2 customer accounts: WhatsApp OTP sign-in, sessions, profile, addresses (§5.2). Error code `DELIVERY_FAILED` added.

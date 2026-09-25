@@ -181,3 +181,48 @@ export const CheckoutQuote = z.object({
   warnings: z.array(z.object({ sku: z.string(), code: z.string(), message: z.string() })),
 });
 export type CheckoutQuote = z.infer<typeof CheckoutQuote>;
+
+// ---- Orders and payment ----
+
+export const PlaceOrderRequest = z.object({ quoteId: z.uuid() });
+
+// What the storefront needs to open Razorpay Checkout (or the dev payment simulator).
+export const PaymentSession = z.object({
+  provider: z.enum(["razorpay", "dev"]),
+  keyId: z.string(),
+  providerOrderId: z.string(),
+  amount: QuoteMoney,
+  purpose: z.enum(["full", "deposit"]),
+  prefill: z.object({ name: z.string(), contact: z.string(), email: z.string().nullable() }),
+});
+
+export const PaymentVerifyRequest = z.object({
+  providerOrderId: z.string().min(1).max(100),
+  providerPaymentId: z.string().min(1).max(100),
+  signature: z.string().regex(/^[0-9a-f]{64}$/i),
+});
+
+export const OrderStatus = z.enum(["pending_payment", "confirmed", "expired", "cancelled"]);
+
+export const Order = z.object({
+  id: z.string(),
+  number: z.string(),
+  status: OrderStatus,
+  paymentMethod: z.enum(["prepaid", "partial_cod"]),
+  paymentStatus: z.enum(["awaiting", "paid", "failed"]),
+  placedAt: z.string(),
+  confirmedAt: z.string().nullable(),
+  // Pay before this time or the reservation lapses (pending_payment only).
+  payBy: z.string().nullable(),
+  lines: z.array(z.object({ sku: z.string(), productTitle: z.string(), optionsLabel: z.string(), quantity: z.number().int(), unitPrice: QuoteMoney, lineTotal: QuoteMoney })),
+  merchandiseTotal: QuoteMoney,
+  shipping: QuoteMoney,
+  total: QuoteMoney,
+  payNow: QuoteMoney,
+  codBalance: QuoteMoney,
+  gst: z.object({ intraState: z.boolean(), taxable: QuoteMoney, cgst: QuoteMoney, sgst: QuoteMoney, igst: QuoteMoney }),
+  shippingAddress: z.object({ name: z.string(), phone: z.string(), line1: z.string(), line2: z.string(), landmark: z.string(), city: z.string(), stateCode: z.string(), stateName: z.string(), pincode: z.string() }),
+});
+export type Order = z.infer<typeof Order>;
+
+export const PlaceOrderResponse = z.object({ order: Order, payment: PaymentSession.nullable() });

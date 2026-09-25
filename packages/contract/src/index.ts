@@ -28,6 +28,7 @@ export const ErrorCode = z.enum([
   "PRICE_PENDING",
   "INVALID_OPTION_COMBINATION",
   "DELIVERY_FAILED",
+  "PAYMENT_UNAVAILABLE",
   "INTERNAL_ERROR",
 ]);
 export type ErrorCode = z.infer<typeof ErrorCode>;

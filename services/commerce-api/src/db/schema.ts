@@ -2,7 +2,7 @@
 // Money is integer paise. Nullable price/tax columns mean "not yet approved by the client" (API_CONTRACT §2).
 import { sql } from "drizzle-orm";
 import {
-  boolean, check, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid,
+  boolean, check, index, integer, jsonb, pgEnum, pgSequence, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 
 const timestamps = {
@@ -450,3 +450,85 @@ export const checkoutQuotes = pgTable("checkout_quotes", {
   index("checkout_quotes_customer_idx").on(t.customerId, t.createdAt),
   check("checkout_quotes_amounts", sql`${t.payNowPaise} + ${t.codBalancePaise} = ${t.totalPaise} AND ${t.payNowPaise} > 0`),
 ]);
+
+// ---- Orders and payments (Milestone 2) ----
+
+export const orderNumberSeq = pgSequence("order_number_seq", { startWith: 100001 });
+
+export const orderStatus = pgEnum("order_status", ["pending_payment", "confirmed", "expired", "cancelled"]);
+
+export const orders = pgTable("orders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Human-facing number, e.g. KLW100001.
+  number: text("number").notNull(),
+  customerId: uuid("customer_id").notNull().references(() => customers.id, { onDelete: "restrict" }),
+  quoteId: uuid("quote_id").notNull().references(() => checkoutQuotes.id, { onDelete: "restrict" }),
+  idempotencyKey: text("idempotency_key").notNull(),
+  status: orderStatus("status").notNull().default("pending_payment"),
+  paymentMethod: paymentMethod("payment_method").notNull(),
+  // Frozen at order time: later edits to the address book or catalogue never change a placed order.
+  shippingAddress: jsonb("shipping_address").notNull(),
+  merchandisePaise: integer("merchandise_paise").notNull(),
+  shippingPaise: integer("shipping_paise").notNull(),
+  totalPaise: integer("total_paise").notNull(),
+  payNowPaise: integer("pay_now_paise").notNull(),
+  codBalancePaise: integer("cod_balance_paise").notNull(),
+  gst: jsonb("gst").notNull(),
+  reservationExpiresAt: timestamp("reservation_expires_at", { withTimezone: true }).notNull(),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  closedAt: timestamp("closed_at", { withTimezone: true }),
+  // Set when money arrived for an order that can no longer be fulfilled (e.g. paid after expiry, stock gone).
+  needsAttention: text("needs_attention"),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex("orders_number_key").on(t.number),
+  uniqueIndex("orders_quote_key").on(t.quoteId),
+  uniqueIndex("orders_customer_idempotency_key").on(t.customerId, t.idempotencyKey),
+  index("orders_status_created_idx").on(t.status, t.createdAt),
+  check("orders_amounts", sql`${t.payNowPaise} + ${t.codBalancePaise} = ${t.totalPaise} AND ${t.merchandisePaise} + ${t.shippingPaise} = ${t.totalPaise}`),
+]);
+
+export const orderLines = pgTable("order_lines", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+  variantId: uuid("variant_id").notNull().references(() => variants.id, { onDelete: "restrict" }),
+  inventoryItemId: uuid("inventory_item_id").notNull().references(() => inventoryItems.id, { onDelete: "restrict" }),
+  inventoryUnits: integer("inventory_units").notNull(), // units reserved = quantity × units per sale
+  sku: text("sku").notNull(),
+  productTitle: text("product_title").notNull(),
+  optionsLabel: text("options_label").notNull(),
+  quantity: integer("quantity").notNull(),
+  unitPricePaise: integer("unit_price_paise").notNull(),
+  taxRateBasisPoints: integer("tax_rate_basis_points").notNull(),
+  lineTotalPaise: integer("line_total_paise").notNull(),
+}, (t) => [index("order_lines_order_idx").on(t.orderId), check("order_lines_positive", sql`${t.quantity} > 0 AND ${t.inventoryUnits} > 0`)]);
+
+export const paymentStatus = pgEnum("payment_status", ["created", "captured", "failed"]);
+
+export const payments = pgTable("payments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "restrict" }),
+  provider: text("provider").notNull(), // "razorpay" | "dev"
+  purpose: text("purpose").notNull(), // "full" (prepaid) | "deposit" (partial COD)
+  providerOrderId: text("provider_order_id").notNull(),
+  providerPaymentId: text("provider_payment_id"),
+  amountPaise: integer("amount_paise").notNull(),
+  status: paymentStatus("status").notNull().default("created"),
+  failureReason: text("failure_reason"),
+  capturedAt: timestamp("captured_at", { withTimezone: true }),
+  ...timestamps,
+}, (t) => [
+  uniqueIndex("payments_provider_order_key").on(t.provider, t.providerOrderId),
+  uniqueIndex("payments_provider_payment_key").on(t.provider, t.providerPaymentId),
+  index("payments_order_idx").on(t.orderId),
+]);
+
+// Every webhook delivery is recorded once by the provider's event id, so retries never double-process.
+export const paymentEvents = pgTable("payment_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  provider: text("provider").notNull(),
+  eventId: text("event_id").notNull(),
+  type: text("type").notNull(),
+  payload: jsonb("payload").notNull(),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("payment_events_provider_event_key").on(t.provider, t.eventId)]);

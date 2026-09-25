@@ -4,6 +4,8 @@ import { createDatabase } from "./db/client";
 import { LocalDiskStorage } from "./media/storage";
 import { DEFAULT_COMMERCE_SETTINGS } from "./checkout/settings";
 import { MockShippingProvider, ShiprocketProvider } from "./shipping/provider";
+import { DevGateway, RazorpayGateway } from "./payments/gateway";
+import { expireUnpaidOrders } from "./orders/service";
 import { ChannelOtpSender, FileOutboxOtpSender, ResendEmailOtpSender, WhatsAppCloudOtpSender, type OtpSender } from "./messaging/otp-senders";
 
 const config = loadConfig();
@@ -34,6 +36,9 @@ const otpSender = new ChannelOtpSender({ whatsapp, email });
 const shipping = config.SHIPROCKET_EMAIL && config.SHIPROCKET_PASSWORD
   ? new ShiprocketProvider({ email: config.SHIPROCKET_EMAIL, password: config.SHIPROCKET_PASSWORD, pickupPincode: config.PICKUP_PINCODE })
   : isProduction ? null : new MockShippingProvider(config.PICKUP_PINCODE);
+const payments = config.RAZORPAY_KEY_ID
+  ? new RazorpayGateway({ keyId: config.RAZORPAY_KEY_ID, keySecret: config.RAZORPAY_KEY_SECRET!, webhookSecret: config.RAZORPAY_WEBHOOK_SECRET! })
+  : new DevGateway();
 const commerce = {
   ...DEFAULT_COMMERCE_SETTINGS,
   sellerStateCode: config.SELLER_STATE_CODE,
@@ -46,13 +51,23 @@ const app = await buildApp({
   otpSender,
   shipping,
   commerce,
+  payments,
   storefrontOrigins: config.STOREFRONT_ORIGIN.split(",").map((origin) => origin.trim()),
   cookieSecure: config.COOKIE_SECURE,
   trustedProxyHops: config.TRUST_PROXY,
   logger: true,
 });
 
-app.addHook("onClose", async () => close());
+// Release stock held by unpaid orders once their payment window lapses (every minute).
+const expiryTimer = setInterval(() => {
+  expireUnpaidOrders(db).catch((error) => app.log.error({ err: error }, "order expiry failed"));
+}, 60_000);
+expiryTimer.unref();
+
+app.addHook("onClose", async () => {
+  clearInterval(expiryTimer);
+  await close();
+});
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.once(signal, () => void app.close().then(() => process.exit(0)));
 }
