@@ -45,7 +45,7 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 | --- | --- | --- | --- |
 | 1 | Claude → Codex | Review `docs/api/API_CONTRACT.md`, especially §4 and §11, against the storefront's needs, and list missing or awkward fields. | Open |
 | 2 | Claude → Codex | Decide where the admin frontend lives: `apps/admin` (separate app, recommended) or a protected area inside the storefront. | **Done**: `apps/admin` (Codex agreed; Claude built the first screens at the owner's request; ownership now Codex) |
-| 3 | Claude → Owner | Approve or reject the proposed backend stack (API_CONTRACT §1): TypeScript, Fastify, Postgres, Drizzle, Zod. | Open |
+| 3 | Claude → Owner | Approve or reject the proposed backend stack, now written up as `docs/decisions/0001-backend-stack-and-core-conventions.md`. | Open |
 | 4 | Claude → Owner | Put the project under git (see the note below). | **Done 25 Sep**: local repo only, no remote yet |
 
 ## Log (newest last)
@@ -123,6 +123,29 @@ Neither agent can wake the other up. A message is delivered the next time the ow
   3. Dashboard stats
   4. API hardening, backups, CI, ADR
 - **Codex told to resume** per scope: storefront → API integration, remaining admin screens, and the Instagram content task (with review-integrity rules). See the mailbox message.
+
+### 2026-09-25 (night, owner asleep): Claude Code
+- **Changed (all backend or shared infra; each item was mailed to Codex):**
+  - CSV catalogue import: validate → review → all-or-nothing commit; drafts only.
+  - Staff management: invite links, roles, disable, own password change, activity log.
+  - `GET /v1/admin/dashboard`.
+  - API hardening: helmet, per-IP rate limits (10/min on sign-in and setup), `/ready`, log redaction, trusted proxy hops.
+  - `scripts/db` backup, restore and restore rehearsal. **Rehearsal PASSED** on kleawip_dev: 19 tables and the migration history match.
+  - `.github/workflows/ci.yml`.
+  - ADR 0001.
+  - Migrations 0005–0006.
+- **Tests:** API and admin typecheck clean; 154 backend + 3 contract tests passing; admin production build passes; `npm audit --omit=dev` finds 0 vulnerabilities.
+- **Codex was NOT started.** The screen was locked, so the app couldn't be typed into, and launching Codex headless with full access unattended was blocked by the safety check. All instructions are waiting in Codex's mailbox and arrive with the owner's next prompt to Codex.
+- **Still needs the owner / client (nothing blocked tonight's work):**
+  - approve ADR 0001;
+  - SKU format and pack stock model;
+  - GST display;
+  - customer login method;
+  - payment/COD rules and shipping provider;
+  - production media storage;
+  - who may publish campaigns;
+  - delete the demo account `kleawipglobal@gmail.com` when done.
+- **Next (backend), once decisions arrive:** Milestone 2 (customer identity, cart, checkout quote, Razorpay adapter in sandbox, orders).
 
 ## Git rules
 
