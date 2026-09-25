@@ -45,6 +45,24 @@ export const products = pgTable("products", {
   index("products_category_status_idx").on(t.categoryId, t.status),
 ]);
 
+// Uploaded image files (the media library). Files are content-addressed, so a URL never changes behind a cache.
+export const mediaAssets = pgTable("media_assets", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Delivery file (normalised WebP) and the untouched original, as storage keys.
+  storageKey: text("storage_key").notNull(),
+  originalKey: text("original_key").notNull(),
+  url: text("url").notNull(),
+  originalFilename: text("original_filename").notNull(),
+  originalMime: text("original_mime").notNull(),
+  width: integer("width").notNull(),
+  height: integer("height").notNull(),
+  bytes: integer("bytes").notNull(),
+  sha256: text("sha256").notNull(),
+  alt: text("alt").notNull().default(""),
+  uploadedByStaffId: uuid("uploaded_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("media_assets_sha256_key").on(t.sha256)]);
+
 export const productMedia = pgTable("product_media", {
   id: uuid("id").primaryKey().defaultRandom(),
   productId: uuid("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
@@ -54,7 +72,9 @@ export const productMedia = pgTable("product_media", {
   height: integer("height").notNull(),
   position: integer("position").notNull().default(0),
   // Show this image when the customer selects this option value (e.g. Colour = Blue). Null = always.
-  optionValueId: uuid("option_value_id"),
+  optionValueId: uuid("option_value_id").references(() => productOptionValues.id, { onDelete: "set null" }),
+  // Library file this image came from. Null for legacy/demo images that live in the storefront's public folder.
+  assetId: uuid("asset_id").references(() => mediaAssets.id, { onDelete: "restrict" }),
   ...timestamps,
 }, (t) => [
   index("product_media_product_idx").on(t.productId, t.position),
@@ -165,9 +185,12 @@ export const collections = pgTable("collections", {
   slug: text("slug").notNull(),
   title: text("title").notNull(),
   description: text("description").notNull().default(""),
+  bannerAssetId: uuid("banner_asset_id").references(() => mediaAssets.id, { onDelete: "restrict" }),
+  bannerAlt: text("banner_alt").notNull().default(""),
   status: publishStatus("status").notNull().default("draft"),
   position: integer("position").notNull().default(0),
   isDemo: boolean("is_demo").notNull().default(false),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
   ...timestamps,
 }, (t) => [uniqueIndex("collections_slug_key").on(t.slug)]);
 

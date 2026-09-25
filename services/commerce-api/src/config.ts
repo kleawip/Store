@@ -7,6 +7,9 @@ const Env = z.object({
   STOREFRONT_ORIGIN: z.string().default("http://localhost:3000"),
   // Secure admin cookie unless explicitly disabled for plain-HTTP local development.
   COOKIE_SECURE: z.enum(["true", "false"]).default("true").transform((value) => value === "true"),
+  // Local development media store (served by the API under /media). Production uses a cloud store (Phase 0 decision).
+  MEDIA_DIR: z.string().default(".data/media"),
+  MEDIA_PUBLIC_BASE_URL: z.string().url().default("http://127.0.0.1:4000/media"),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
 

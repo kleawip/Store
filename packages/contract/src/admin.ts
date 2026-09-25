@@ -156,7 +156,16 @@ export const AdminProduct = z.object({
     values: z.array(z.object({ code: z.string(), label: z.string(), swatch: z.string().nullable() })),
   })),
   variants: z.array(AdminVariant),
-  media: z.array(z.object({ id: z.string(), url: z.string(), alt: z.string(), width: z.number(), height: z.number(), position: z.number() })),
+  media: z.array(z.object({
+    id: z.string(),
+    assetId: z.string().nullable(),
+    url: z.string(),
+    alt: z.string(),
+    width: z.number(),
+    height: z.number(),
+    position: z.number(),
+    optionValue: z.string().nullable(), // "optionCode:valueCode"
+  })),
   publishChecklist: z.array(PublishCheck),
   isDemo: z.boolean(),
   updatedAt: z.string(),
@@ -242,3 +251,77 @@ export const AuditEvent = z.object({
 });
 
 export const AuditCommentCreate = z.object({ comment: z.string().trim().min(1).max(2000) });
+
+// ---- Media library ----
+
+export const MediaAsset = z.object({
+  id: z.string(),
+  url: z.string(),
+  width: z.number().int(),
+  height: z.number().int(),
+  bytes: z.number().int(),
+  originalFilename: z.string(),
+  alt: z.string(),
+  createdAt: z.string(),
+  // Where the file is used; deleting is blocked while this is non-empty.
+  usedBy: z.array(z.object({ type: z.enum(["product", "collection"]), id: z.string(), title: z.string() })),
+});
+export type MediaAsset = z.infer<typeof MediaAsset>;
+
+export const MediaAssetUpdate = z.object({ alt: z.string().trim().max(250) });
+
+export const MediaListQuery = z.object({
+  q: z.string().trim().max(100).optional(),
+  unused: z.enum(["true", "false"]).optional(),
+  limit: z.coerce.number().int().min(1).max(100).default(48),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+// Attach a library image to a product. `alt` falls back to the asset's alt text.
+export const ProductMediaAttach = z.object({
+  assetId: z.uuid(),
+  alt: z.string().trim().max(250).optional(),
+  // "optionCode:valueCode" to show only for that option value, or null for always.
+  optionValue: z.string().regex(/^[a-z0-9_-]+:[a-z0-9_-]+$/).nullable().default(null),
+});
+
+export const ProductMediaUpdate = z.object({
+  alt: z.string().trim().max(250),
+  optionValue: z.string().regex(/^[a-z0-9_-]+:[a-z0-9_-]+$/).nullable(),
+}).partial();
+
+export const ProductMediaOrder = z.object({ mediaIds: z.array(z.uuid()).min(1).max(100) });
+
+// ---- Collections (manual product lists) ----
+
+export const AdminCollectionCreate = z.object({
+  title: z.string().trim().min(1).max(120),
+  slug: Slug.optional(),
+  description: z.string().trim().max(2000).default(""),
+});
+
+export const AdminCollectionUpdate = z.object({
+  title: z.string().trim().min(1).max(120),
+  slug: Slug,
+  description: z.string().trim().max(2000),
+  bannerAssetId: z.uuid().nullable(),
+  bannerAlt: z.string().trim().max(250),
+  position: z.number().int().min(0),
+}).partial();
+
+export const AdminCollectionProducts = z.object({ productIds: z.array(z.uuid()).max(500) });
+
+export const AdminCollection = z.object({
+  id: z.string(),
+  slug: z.string(),
+  slugLocked: z.boolean(),
+  title: z.string(),
+  description: z.string(),
+  status: PublishStatus,
+  banner: z.object({ assetId: z.string(), url: z.string(), width: z.number(), height: z.number(), alt: z.string() }).nullable(),
+  position: z.number().int(),
+  products: z.array(z.object({ id: z.string(), title: z.string(), slug: z.string(), status: PublishStatus, thumbnailUrl: z.string().nullable() })),
+  publishChecklist: z.array(PublishCheck),
+  updatedAt: z.string(),
+});
+export type AdminCollection = z.infer<typeof AdminCollection>;

@@ -146,7 +146,19 @@ export async function adminProduct(db: Database, id: string): Promise<AdminProdu
       values: values.filter((value) => value.optionId === option.id).map(({ code, label, swatch }) => ({ code, label, swatch })),
     })),
     variants: adminVariants,
-    media: media.map(({ id: mediaId, url, alt, width, height, position }) => ({ id: mediaId, url, alt, width, height, position })),
+    media: media.map((image) => {
+      const value = image.optionValueId ? values.find((v) => v.id === image.optionValueId) : undefined;
+      return {
+        id: image.id,
+        assetId: image.assetId,
+        url: image.url,
+        alt: image.alt,
+        width: image.width,
+        height: image.height,
+        position: image.position,
+        optionValue: value ? `${optionCode.get(value.optionId)}:${value.code}` : null,
+      };
+    }),
     publishChecklist: publishChecklist(media, adminVariants),
     isDemo: product.isDemo,
     updatedAt: product.updatedAt.toISOString(),

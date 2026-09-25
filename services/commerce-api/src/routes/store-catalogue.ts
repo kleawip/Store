@@ -1,5 +1,7 @@
 import {
   CategoryListResponse,
+  CollectionDetail,
+  CollectionListResponse,
   ProductDetail,
   ProductListQuery,
   ProductListResponse,
@@ -12,6 +14,7 @@ import { and, asc, count, eq, ilike, inArray, or, sql, type SQL } from "drizzle-
 import type { FastifyPluginAsync } from "fastify";
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { storeCollection, storeCollections } from "../catalogue/collections";
 import { productDetail, productSummaries } from "../catalogue/queries";
 import type { Database } from "../db/client";
 import { categories, productMedia, products } from "../db/schema";
@@ -223,6 +226,18 @@ export const storeCatalogueRoutes = (db: Database): FastifyPluginAsync => async 
     ].slice(0, limit);
 
     return SearchSuggestResponse.parse({ query: q, suggestions });
+  });
+
+  app.get("/collections", async (_request, reply) => {
+    reply.header("cache-control", PUBLIC_CACHE);
+    return CollectionListResponse.parse({ data: await storeCollections(db) });
+  });
+
+  app.get<{ Params: { slug: string } }>("/collections/:slug", async (request, reply) => {
+    const collection = await storeCollection(db, request.params.slug);
+    if (!collection) throw notFound(`No published collection "${request.params.slug}".`);
+    reply.header("cache-control", PUBLIC_CACHE);
+    return CollectionDetail.parse(collection);
   });
 
   app.get<{ Params: { slug: string } }>("/products/:slug", async (request, reply) => {

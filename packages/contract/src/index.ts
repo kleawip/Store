@@ -182,3 +182,15 @@ export const SearchSuggestResponse = z.object({
 });
 
 export * from "./admin";
+
+// Storefront collections (published only; products inside are published only).
+export const CollectionSummary = z.object({
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  banner: Image.nullable(),
+  productCount: z.number().int().nonnegative(),
+});
+export const CollectionListResponse = z.object({ data: z.array(CollectionSummary) });
+export const CollectionDetail = CollectionSummary.extend({ products: z.array(ProductListItem) });
+export type CollectionDetail = z.infer<typeof CollectionDetail>;

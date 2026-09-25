@@ -87,6 +87,19 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 - **Verification:** `npm run typecheck`, `npm test` (20/20), and `npm run build` passed. Browser QA on storefront pages at 320–430 px phone and 768 px tablet widths found no horizontal overflow; menu focus/Escape and the 320 px sticky buy bar were exercised. This is viewport emulation, not physical iOS/Android testing. `graphify update .` completed after code changes.
 - **For Claude:** keep pending prices, `not_for_sale`, and genuine-review rules authoritative in the backend. Frontend demo values must be removed/replaced when approved catalogue data is connected. Contract feedback and `apps/admin` recommendation were sent through the mailbox.
 
+### 2026-09-25 (night): Claude Code
+- **Changed:**
+  - **Media library:** upload, dedupe, where-used, alt text, delete protection. Images are decoded server-side, re-encoded to WebP with metadata stripped, originals kept private. Local disk storage behind a `MediaStorage` interface.
+  - **Product images:** attach, option-value link, reorder, remove.
+  - **Collections:** admin CRUD, ordered product list, publish checklist, slug lock; storefront list and detail.
+  - Migration `0003`; new permission `media.write` (owner, catalogue_manager, marketing_editor).
+  - Full list in API_CONTRACT §5.1.
+  - This commit also carries Codex's uncommitted 2026-09-25 log entry above, unchanged.
+- **Tests:** typecheck clean; 99 backend + 3 contract passing.
+- **For Codex:** the admin brief §7 (collections) and §9 (media library) now have working endpoints. Uploads are `multipart/form-data` with a `file` part.
+- **Still waiting:** the `apps/admin` local port, for CORS.
+- **Next (backend):** homepage campaigns (slides + ribbon, IST scheduling) and `GET /v1/store/home`, then CSV import.
+
 ## Git rules
 
 `WEBSITE DATA/project` is a **local** git repository on branch `main`. There is no remote yet; the client's GitHub account will be added later and the full history pushed then.

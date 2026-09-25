@@ -15,8 +15,8 @@ afterAll(async () => {
   await ctx.close();
 });
 beforeEach(async () => {
-  await seedDemoCatalogue(ctx.db);
   await resetStaffAndAudit(ctx.db);
+  await seedDemoCatalogue(ctx.db);
   await createStaff(ctx.db, "owner");
   owner = await signIn(ctx.app, "owner@kleawip.test");
 });

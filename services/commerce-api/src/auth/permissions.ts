@@ -8,6 +8,7 @@ export const PERMISSIONS = [
   "catalogue.read",
   "catalogue.write",
   "catalogue.publish",
+  "media.write",
   "inventory.read",
   "inventory.adjust",
   "audit.read",
@@ -20,8 +21,8 @@ const READ_ALL: Permission[] = ["catalogue.read", "inventory.read", "audit.read"
 
 const GRANTS: Record<Role, readonly Permission[]> = {
   owner: PERMISSIONS,
-  catalogue_manager: [...READ_ALL, "catalogue.write", "catalogue.publish", "audit.comment"],
-  marketing_editor: [...READ_ALL, "audit.comment"],
+  catalogue_manager: [...READ_ALL, "catalogue.write", "catalogue.publish", "media.write", "audit.comment"],
+  marketing_editor: [...READ_ALL, "media.write", "audit.comment"],
   operations: [...READ_ALL, "inventory.adjust", "audit.comment"],
   support: [...READ_ALL, "audit.comment"],
   viewer: READ_ALL,

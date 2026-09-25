@@ -1,16 +1,24 @@
 import type { StaffRole, StaffSession } from "@kleawip/contract";
 import { sql } from "drizzle-orm";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { buildApp } from "../src/app";
 import { hashPassword } from "../src/auth/password";
 import { createDatabase, type Database } from "../src/db/client";
 import { staffUsers } from "../src/db/schema";
+import { LocalDiskStorage } from "../src/media/storage";
 
 export async function createTestApp() {
   const { db, close } = createDatabase(process.env.TEST_DATABASE_URL!);
-  const app = await buildApp({ db, storefrontOrigins: ["http://localhost:3000"], cookieSecure: false });
+  const mediaDir = mkdtempSync(join(tmpdir(), "kleawip-test-media-"));
+  const storage = new LocalDiskStorage(mediaDir, "http://127.0.0.1:4000/media");
+  const app = await buildApp({ db, storage, storefrontOrigins: ["http://localhost:3000"], cookieSecure: false });
   return {
     app,
     db,
+    storage,
+    mediaDir,
     async close() {
       await app.close();
       await close();
@@ -21,8 +29,12 @@ export async function createTestApp() {
 export const TEST_PASSWORD = "correct horse battery staple";
 let cachedHash: Promise<string> | undefined;
 
+/**
+ * Empties staff, sessions, audit and media. CASCADE also empties tables that reference these
+ * (product images, collections), so call this BEFORE seeding the demo catalogue.
+ */
 export async function resetStaffAndAudit(db: Database) {
-  await db.execute(sql`TRUNCATE staff_sessions, staff_users, audit_events RESTART IDENTITY CASCADE`);
+  await db.execute(sql`TRUNCATE staff_sessions, staff_users, audit_events, media_assets RESTART IDENTITY CASCADE`);
 }
 
 export async function createStaff(db: Database, role: StaffRole, email = `${role}@kleawip.test`) {

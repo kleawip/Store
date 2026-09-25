@@ -299,7 +299,48 @@ Zod schemas: `packages/contract/src/admin.ts`. Admin routes use the product **id
 - Wrong role or missing CSRF header → 403 `FORBIDDEN`, with a readable `detail`.
 - Field problems → 422, with `errors[].path` matching request field paths (e.g. `sku`, `options.pack`, `mrpPaise`, `stock.fromSku`).
 
-**Not yet built:** media upload, collections, homepage campaigns, CSV import, staff management.
+**Media library:**
+
+| Endpoint | Permission |
+| --- | --- |
+| `POST /v1/admin/media` (multipart: `file`, optional `alt`) → 201 `MediaAsset`, or 200 with the existing asset when identical bytes were uploaded before | `media.write` |
+| `GET /v1/admin/media?q=&unused=true\|false&limit=&offset=` → `{ data: MediaAsset[], totalCount }` | `catalogue.read` |
+| `GET` / `PATCH { alt }` / `DELETE /v1/admin/media/{id}` (delete → 422 `in_use` while `usedBy` is non-empty) | read / `media.write` |
+
+Upload handling:
+- Accepts JPEG, PNG or WebP, **identified by the file's bytes**, up to 15 MB and at least 300 px on the shortest side.
+- Delivered as WebP: EXIF-rotated, metadata stripped (no GPS), longest edge at most 2400 px, and a content-hashed immutable URL.
+- The original is kept privately and never served.
+- Locally, files are stored in `services/commerce-api/.data/media` and served at `/media/...`. The production store is a Phase 0 decision, and the server refuses to start in production without one.
+
+**Product images:**
+
+| Endpoint | Permission |
+| --- | --- |
+| `POST /v1/admin/products/{id}/media { assetId, alt?, optionValue? }` | `catalogue.write` |
+| `PATCH /v1/admin/products/{id}/media/{mediaId} { alt?, optionValue? }` | `catalogue.write` |
+| `DELETE /v1/admin/products/{id}/media/{mediaId}` | `catalogue.write` |
+| `PUT /v1/admin/products/{id}/media/order { mediaIds }` (must list every image exactly once) | `catalogue.write` |
+
+Every one returns `AdminProduct`, whose `media[]` now includes `assetId` and `optionValue`.
+
+**Collections** (hand-picked, ordered product lists):
+
+| Endpoint | Permission |
+| --- | --- |
+| `GET /v1/admin/collections` | `catalogue.read` |
+| `POST /v1/admin/collections` (`AdminCollectionCreate`) → 201 `AdminCollection` | `catalogue.write` |
+| `GET` / `PATCH /v1/admin/collections/{id}` (banner via `bannerAssetId` + `bannerAlt`) | read / `catalogue.write` |
+| `PUT /v1/admin/collections/{id}/products { productIds }` (ordered; drafts allowed but hidden from customers) | `catalogue.write` |
+| `POST …/{id}/publish` · `/unpublish` · `/archive`; checklist: at least one published product, and alt text on the banner | `catalogue.publish` |
+
+The slug locks after the first publish.
+
+**Storefront:**
+- `GET /v1/store/collections` → `CollectionListResponse`.
+- `GET /v1/store/collections/{slug}` → `CollectionDetail`, with published products only, as `ProductListItem`s.
+
+**Not yet built:** homepage campaigns, CSV import, staff management.
 
 ---
 
@@ -349,6 +390,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026: media library, product images and collections added (§5.1). Storefront `GET /v1/store/collections[/{slug}]`. `AdminProduct.media[]` gains `assetId` and `optionValue`.
 - 25 Sep 2026: staff auth + admin catalogue/inventory/timeline APIs implemented (§5.1). Admin routes are keyed by product id rather than slug.
 - 25 Sep 2026 (Codex review): `packages/contract` now has `badge`, `totalCount`, `facets` and the flat `SearchSuggestResponse`. `GET /v1/store/search/suggest` is implemented. Unsupported sorts return 422. Cursors are bound to their filters. §11 ranking is implemented, with `spec` included in matching. The no-SKU detail response is stated in §4. The demo seed refuses any database not named `*_dev` or `*_test`.
 - 25 Sep 2026: `GET /v1/store/products/{slug}` implemented. The product detail additionally carries `detail`, `spec`, `priceFrom`, `priceStatus` and `availability` at product level; `images[].optionValue` is `"optionCode:valueCode"`; `maxOrderQuantity` is the quantity orderable *now* (min of the max and sellable stock). A SKU with a pending price reports `availability: "not_for_sale"`. Additive only. Zod: `ProductDetail` in `packages/contract`.
