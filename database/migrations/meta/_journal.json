@@ -43,6 +43,13 @@
       "when": 1790333017658,
       "tag": "0005_catalogue_imports",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790333201616,
+      "tag": "0006_staff_invites",
+      "breakpoints": true
     }
   ]
 }

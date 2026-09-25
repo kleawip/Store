@@ -396,7 +396,19 @@ A failed commit returns 422, with `errors[0].code` one of: `already_committed`, 
 - Warnings, such as `price_pending`, don't block an import.
 - Every problem is reported with a row number and a column.
 
-**Not yet built:** staff management.
+**Staff management** (Settings → Staff; `StaffMember`, `StaffSetupLink` etc. in `packages/contract`):
+
+| Endpoint | Permission | Notes |
+| --- | --- | --- |
+| `GET /v1/admin/staff` | `staff.manage` (owner) | |
+| `POST /v1/admin/staff { email, name, role }` | owner | 201 `StaffSetupLink { staff, setupToken, setupPath, expiresAt }`. The account is `invited` until the one-time link (valid 72 h) is used. Show the link once and share it privately; nobody else ever knows the password. |
+| `PATCH /v1/admin/staff/{id} { name?, role?, status: active\|disabled }` | owner | A role change or disable ends that person's sessions immediately. You can't change your own role or status (`self_change`), and the last active Owner can't be removed (`last_owner`). |
+| `POST /v1/admin/staff/{id}/setup-link` | owner | The old password stops working and a fresh link is issued. Not allowed for yourself. |
+| `POST /v1/admin/auth/setup { token, password }` | **public** (the token is the credential) | 204. Password: at least 12 characters, not containing the email name. The link is single-use. |
+| `POST /v1/admin/auth/password { currentPassword, newPassword }` | any signed-in staff | 204; signs out your other sessions |
+| `GET /v1/admin/activity?entityType=&actorId=&limit=&before=` | `audit.read` | Store activity log, newest first |
+
+The admin app needs a public `/setup?token=…` page that posts to `/v1/admin/auth/setup`.
 
 ---
 
@@ -446,6 +458,7 @@ The frontend can switch over one fixture at a time. Until the API is running, th
 ### Changelog
 
 - 25 Sep 2026: initial v1 proposal (Claude Code).
+- 25 Sep 2026: staff management (invite links, roles, disable, self password change, activity log) implemented.
 - 25 Sep 2026: catalogue CSV import (validate → review → all-or-nothing commit) implemented.
 - 25 Sep 2026: homepage campaigns (slides + ribbon, IST scheduling, publish checklist, offer-claim guard) and `GET /v1/store/home` implemented. Slide images carry per-device `alt`. Permissions `campaigns.write` / `campaigns.publish` added.
 - 25 Sep 2026: media library, product images and collections added (§5.1). Storefront `GET /v1/store/collections[/{slug}]`. `AdminProduct.media[]` gains `assetId` and `optionValue`.

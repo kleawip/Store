@@ -452,3 +452,56 @@ export const ImportReport = z.object({
   committedAt: z.string().nullable(),
 });
 export type ImportReport = z.infer<typeof ImportReport>;
+
+// ---- Staff management (Settings → Staff; owner only) ----
+
+export const PASSWORD_MIN_LENGTH = 12;
+const NewPassword = z.string().min(PASSWORD_MIN_LENGTH, `Use at least ${PASSWORD_MIN_LENGTH} characters.`).max(256);
+
+export const StaffMember = z.object({
+  id: z.string(),
+  email: z.string(),
+  name: z.string(),
+  role: StaffRole,
+  status: z.enum(["invited", "active", "disabled"]),
+  lockedUntil: z.string().nullable(),
+  lastLoginAt: z.string().nullable(),
+  createdAt: z.string(),
+});
+export type StaffMember = z.infer<typeof StaffMember>;
+
+export const StaffInvite = z.object({ email: z.email().max(254), name: z.string().trim().min(1).max(80), role: StaffRole });
+
+export const StaffUpdate = z.object({
+  name: z.string().trim().min(1).max(80),
+  role: StaffRole,
+  status: z.enum(["active", "disabled"]),
+}).partial();
+
+// Returned once when inviting or resetting. The link is the only way to set the password; share it privately.
+export const StaffSetupLink = z.object({
+  staff: StaffMember,
+  setupToken: z.string(),
+  setupPath: z.string(), // e.g. "/setup?token=…" on the admin app
+  expiresAt: z.string(),
+});
+
+export const StaffSetupRequest = z.object({ token: z.string().min(20).max(200), password: NewPassword });
+export const PasswordChange = z.object({ currentPassword: z.string().min(1).max(256), newPassword: NewPassword });
+
+export const ActivityQuery = z.object({
+  entityType: z.enum(["product", "inventory_item", "collection", "hero_slide", "ribbon_message", "staff"]).optional(),
+  actorId: z.uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+  before: z.iso.datetime({ offset: true }).optional(),
+});
+
+export const ActivityEvent = z.object({
+  id: z.string(),
+  entityType: z.string(),
+  entityId: z.string(),
+  action: z.string(),
+  actorName: z.string().nullable(),
+  comment: z.string().nullable(),
+  createdAt: z.string(),
+});

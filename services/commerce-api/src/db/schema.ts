@@ -216,7 +216,7 @@ export const auditEvents = pgTable("audit_events", {
 // ---- Staff (Kleawip employees only; no public sign-up) ----
 
 export const staffRole = pgEnum("staff_role", ["owner", "catalogue_manager", "marketing_editor", "operations", "support", "viewer"]);
-export const staffStatus = pgEnum("staff_status", ["active", "disabled"]);
+export const staffStatus = pgEnum("staff_status", ["invited", "active", "disabled"]);
 
 export const staffUsers = pgTable("staff_users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -233,6 +233,18 @@ export const staffUsers = pgTable("staff_users", {
   uniqueIndex("staff_users_email_key").on(t.email),
   check("staff_users_email_lowercase", sql`${t.email} = lower(${t.email})`),
 ]);
+
+// One-time links for setting a password (new invites and resets). Only the SHA-256 of the token is stored.
+export const staffSetupTokens = pgTable("staff_setup_tokens", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  staffId: uuid("staff_id").notNull().references(() => staffUsers.id, { onDelete: "cascade" }),
+  tokenHash: text("token_hash").notNull(),
+  purpose: text("purpose").notNull(), // "invite" | "reset"
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+  createdByStaffId: uuid("created_by_staff_id").references(() => staffUsers.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("staff_setup_tokens_hash_key").on(t.tokenHash)]);
 
 // Only a SHA-256 of the session token is stored, so a database leak does not expose live sessions.
 export const staffSessions = pgTable("staff_sessions", {
