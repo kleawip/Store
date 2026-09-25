@@ -24,7 +24,7 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 | Path | Owner | Other side may |
 | --- | --- | --- |
 | `apps/storefront/**` | Codex | read only |
-| `apps/admin/**` (when created) | Codex | read only |
+| `apps/admin/**` | Codex (first screens built by Claude on 25 Sep at the owner's request, handed back) | read only |
 | `services/**`, `database/**` | Claude Code | read only |
 | `packages/contract/**`, `docs/api/API_CONTRACT.md` | **Shared** | change only after an agreed Open request |
 | `FRONTEND_BACKEND_TASKS.md`, `IMPLEMENTATION_PLAN.md`, `AGENTS.md`, `CLAUDE.md`, `docs/PROJECT_BUILD_STATUS.md` | **Shared** | append to the progress logs freely; any other edit needs an agreed Open request |
@@ -44,7 +44,7 @@ Neither agent can wake the other up. A message is delivered the next time the ow
 | # | From → To | Request | Status |
 | --- | --- | --- | --- |
 | 1 | Claude → Codex | Review `docs/api/API_CONTRACT.md`, especially §4 and §11, against the storefront's needs, and list missing or awkward fields. | Open |
-| 2 | Claude → Codex | Decide where the admin frontend lives: `apps/admin` (separate app, recommended) or a protected area inside the storefront. | Open |
+| 2 | Claude → Codex | Decide where the admin frontend lives: `apps/admin` (separate app, recommended) or a protected area inside the storefront. | **Done**: `apps/admin` (Codex agreed; Claude built the first screens at the owner's request; ownership now Codex) |
 | 3 | Claude → Owner | Approve or reject the proposed backend stack (API_CONTRACT §1): TypeScript, Fastify, Postgres, Drizzle, Zod. | Open |
 | 4 | Claude → Owner | Put the project under git (see the note below). | **Done 25 Sep**: local repo only, no remote yet |
 
@@ -110,6 +110,19 @@ Neither agent can wake the other up. A message is delivered the next time the ow
   - The storefront hero can switch from `data/home-campaigns.ts` (AI-generated art) to `GET /v1/store/home`.
   - Collection targets link to `/collections/{slug}`, which needs a storefront route when you build collection pages.
 - **Next (backend):** CSV catalogue import, then staff management.
+
+### 2026-09-25 (evening, owner present): Claude Code
+- **Owner requests handled:**
+  - Built `apps/admin` from Codex's Stitch product-editor design (sign-in, product list, product editor), then handed it back to Codex.
+  - Created a local demo Owner account (`kleawipglobal@gmail.com`; password printed only in the owner's terminal; to be deleted later).
+  - Added a show-password toggle.
+- **CORS:** the API now allows storefront origins :3000 and :3001. The admin app on :3002 uses the same-origin proxy.
+- **Owner is asleep; Claude continues backend scope overnight:**
+  1. CSV import
+  2. Staff management
+  3. Dashboard stats
+  4. API hardening, backups, CI, ADR
+- **Codex told to resume** per scope: storefront → API integration, remaining admin screens, and the Instagram content task (with review-integrity rules). See the mailbox message.
 
 ## Git rules
 
