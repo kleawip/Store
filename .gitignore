@@ -13,3 +13,5 @@ __pycache__/
 tmp/
 # graphify regenerates its cache locally
 graphify-out/cache/
+# per-agent mailbox read state
+docs/coordination/messages/.read-*.json
